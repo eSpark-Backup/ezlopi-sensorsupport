@@ -1,5 +1,5 @@
 
-
+/*
 #ifndef _016_SENS_TEST_SENSOR_
 #define _016_SENS_TEST_SENSOR_
 
@@ -12,3 +12,4 @@ int sensor_0016_oneWire_test_sensor(e_ezlopi_actions_t action, s_ezlopi_device_p
 
 #endif //_016_SENS_TEST_SENSOR_
 
+*/

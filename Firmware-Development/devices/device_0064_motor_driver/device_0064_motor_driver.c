@@ -1,4 +1,4 @@
-
+/*
 #include "cJSON.h"
 #include "ezlopi_cloud.h"
 #include "ezlopi_devices_list.h"
@@ -10,7 +10,7 @@
 #include "ezlopi_cloud_value_type_str.h"
 #include "trace.h"
 #include "ezlopi_adc.h"
-#include "sensor_0064_oneWire_test_sensor.h"
+#include "device_0064_motor_driver.h"
 
 static bool dht22_initialized = false;
 static int counter = 5;
@@ -182,3 +182,4 @@ static int test_sensor_get_sensor_value(s_ezlopi_device_properties_t *properties
 
     return ret;
 }
+*/
