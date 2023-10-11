@@ -75,6 +75,7 @@ idf_component_register(
         sensor_0061_digitalIn_reed_switch
         sensor_0062_other_MQ7_CO_gas_detector
         sensor_0063_other_MQ9_LPG_flameable_gas_detector
+        device_0064_motor_driver
         )
 
 

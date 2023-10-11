@@ -69,6 +69,7 @@
 //  0053,54,55,56
 #include "sensor_0057_other_KY026_FlameDetector.h"
 #include "sensor_0056_ADC_Force_Sensitive_Resistor.h"
+#include "device_0064_motor_driver_a4988.h"
 
 static s_ezlopi_device_t device_array[] = {
 
@@ -498,6 +499,13 @@ static s_ezlopi_device_t device_array[] = {
     {
         .id = EZLOPI_SENSOR_0063_OTHER_MQ9_LPG_FLAMEABLE_GAS_DETECTOR,
         .func = sensor_0063_MQ9_LPG_flameable,
+    },
+#endif
+
+#ifdef EZLOPI_SENSOR_0064_MOTOR_DRIVER_A4988
+    {
+        .id = EZLOPI_SENSOR_0064_MOTOR_DRIVER_A4988,
+        .func = device_0064_motor_driver_a4988,
     },
 #endif
 
