@@ -48,7 +48,7 @@ esp_err_t a4988_setup(a4988_config_t* config)
     ledc_channel->timer_sel = LEDC_TIMER_0;
     ledc_channel->speed_mode = LEDC_HIGH_SPEED_MODE;
     ledc_channel->channel = LEDC_CHANNEL_0;
-    ledc_channel->duty = 50;
+    ledc_channel->duty = 0;
     ledc_channel->hpoint = 0;
     ledc_channel->gpio_num = a4988_driver_config->step_pin;
 
@@ -56,7 +56,7 @@ esp_err_t a4988_setup(a4988_config_t* config)
     ESP_GOTO_ON_ERROR(ret, a4988_out, TAG, "ledc_channel_config");
 
     gpio_config_t direction_pin_io_conf = {
-        .mode = GPIO_MODE_OUTPUT,
+        .mode = GPIO_MODE_INPUT_OUTPUT,
         .intr_type = GPIO_INTR_DISABLE,
         .pull_down_en = 0,
         .pull_up_en = 0,
@@ -66,7 +66,7 @@ esp_err_t a4988_setup(a4988_config_t* config)
     ESP_GOTO_ON_ERROR(ret, a4988_out, TAG, "invalid gpio direction_pin_io_conf");
 
     gpio_config_t en_pin_io_conf = {
-        .mode = GPIO_MODE_OUTPUT,
+        .mode = GPIO_MODE_INPUT_OUTPUT,
         .intr_type = GPIO_INTR_DISABLE,
         .pull_down_en = 0,
         .pull_up_en = 0,
@@ -109,10 +109,13 @@ void a4988_set_speed(float rpm)
     if (frequency)
     {  
         ledc_set_freq(ledc_timer->speed_mode, ledc_timer->timer_num, frequency);
+        ledc_set_duty(ledc_channel->speed_mode, ledc_channel->channel, DUTY_CYCLE_50PERCENT_VALUE);
+        ledc_update_duty(ledc_channel->speed_mode, ledc_channel->channel);
     }
     else
     {
-        ledc_stop(ledc_channel->speed_mode, ledc_channel->channel, 0);
+        ledc_set_duty(ledc_channel->speed_mode, ledc_channel->channel, 0);
+        ledc_update_duty(ledc_channel->speed_mode, ledc_channel->channel);
     }
 }
 

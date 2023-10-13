@@ -411,7 +411,10 @@ static const char *test_device_constant_config =
                 \"dev_name\": \"TestSensor\",\
                 \"id_room\": \"\",\
                 \"id_item\": 64,\
-                \"gpio\": 32,\
+                \"gpio_en\":21,\
+                \"gpio_dir\":19,\
+                \"gpio_step\":18,\
+                \"steps_per_rev\":200,\
                 \"logic_inv\": false\
             }\
         ],\
