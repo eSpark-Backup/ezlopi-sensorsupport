@@ -62,7 +62,7 @@ esp_err_t a4988_setup(a4988_config_t* config)
     ESP_GOTO_ON_ERROR(ret, a4988_out, TAG, "ledc_channel_config");
 
     gpio_config_t direction_pin_io_conf = {
-        .mode = GPIO_MODE_OUTPUT,
+        .mode = GPIO_MODE_INPUT_OUTPUT,
         .intr_type = GPIO_INTR_DISABLE,
         .pull_down_en = 0,
         .pull_up_en = 0,
@@ -72,7 +72,7 @@ esp_err_t a4988_setup(a4988_config_t* config)
     ESP_GOTO_ON_ERROR(ret, a4988_out, TAG, "invalid gpio direction_pin_io_conf");
 
     gpio_config_t en_pin_io_conf = {
-        .mode = GPIO_MODE_OUTPUT,
+        .mode = GPIO_MODE_INPUT_OUTPUT,
         .intr_type = GPIO_INTR_DISABLE,
         .pull_down_en = 0,
         .pull_up_en = 0,
@@ -81,7 +81,11 @@ esp_err_t a4988_setup(a4988_config_t* config)
     ret = gpio_config(&en_pin_io_conf);
     ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
     
-    if (a4988_driver_config->micro_step_mode)
+    if(!a4988_driver_config->microsteps)
+    {
+        a4988_driver_config->microsteps = 1;
+    }
+    if (a4988_driver_config->micro_step_gpio_control)
     {
         gpio_config_t ms_io_conf = 
         {
@@ -89,11 +93,13 @@ esp_err_t a4988_setup(a4988_config_t* config)
             .intr_type = GPIO_INTR_DISABLE,
             .pull_down_en = 0,
             .pull_up_en = 0,
-            .pin_bit_mask = (1ULL << a4988_driver_config->ms1_pin) | (1ULL << a4988_driver_config->ms2_pin) | (1ULL << a4988_driver_config->ms3_pin),
+            .pin_bit_mask = (1ULL << a4988_driver_config->ms_pin[0]) | (1ULL << a4988_driver_config->ms_pin[1]) | (1ULL << a4988_driver_config->ms_pin[2]),
         };
         ret = gpio_config(&ms_io_conf);
         ESP_ERROR_CHECK_WITHOUT_ABORT(ret);
-    }
+
+        a4988_set_microsteps(a4988_driver_config->microsteps);
+    } 
 
     a4988_driver_status = A4988_INITIALIZED;
     return ESP_OK;
@@ -107,6 +113,48 @@ esp_err_t a4988_setup(a4988_config_t* config)
     ledc_channel = NULL;
     return ESP_FAIL;
 }
+
+void a4988_set_microsteps(a4988_microstep_t microsteps)
+{
+    a4988_driver_config->microsteps = microsteps;
+
+    uint8_t gpio_val = 0;
+    switch (a4988_driver_config->microsteps)
+    {
+        case FULL_STEP:
+            ESP_LOGI(TAG, "FULL_STEP");
+            break;
+
+        case HALF_STEP:
+            gpio_val = 1;
+            ESP_LOGI(TAG, "HALF_STEP");
+            break;
+
+        case QUARTER_STEP:
+            gpio_val = 2;
+            ESP_LOGI(TAG, "QUARTER_STEP");
+            break;
+
+        case EIGHTH_STEP:
+            gpio_val = 3;
+            ESP_LOGI(TAG, "EIGHTH_STEP");
+            break;
+
+        case SIXTEENTH_STEP:
+            gpio_val = 7;
+            ESP_LOGI(TAG, "SIXTEENTH_STEP");
+            break;
+        
+        default:
+            break;
+    }
+
+    for (uint8_t i = 0; i < 3; i++)
+    {     
+        gpio_set_level(a4988_driver_config->ms_pin[i], (gpio_val >> i) & 0x01);
+    }
+}
+
 
 void a4988_set_direction(a4988_direction_t direction)
 {
@@ -123,9 +171,10 @@ void a4988_disable_driver()
     gpio_set_level(a4988_driver_config->en_pin, 1);
 }
 
-void a4988_set_speed(float rpm)
+void a4988_run_speed(float rpm)
 {
-    uint32_t frequency = ((rpm/60.f) * a4988_driver_config->steps_per_rev);
+    uint32_t frequency = (rpm/60.f) * (a4988_driver_config->steps_per_rev * a4988_driver_config->microsteps);
+
     if (frequency)
     {  
         ledc_set_freq(ledc_timer->speed_mode, ledc_timer->timer_num, frequency);
@@ -139,14 +188,39 @@ void a4988_set_speed(float rpm)
     }
 }
 
+void a4988_update_speed(float rpm)
+{
+    uint32_t frequency = (rpm/60.f) * (a4988_driver_config->steps_per_rev * a4988_driver_config->microsteps); 
+    ledc_set_freq(ledc_timer->speed_mode, ledc_timer->timer_num, frequency);
+} 
+
 bool a4988_run(motor_run_properties_t* motor_properties)
 {
-    if ( !motor_properties->rpm || !motor_properties->steps)
+    if (!motor_properties->rpm || (!motor_properties->steps && !motor_properties->rotations && !motor_properties->angle))
         return false;
 
     a4988_set_direction(motor_properties->direction);
-    a4988_set_speed(motor_properties->rpm);
+    a4988_run_speed(motor_properties->rpm);
+    
+    switch (motor_properties->mode)
+    {
+        case STEPS_MODE:
+            break;
+        
+        case ANGLE_MODE:
+            motor_properties->steps = motor_properties->angle * ((a4988_driver_config->steps_per_rev * a4988_driver_config->microsteps)/360.f);
+            break;
+
+        case ROTATION_MODE:
+            motor_properties->steps = motor_properties->rotations * (a4988_driver_config->steps_per_rev * a4988_driver_config->microsteps);
+            break;
+
+        default:
+            break;
+    }
+    
     a4988_set_steps(motor_properties->steps);
+    
     return true;
 }
 
@@ -176,12 +250,11 @@ void a4988_set_steps(uint32_t steps)
 
     a4988_driver_config->steps_left = steps;  
     a4988_driver_config->steps = a4988_driver_config->steps_left >= PCNT_H_LIM_VAL ? PCNT_H_LIM_VAL - 1 : a4988_driver_config->steps_left;
-    ESP_LOGE(TAG, "set counter %d", a4988_driver_config->steps);
 
     /* Prepare configuration for the PCNT unit */
     pcnt_config_t pcnt_config = {
         // Set PCNT input signal and control GPIOs
-        .pulse_gpio_num = a4988_driver_config->counter_gpio,
+        .pulse_gpio_num = a4988_driver_config->counter_pin,
         .ctrl_gpio_num = PCNT_INPUT_CTRL_IO,
         .channel = PCNT_CHANNEL_0,
         .unit = unit,
@@ -229,7 +302,7 @@ static void stepperStopTask(void *pvParameters)
     portBASE_TYPE res;
     while (1) 
     {
-        res = xQueueReceive(pcnt_evt_queue, &evt, 500/portTICK_RATE_MS);
+        res = xQueueReceive(pcnt_evt_queue, &evt, portMAX_DELAY);
         if (res == pdTRUE) 
         {
             pcnt_get_counter_value(evt.unit, &count);
@@ -254,12 +327,9 @@ static void stepperStopTask(void *pvParameters)
                     a4988_driver_config->steps_left = 0;
 
                     ESP_LOGI(TAG, "Steps Completed");
-                    ESP_LOGI(TAG, "counter %d", count);
-                    a4988_set_speed(0);
+                    a4988_run_speed(0);
                 }
             }
         }
-        pcnt_get_counter_value(PCNT_UNIT_0, &count);
-        ESP_LOGI(TAG, "counter %d", count);
     }
 }

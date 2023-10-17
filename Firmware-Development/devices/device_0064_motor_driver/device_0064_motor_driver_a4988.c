@@ -24,9 +24,9 @@ static int add_device_to_list(s_ezlopi_prep_arg_t *prep_arg, s_ezlopi_device_pro
 static s_ezlopi_device_properties_t *motor_driver_a4988_rotation_properties = NULL;
 static s_ezlopi_device_properties_t *motor_driver_a4988_switch_enable_properties = NULL;
 static s_ezlopi_device_properties_t *motor_driver_a4988_switch_direction_properties = NULL;
+static s_ezlopi_device_properties_t *motor_driver_a4988_counter_properties = NULL;
 static a4988_config_t* a4988_config = NULL;
-int rotation = 0;
-bool en_pin_state = 0;
+static motor_run_properties_t* motor_properties = NULL;
 
 #define ADD_PROPERTIES_DEVICE_LIST(_properties, device_id, category, sub_category, item_name, value_type, cjson_device)                       \
     {                                                                                                                                         \
@@ -81,6 +81,7 @@ static int ezlopi_motor_driver_a4988_prepare(void *args)
         uint32_t device_id = ezlopi_cloud_generate_device_id();
 
         ADD_PROPERTIES_DEVICE_LIST(motor_driver_a4988_rotation_properties, device_id, category_interface, subcategory_not_defined, ezlopi_item_name_rotation, value_type_frequency, prep_arg->cjson_device);
+        ADD_PROPERTIES_DEVICE_LIST(motor_driver_a4988_counter_properties, device_id, category_interface, subcategory_not_defined, ezlopi_item_name_angle_position, value_type_angle, prep_arg->cjson_device);
         ADD_PROPERTIES_DEVICE_LIST(motor_driver_a4988_switch_enable_properties, device_id, category_switch, subcategory_relay, ezlopi_item_name_switch, value_type_bool, prep_arg->cjson_device);
         ADD_PROPERTIES_DEVICE_LIST(motor_driver_a4988_switch_direction_properties, device_id, category_switch, subcategory_relay, ezlopi_item_name_switch, value_type_bool, prep_arg->cjson_device);
     }
@@ -97,12 +98,16 @@ static int ezlopi_motor_driver_a4988_init(s_ezlopi_device_properties_t *properti
         a4988_config->en_pin = motor_driver_a4988_switch_enable_properties->interface.gpio.gpio_out.gpio_num;
         a4988_config->step_pin = motor_driver_a4988_rotation_properties->interface.gpio.gpio_out.gpio_num;
         a4988_config->direction_pin = motor_driver_a4988_switch_direction_properties->interface.gpio.gpio_out.gpio_num;
+        a4988_config->counter_pin = motor_driver_a4988_counter_properties->interface.gpio.gpio_out.gpio_num;
 
         ret = a4988_setup(a4988_config);
         a4988_disable_driver();
         
         free(a4988_config);
         a4988_config = NULL;
+
+        motor_properties = (motor_run_properties_t*)malloc(sizeof(motor_run_properties_t));
+        memset(motor_properties, 0, sizeof(motor_run_properties_t));
     }
 
     return ret;
@@ -121,9 +126,9 @@ static int ezlopi_motor_driver_a4988_set_value(s_ezlopi_device_properties_t *pro
 
         if (ezlopi_item_name_rotation == properties->ezlopi_cloud.item_name)
         {
-            rotation = value;
-            TRACE_I("rotation update value: %d", value);
-            a4988_set_speed(value);
+            motor_properties->rpm = value;
+            a4988_update_speed(motor_properties->rpm);
+            TRACE_I("RPM updated value: %g", motor_properties->rpm);
         }
         else if (ezlopi_item_name_switch == properties->ezlopi_cloud.item_name)
         {
@@ -138,10 +143,18 @@ static int ezlopi_motor_driver_a4988_set_value(s_ezlopi_device_properties_t *pro
             }
             if (strstr(properties->ezlopi_cloud.device_name, "direction"))
             {
-                a4988_set_direction(value);
-                TRACE_I("Direction updated value: %d", value);
+                motor_properties->direction = value;
+                a4988_set_direction(motor_properties->direction);
+                TRACE_I("Direction updated value: %d", motor_properties->direction);
             }
             
+        }
+        else if (strstr(properties->ezlopi_cloud.device_name, "counter"))
+        {
+            motor_properties->angle = value;
+            motor_properties->mode = ANGLE_MODE;
+            a4988_run(motor_properties);
+            TRACE_I("Angle updated value: %g", motor_properties->angle);
         }
 
         // ezlopi_device_value_updated_from_device(properties);
@@ -157,17 +170,22 @@ static int ezlopi_motor_driver_a4988_get_value_cjson(s_ezlopi_device_properties_
     {
         if (ezlopi_item_name_rotation == properties->ezlopi_cloud.item_name)
         {
-            cJSON_AddNumberToObject(cjson_properties, "value", rotation);
+            cJSON_AddNumberToObject(cjson_properties, "value", motor_properties->rpm);
             cJSON_AddStringToObject(cjson_properties, "scale", "revolutions_per_minute");
         }
         else if (ezlopi_item_name_switch == properties->ezlopi_cloud.item_name )
         {
             bool gpio_level = gpio_get_level(properties->interface.gpio.gpio_out.gpio_num);
             if (properties->interface.gpio.gpio_out.invert)
+            {
                 gpio_level = !gpio_level;
-
+            }
             cJSON_AddNumberToObject(cjson_properties, "value", gpio_level);  
             TRACE_E("gpio %d current value %d", properties->interface.gpio.gpio_out.gpio_num, gpio_level);        
+        }
+        else if (ezlopi_item_name_angle_position == properties->ezlopi_cloud.item_name)
+        {
+            cJSON_AddNumberToObject(cjson_properties, "value", motor_properties->angle);
         }
 
         ret = true;
@@ -225,17 +243,35 @@ static s_ezlopi_device_properties_t *ezlopi_motor_driver_a4988_prepare_propertie
                 CJSON_GET_VALUE_INT(cjson_device, "gpio_step", gpio_num);
                 strcat(ezlopi_motor_driver_a4988_properties->ezlopi_cloud.device_name, " speed");
                 a4988_config = (a4988_config_t*)malloc(sizeof(a4988_config_t));
+            
                 if (a4988_config)
                 {
-                    CJSON_GET_VALUE_INT(cjson_device, "steps_per_rev", a4988_config->steps_per_rev);      
-                    ezlopi_motor_driver_a4988_properties->user_arg = a4988_config;
-                }
+                    memset(a4988_config, 0, sizeof(a4988_config_t));
+                    CJSON_GET_VALUE_INT(cjson_device, "steps_per_rev", a4988_config->steps_per_rev);     
+                    CJSON_GET_VALUE_INT(cjson_device, "microsteps", a4988_config->microsteps);
+                    CJSON_GET_VALUE_INT(cjson_device, "micro_step_gpio_control", a4988_config->micro_step_gpio_control);
+                    if (a4988_config->micro_step_gpio_control)
+                    {
+                        TRACE_B("ms gpio control enabled");
+                        CJSON_GET_VALUE_INT(cjson_device, "gpio_ms1", a4988_config->ms_pin[0]);
+                        CJSON_GET_VALUE_INT(cjson_device, "gpio_ms2", a4988_config->ms_pin[1]);
+                        CJSON_GET_VALUE_INT(cjson_device, "gpio_ms3", a4988_config->ms_pin[2]);
+                    }
+                }  
             }
+
+            else if(ezlopi_item_name_angle_position == item_name)
+            {
+                CJSON_GET_VALUE_INT(cjson_device, "gpio_counter", gpio_num);
+                strcat(ezlopi_motor_driver_a4988_properties->ezlopi_cloud.device_name, " counter");
+            }
+
             ezlopi_motor_driver_a4988_properties->interface.gpio.gpio_out.enable = true;
             ezlopi_motor_driver_a4988_properties->interface_type = EZLOPI_DEVICE_INTERFACE_DIGITAL_OUTPUT;
             ezlopi_motor_driver_a4988_properties->interface.gpio.gpio_out.gpio_num = gpio_num;
         }
     }
+    
     return ezlopi_motor_driver_a4988_properties;
 }
 

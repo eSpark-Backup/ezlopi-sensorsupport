@@ -414,7 +414,13 @@ static const char *test_device_constant_config =
                 \"gpio_en\":21,\
                 \"gpio_dir\":19,\
                 \"gpio_step\":18,\
+                \"gpio_counter\":4,\
                 \"steps_per_rev\":200,\
+                \"microsteps\":16,\
+                \"micro_step_gpio_control\":true,\
+                \"gpio_ms1\":5,\
+                \"gpio_ms2\":22,\
+                \"gpio_ms3\":23,\
                 \"logic_inv\": false\
             }\
         ],\
