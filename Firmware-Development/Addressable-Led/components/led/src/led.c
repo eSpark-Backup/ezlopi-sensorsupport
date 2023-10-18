@@ -262,7 +262,7 @@ static void led_channel_rgb(int c, int x, int y, uint8_t r, uint8_t g,
 
 void led_rgb_rtp(int x, int y, uint8_t r, uint8_t g, uint8_t b) {
 	for (int c = 0; c < led_get_max_lines(); c++) {
-		if (led_config.channel[c].mode == LED_MODE_NETWORK) {
+		if (led_config.channel[c].mode == LED_MODE_SOLID) {  //FIXME: LED_MODE_NETWORK
 			led_channel_rgb(c, x, y, r, g, b);
 		}
 	}
@@ -276,7 +276,7 @@ void led_channel_block(int c, int x, int y, uint8_t *r, uint8_t *g, uint8_t *b) 
 
 void led_block(int x, int y, uint8_t *r, uint8_t *g, uint8_t *b) {
 	for (int c = 0; c < led_get_max_lines(); c++) {
-		if (led_config.channel[c].mode == LED_MODE_NETWORK) {
+		if (led_config.channel[c].mode == LED_MODE_SOLID) { //FIXME: LED_MODE_NETWORK
 			led_channel_block(c, x, y, r, g, b);
 		}
 	}
@@ -285,7 +285,7 @@ void led_block(int x, int y, uint8_t *r, uint8_t *g, uint8_t *b) {
 static void handleNewConfig() {
 	ESP_LOGI(TAG, "HADNLING NEW CONFIG");
 	for (int i = 0; i < led_get_max_lines(); i++) {
-		WS2812FX_init(i, led_config.channel[i].sx * led_config.channel[i].sy);
+		WS2812FX_init(i, led_config.channel[i].sx * led_config.channel[i].sy, led_config.config_color);
 		ownled_setSize(i,
 				led_config.channel[i].sx * led_config.channel[i].sy
 						+ led_config.prefix_leds);
@@ -543,63 +543,66 @@ static void task(void *args) {
 			for (int i = 0; i < led_get_max_lines(); i++) {
 			// ESP_LOGI(TAG, "MODE %d",  led_config.channel[i].mode);	
 				switch (led_config.channel[i].mode) {
-				case LED_MODE_OFF:
-					fill(i, 0, 0, 0);
+				// case LED_MODE_OFF:
+				// 	fill(i, 0, 0, 0);
+				// 	break;
+				// case LED_MODE_NETWORK:
+				// 	break;
+				// case LED_MODE_WHITE:
+				// 	fill(i, 255, 255, 255);
+				// 	break;
+				// case LED_MODE_GRAY:
+				// 	fill(i, 128, 128, 128);
+				// 	break;
+				// case LED_MODE_RED:
+				// 	ESP_LOGI(TAG, "MODE RED");
+				// 	fill(i, 255, 0, 0);
+				// 	break;
+				// case LED_MODE_YELLOW:
+				// 	fill(i, 255, 255, 0);
+				// 	break;
+				// case LED_MODE_GREEN:
+				// 	fill(i, 0, 255, 0);
+				// 	break;
+				// case LED_MODE_CYAN:
+				// 	fill(i, 0, 255, 255);
+				// 	break;
+				// case LED_MODE_BLUE:
+				// 	fill(i, 0, 0, 255);
+				// 	break;
+				// case LED_MODE_MAGENTA:
+				// 	fill(i, 255, 0, 255);
+				// 	break;
+				// case LED_MODE_FADE_X:
+				// 	fillFadeX(i);
+				// 	break;
+				// case LED_MODE_FADE_Y:
+				// 	fillFadeY(i);
+				// 	break;
+				// case LED_MODE_FADE_XY:
+				// 	fillFadeXY(i);
+				// 	break;
+				// case LED_MODE_LINES_X:
+				// 	fillLinesX(i);
+				// 	break;
+				// case LED_MODE_LINES_Y:
+				// 	fillLinesY(i);
+				// 	break;
+				// case LED_MODE_LINES_XY:
+				// 	fillLinesXY(i);
+				// 	break;
+				// case LED_MODE_CORNERS:
+				// 	fillCorners(i);
+				// 	break;
+				// case LED_MODE_SQUARE:
+				// 	fillSquare(i);
+				// 	break;
+				case LED_MODE_SOLID:
+					fill(i, 255, 200, 150);
 					break;
-				case LED_MODE_NETWORK:
-					break;
-				case LED_MODE_WHITE:
-					fill(i, 255, 255, 255);
-					break;
-				case LED_MODE_GRAY:
-					fill(i, 128, 128, 128);
-					break;
-				case LED_MODE_RED:
-					ESP_LOGI(TAG, "MODE RED");
-					fill(i, 255, 0, 0);
-					break;
-				case LED_MODE_YELLOW:
-					fill(i, 255, 255, 0);
-					break;
-				case LED_MODE_GREEN:
-					fill(i, 0, 255, 0);
-					break;
-				case LED_MODE_CYAN:
-					fill(i, 0, 255, 255);
-					break;
-				case LED_MODE_BLUE:
-					fill(i, 0, 0, 255);
-					break;
-				case LED_MODE_MAGENTA:
-					fill(i, 255, 0, 255);
-					break;
-				case LED_MODE_FADE_X:
-					fillFadeX(i);
-					break;
-				case LED_MODE_FADE_Y:
-					fillFadeY(i);
-					break;
-				case LED_MODE_FADE_XY:
-					fillFadeXY(i);
-					break;
-				case LED_MODE_LINES_X:
-					fillLinesX(i);
-					break;
-				case LED_MODE_LINES_Y:
-					fillLinesY(i);
-					break;
-				case LED_MODE_LINES_XY:
-					fillLinesXY(i);
-					break;
-				case LED_MODE_CORNERS:
-					fillCorners(i);
-					break;
-				case LED_MODE_SQUARE:
-					fillSquare(i);
-					break;
-				case LED_MODE_PRODUCTION_TEST:
-					fillProductionTest(i);
-					break;
+				// case LED_MODE_PRODUCTION_TEST:
+				// 	fillProductionTest(i);
+				// 	break;
 				case FX_MODE_BLINK:
 					WS2812FX_call(i, WS2812FX_mode_blink);
 					break;

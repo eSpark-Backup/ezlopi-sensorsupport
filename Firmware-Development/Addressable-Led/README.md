@@ -9,19 +9,42 @@
 
 
 - Example Json:
+1- To Change Effects
 
 ```
 {
   "seg": {
-    "fx": 31,
+    "fx": 4,
     "fxdef": true
   },
   "v": true,
   "time": 1697181639
 }
 ```
+Change is "fx" value to change animations on the led strip (0-66)
 
-- Change is "fx" value to change animations on the led strip (0-66)
+2- To Change RGB Color Values
+
+```
+{
+  "seg": {
+    "col": [
+      [
+        180,
+        180,
+        255,
+        0
+      ],
+      [],
+      []
+    ]
+  },
+  "v": true,
+  "time": 1697181431
+}
+```
+Change is "col":[G,R,B,W] values to change RGB Colors on the led strip (0-255)
+
 
 Select the instructions depending on Espressif chip installed on your development board:
 
