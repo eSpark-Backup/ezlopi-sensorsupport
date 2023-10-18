@@ -12,80 +12,54 @@ static const char* TAG = "uart_select_example";
 void parse_json(char* start);
 char c[1024];
 
-void uart_select_task(void *arg)
+#define ECHO_TEST_TXD 1
+#define ECHO_TEST_RXD 3
+#define ECHO_TEST_RTS (UART_PIN_NO_CHANGE)
+#define ECHO_TEST_CTS (UART_PIN_NO_CHANGE)
+
+#define ECHO_UART_PORT_NUM      UART_NUM_0
+#define ECHO_UART_BAUD_RATE     115200
+#define ECHO_TASK_STACK_SIZE    2048
+
+#define BUF_SIZE (1024)
+
+void uart_task(void *arg)
 {
+    /* Configure parameters of an UART driver,
+     * communication pins and install the driver */
     uart_config_t uart_config = {
-        .baud_rate = 115200,
+        .baud_rate = ECHO_UART_BAUD_RATE,
         .data_bits = UART_DATA_8_BITS,
         .parity    = UART_PARITY_DISABLE,
         .stop_bits = UART_STOP_BITS_1,
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
         .source_clk = UART_SCLK_APB,
     };
-    uart_driver_install(UART_NUM_0, 2*1024, 0, 0, NULL, 0);
-    uart_param_config(UART_NUM_0, &uart_config);
+    int intr_alloc_flags = 0;
+
+#if CONFIG_UART_ISR_IN_IRAM
+    intr_alloc_flags = ESP_INTR_FLAG_IRAM;
+#endif
+
+    ESP_ERROR_CHECK(uart_driver_install(ECHO_UART_PORT_NUM, BUF_SIZE * 2, 0, 0, NULL, intr_alloc_flags));
+    ESP_ERROR_CHECK(uart_param_config(ECHO_UART_PORT_NUM, &uart_config));
+    ESP_ERROR_CHECK(uart_set_pin(ECHO_UART_PORT_NUM, ECHO_TEST_TXD, ECHO_TEST_RXD, ECHO_TEST_RTS, ECHO_TEST_CTS));
+
+    // Configure a temporary buffer for the incoming data
+    uint8_t *data = (uint8_t *) malloc(BUF_SIZE);
 
     while (1) {
-        int fd;
-        int  i=0;
+        // Read data from the UART
+        int len = uart_read_bytes(ECHO_UART_PORT_NUM, data, (BUF_SIZE - 1), 20 / portTICK_RATE_MS);
+        // Write data back to the UART
+        // uart_write_bytes(ECHO_UART_PORT_NUM, (const char *) data, len);
 
-        if ((fd = open("/dev/uart/0", O_RDWR)) == -1) {
-            ESP_LOGE(TAG, "Cannot open UART");
-            vTaskDelay(5000 / portTICK_PERIOD_MS);
-            continue;
+        if (len) {
+            data[len] = '\0';
+            ESP_LOGI(TAG, "Recv str: %s", (char *) data);
+            parse_json((char*)data);
         }
-
-        // We have a driver now installed so set up the read/write functions to use driver also.
-        esp_vfs_dev_uart_use_driver(0);
-
-        while (1) {
-            int s;
-            fd_set rfds;
-            struct timeval tv = {
-                .tv_sec = 1.5,
-                .tv_usec = 0,
-            };
-
-            FD_ZERO(&rfds);
-            FD_SET(fd, &rfds);
-
-            s = select(fd + 1, &rfds, NULL, NULL, &tv);
-
-            if (s < 0) {
-                ESP_LOGE(TAG, "Select failed: errno %d", errno);
-                break;
-            } else if (s == 0) {
-                ESP_LOGI(TAG, "Timeout has been reached and nothing has been received");
-                break;
-            } else {
-                if (FD_ISSET(fd, &rfds)) {
-                    char buf;
-                    if (read(fd, &buf, 1) > 0) {
-                        ESP_LOGI(TAG, "Received: %c", buf);
-
-
-                        i+=sprintf(c+i,&buf);
-
-                        // Note: Only one character was read even the buffer contains more. The other characters will
-                        // be read one-by-one by subsequent calls to select() which will then return immediately
-                        // without timeout.
-                    } else {
-                        ESP_LOGE(TAG, "UART read error");
-                        break;
-                    }
-                } else {
-                    ESP_LOGE(TAG, "No FD has been set in select()");
-                    break;
-                }
-            }
-        }
-
-        close(fd);
-        parse_json(c);
-
     }
-
-    vTaskDelete(NULL);
 }
 
 void parse_json(char* start){
@@ -96,10 +70,12 @@ void parse_json(char* start){
         cJSON* seg = cJSON_GetObjectItemCaseSensitive(root, "seg");
 
         cJSON* fx = cJSON_GetObjectItemCaseSensitive(seg, "fx");
-        config_setMode((uint8_t)fx->valueint);
+        if(fx != NULL){
+            config_setMode((uint8_t)fx->valueint);
+        }
     }
     cJSON_Delete(root);
-        
+    memset(start, 0 , BUF_SIZE);
 }
 
 
