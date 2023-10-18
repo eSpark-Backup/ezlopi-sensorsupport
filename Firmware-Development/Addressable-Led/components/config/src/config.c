@@ -182,7 +182,7 @@ void config_setMode(uint8_t mode) {
 	led_config.refresh_rate = 20.;
 	for (int i = 0; i < led_get_max_lines(); i++) {
 		led_config.channel[i].mode = mode;
-		led_config.channel[i].sx = led_config.channel[i].sy = 4;
+		led_config.channel[i].sx = led_config.channel[i].sy = 6;
 		led_config.channel[i].ox = led_config.channel[i].oy = 0;
 		led_config.channel[i].orientation = LED_ORI0_ZIGZAG;
 		led_config.channel[i].black[0] = led_config.channel[i].black[1] =
