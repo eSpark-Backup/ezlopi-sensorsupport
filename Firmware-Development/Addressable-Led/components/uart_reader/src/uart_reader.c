@@ -64,6 +64,7 @@ void uart_task(void *arg)
 
 void parse_json(char* start){
     cJSON* root = cJSON_Parse(start);
+    uint32_t rgbcolor = 0;
     if(root != NULL){
         char *string = cJSON_Print(root);
 
@@ -71,8 +72,26 @@ void parse_json(char* start){
 
         cJSON* fx = cJSON_GetObjectItemCaseSensitive(seg, "fx");
         if(fx != NULL){
-            config_setMode((uint8_t)fx->valueint);
+            config_setMode((uint8_t)fx->valueint); //TODO: Read color from json
         }
+
+        cJSON* col = cJSON_GetObjectItemCaseSensitive(seg, "col");
+        if(col != NULL){
+            for (int i = 0 ; i < cJSON_GetArraySize(col) ; i++)
+            {
+                    cJSON* subitem = cJSON_GetArrayItem(col, i);
+
+                    for(int j = 0; j < cJSON_GetArraySize(subitem)-1; j++ ){ //FIXME: Array size is 4 RGBW not RGB
+                        cJSON* subsubitem = cJSON_GetArrayItem(subitem, j);
+                        ESP_LOGI(TAG, "JSON COL %d : %u",j, subsubitem->valueint);
+                        uint8_t color = subsubitem->valueint;
+                        rgbcolor += (color << (j*8));
+                    }
+            }
+        	config_setColor(rgbcolor);
+        }
+
+        
     }
     cJSON_Delete(root);
     memset(start, 0 , BUF_SIZE);

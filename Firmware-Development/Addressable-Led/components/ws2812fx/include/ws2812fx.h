@@ -14,7 +14,7 @@
 
 #include <stdint.h>
 
-void WS2812FX_init(int line, int n);
+void WS2812FX_init(int line, int n, uint32_t color);
 void WS2812FX_call(int line, uint16_t (*fct)(int));
 
 uint16_t WS2812FX_mode_bicolor_chase(int line);
