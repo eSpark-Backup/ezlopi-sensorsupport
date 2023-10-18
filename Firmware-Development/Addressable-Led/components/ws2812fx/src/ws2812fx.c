@@ -64,9 +64,9 @@ static inline int max(int a, int b) {
 }
 
 // some common colors
-#define GREEN (uint32_t)0xFF0000
-#define RED (uint32_t)0x00FF00
-#define BLUE (uint32_t)0x0000FF
+#define GREEN fx_segments[line].colors[0]
+#define RED fx_segments[line].colors[1]
+#define BLUE fx_segments[line].colors[2]
 #define WHITE (uint32_t)0xFFFFFF
 #define BLACK (uint32_t)0x000000
 #define YELLOW (uint32_t)0xFFFF00
@@ -122,9 +122,9 @@ void WS2812FX_init(int line, int n, uint32_t color) {
   // fx_segments[line].colors[0] = GREEN;
   // fx_segments[line].colors[1] = RED;
   // fx_segments[line].colors[2] = BLUE;
-  fx_segments[line].colors[0] = (color & GREEN);
-  fx_segments[line].colors[1] = (color & RED);
-  fx_segments[line].colors[2] = (color & BLUE);
+  fx_segments[line].colors[0] = (color & 0XFF0000); //G
+  fx_segments[line].colors[1] = (color & 0X00FF00); //R
+  fx_segments[line].colors[2] = (color & 0X0000FF); //B
   fx_segments[line].rgbColor = color;
   fx_segments[line].start = 0;
   fx_segments[line].stop = n - 1;

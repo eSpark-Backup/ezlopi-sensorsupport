@@ -3,13 +3,16 @@
 
 ## How to use 
 - Connect LED Strip Data pin to GPIO 16
+    - Configurable through menuconfig ```idf.py menuconfig```
 - Connect LED Strip GND to Board's GND
 - Upload the firmware using `idf.py -p PORT flash`
 - Send JSON Packet using Serial Monitor
+     - Arduino Serial Recommended
 
 
-- Example Json:
-1- To Change Effects
+## Example JSON Packets:
+
+1. To Change Effects
 
 ```
 {
@@ -23,7 +26,7 @@
 ```
 Change is "fx" value to change animations on the led strip (0-66)
 
-2- To Change RGB Color Values
+2. To Change RGB Color Values
 
 ```
 {
@@ -43,13 +46,20 @@ Change is "fx" value to change animations on the led strip (0-66)
   "time": 1697181431
 }
 ```
-Change is "col":[G,R,B,W] values to change RGB Colors on the led strip (0-255)
+Change is "col":[r,g,b,w] values to change RGB Colors on the led strip (0-255)
 
 
 Select the instructions depending on Espressif chip installed on your development board:
 
 - [ESP32 Getting Started Guide](https://docs.espressif.com/projects/esp-idf/en/stable/get-started/index.html)
 - [ESP32-S2 Getting Started Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/get-started/index.html)
+
+## TODOs
+- [X] Effect Control using JSON
+- [x] Color Control using JSON
+- [ ] Add Custom Effects from WLED
+- [ ] Brightness Control
+- [ ] Segments Control
 
 
 ## Project folder contents

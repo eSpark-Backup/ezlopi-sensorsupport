@@ -72,7 +72,7 @@ void parse_json(char* start){
 
         cJSON* fx = cJSON_GetObjectItemCaseSensitive(seg, "fx");
         if(fx != NULL){
-            config_setMode((uint8_t)fx->valueint); //TODO: Read color from json
+            config_setMode((uint8_t)fx->valueint);
         }
 
         cJSON* col = cJSON_GetObjectItemCaseSensitive(seg, "col");
