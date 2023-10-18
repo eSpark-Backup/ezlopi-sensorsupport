@@ -38,20 +38,45 @@ ESP-IDF projects are built using CMake. The project build configuration is conta
 Below is short explanation of remaining files in the project folder.
 
 ```
-├── CMakeLists.txt           
+├── CMakeLists.txt
+├── components                Component directory
+│   ├── config
+│   │    ├── include
+│   │    ├── src
+│   │    └── CMakeLists.txt
+│   ├── fastrmt
+│   │    ├── include
+│   │    ├── src
+│   │    └── CMakeLists.txt
+│   ├── led
+│   │    ├── include
+│   │    ├── src
+│   │    └── CMakeLists.txt
+│   ├── ownled
+│   │    ├── include
+│   │    ├── src
+│   │    └── CMakeLists.txt
+│   ├── playlist
+│   │    ├── include
+│   │    ├── src
+│   │    └── CMakeLists.txt
+│   ├── status
+│   │    ├── include
+│   │    ├── src
+│   │    └── CMakeLists.txt
+│   ├── uart_reader
+│   │    ├── include
+│   │    ├── src
+│   │    └── CMakeLists.txt
+│   └── ws2812fx
+│        ├── include
+│        ├── src
+│        └── CMakeLists.txt
 ├── main
 │   ├── CMakeLists.txt
 │   ├── component.mk           Component make file
-│   ├── hello_world_main.c
-│   ├── config.c
-│   ├── gamma.c
-│   ├── led.c
-│   ├── ownled.c
-│   ├── playlist.c
-│   ├── status.c
-│   ├── uart_reader.c
-│   ├── ws2812fx.c
-│   └── fastrmt.S
+│   ├── kconfig.projbuild
+│   └── main.c
 ├── Makefile                   Makefile used by legacy GNU Make
 ├── README.md                  This is the file you are currently reading
 ├── sdkconfig
