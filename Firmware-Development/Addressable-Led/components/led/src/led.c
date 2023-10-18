@@ -471,65 +471,64 @@ static void task(void *args) {
 
 	for (;;) {
 		// vTaskDelay(10/portTICK_PERIOD_MS);
-		ESP_LOGE(TAG, "IN THE LED LOOP");
 		/**
 		 * start sending LED data
 		 */
 		ownled_send();
 
-		// for (;;) {
-		// 	ESP_LOGE(TAG, "IN THE second LED LOOP");			
-		// 	/**
-		// 	 * wait for 1/framerate s (in the mean)
-		// 	 */
-		// 	// framerate = 20;
-		// 	ESP_LOGI(TAG, "FRAMERATE %f", framerate);
-		// 	if (framerate > 0) {
-		// 		if (++count >= framerate) {
-		// 			ESP_LOGV(TAG, "led wait %f %d %f",
-		// 					xTaskGetTickCount() / (float )configTICK_RATE_HZ,
-		// 					count, framerate);
-		// 			count = 0;
-		// 		}
-		// 		incrementMs += 1000. / framerate;
-		// 		int incrementTicks = incrementMs / portTICK_PERIOD_MS;
-		// 		incrementMs -= incrementTicks * portTICK_PERIOD_MS;
-		// 		if (incrementTicks < 1)
-		// 			incrementTicks = 1;
-		// 		vTaskDelayUntil(&xLastWakeTime, incrementTicks);
-		// 		if (xLastWakeTime + incrementTicks < xTaskGetTickCount()) {
-		// 			if (!missed) {
-		// 				ESP_LOGE(TAG, "frame(s) missed %d",
-		// 						xTaskGetTickCount() - xLastWakeTime);
-		// 				missed = true;
-		// 			}
-		// 			status_led_top_too_late();
-		// 			continue;
-		// 		} else if (xTaskGetTickCount() - xLastWakeTime > 2
-		// 				&& xLastWakeTime < xTaskGetTickCount()) {
-		// 			if (!missed)
-		// 				ESP_LOGD(TAG, "frame late %d",
-		// 						xTaskGetTickCount() - xLastWakeTime);
-		// 			status_led_top_too_late();
-		// 			continue;
-		// 		}
-		// 	} else {
-		// 		ESP_LOGI(TAG, "TASK DELETED");
-		// 		vTaskSuspend(taskHandle);
-		// 	}
+		for (;;) {
+			// ESP_LOGE(TAG, "IN THE second LED LOOP");			
+			/**
+			 * wait for 1/framerate s (in the mean)
+			 */
+			// framerate = 20;
+			// ESP_LOGI(TAG, "FRAMERATE %f", framerate);
+			if (framerate > 0) {
+				if (++count >= framerate) {
+					ESP_LOGV(TAG, "led wait %f %d %f",
+							xTaskGetTickCount() / (float )configTICK_RATE_HZ,
+							count, framerate);
+					count = 0;
+				}
+				incrementMs += 1000. / framerate;
+				int incrementTicks = incrementMs / portTICK_PERIOD_MS;
+				incrementMs -= incrementTicks * portTICK_PERIOD_MS;
+				if (incrementTicks < 1)
+					incrementTicks = 1;
+				vTaskDelayUntil(&xLastWakeTime, incrementTicks);
+				if (xLastWakeTime + incrementTicks < xTaskGetTickCount()) {
+					if (!missed) {
+						ESP_LOGE(TAG, "frame(s) missed %d",
+								xTaskGetTickCount() - xLastWakeTime);
+						missed = true;
+					}
+					status_led_top_too_late();
+					continue;
+				} else if (xTaskGetTickCount() - xLastWakeTime > 2
+						&& xLastWakeTime < xTaskGetTickCount()) {
+					if (!missed)
+						ESP_LOGD(TAG, "frame late %d",
+								xTaskGetTickCount() - xLastWakeTime);
+					status_led_top_too_late();
+					continue;
+				}
+			} else {
+				ESP_LOGI(TAG, "TASK DELETED");
+				vTaskSuspend(taskHandle);
+			}
 
-		// 	/**
-		// 	 * wait for sending LED data finish
-		// 	 */
-		// 	if (ownled_isFinished() != ESP_OK) {
-		// 		ESP_LOGD(TAG, "led write out early");
-		// 		status_led_bottom_too_slow();
-		// 		continue;
-		// 	} else
-		// 		status_led_on_time();
-		// 	missed = false;
-		// 	break;
-		// }
+			/**
+			 * wait for sending LED data finish
+			 */
+			if (ownled_isFinished() != ESP_OK) {
+				ESP_LOGD(TAG, "led write out early");
+				status_led_bottom_too_slow();
+				continue;
+			} else
+				status_led_on_time();
+			missed = false;
+			break;
+		}
 
 		/**
 		 * generate LED data
@@ -542,7 +541,7 @@ static void task(void *args) {
 			TickType_t now = xTaskGetTickCount();
 
 			for (int i = 0; i < led_get_max_lines(); i++) {
-			ESP_LOGI(TAG, "MODE %d",  led_config.channel[i].mode);	
+			// ESP_LOGI(TAG, "MODE %d",  led_config.channel[i].mode);	
 				switch (led_config.channel[i].mode) {
 				case LED_MODE_OFF:
 					fill(i, 0, 0, 0);
