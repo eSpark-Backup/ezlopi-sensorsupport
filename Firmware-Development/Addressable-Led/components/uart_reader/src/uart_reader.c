@@ -90,6 +90,32 @@ void parse_json(char* start){
             }
         	config_setColor(rgbcolor);
         }
+
+        cJSON* id = cJSON_GetObjectItemCaseSensitive(seg, "id");
+        if(id != NULL){
+            //set the selected flag of segment to true or false
+            cJSON* sel = cJSON_GetObjectItemCaseSensitive(seg, "sel");
+            if(sel != NULL){
+                ESP_LOGI(TAG, "SEG id : %d is selected %d", id->valueint, cJSON_IsTrue(sel));
+                config_set_selected_flag(id->valueint, cJSON_IsTrue(sel));
+            }
+            cJSON* n = cJSON_GetObjectItemCaseSensitive(seg, "n");
+            if(n != NULL){
+                ESP_LOGI(TAG, "Name of Segment : %s", n->valuestring);
+                int seg_id = id->valueint;
+                cJSON* start = cJSON_GetObjectItemCaseSensitive(seg, "start");
+                cJSON* stop = cJSON_GetObjectItemCaseSensitive(seg, "stop");
+                if((start != NULL) & (stop != NULL)){
+                    int seg_start, seg_stop;
+                    seg_start = start->valueint;
+                    seg_stop = stop->valueint;
+                    ESP_LOGI(TAG, "Segment Start: %d", seg_start);
+                    config_set_segment_start_stop(seg_id, seg_start, seg_stop);
+                }
+
+            }
+        }
+
         cJSON* bri = cJSON_GetObjectItemCaseSensitive(root, "bri");
         if(bri != NULL){
             config_set_brightness(bri->valueint);
