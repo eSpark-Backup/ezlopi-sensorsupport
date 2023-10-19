@@ -129,7 +129,7 @@ static void setDefaults() {
 	led_config.refresh_rate = 20.;
 	for (int i = 0; i < led_get_max_lines(); i++) {
 		led_config.channel[i].mode = LED_MODE_SOLID;
-		led_config.channel[i].sx = led_config.channel[i].sy = 10;
+		led_config.channel[i].sx = led_config.channel[i].sy = 6;
 		led_config.channel[i].ox = led_config.channel[i].oy = 0;
 		led_config.channel[i].orientation = LED_ORI0_ZIGZAG;
 		led_config.channel[i].black[0] = led_config.channel[i].black[1] =
@@ -162,7 +162,7 @@ void config_setMode(uint8_t mode) {
 	// 	0  /*hue*/
 	// 	};
 	
-	// led_coloring.brightness = 1-1;
+	// led_coloring.brightness = 1-0.5;
 	// led_coloring.contrast = 1-1;
 
 	// led_coloring.red_brightness = 1 - 0.5;
@@ -174,15 +174,15 @@ void config_setMode(uint8_t mode) {
 	// led_coloring.green_brightness = 1 - 0;
 	// led_coloring.green_contrast = 1 - 0;
 
-	led_coloring.saturation = 1 - 0;
-	led_coloring.hue = 1 - 0;
+	// led_coloring.saturation = 1 - 0.5;
+	// led_coloring.hue = 1 - 0;
 
 	led_config.channels = 1;
 	led_config.prefix_leds = 0;
 	led_config.refresh_rate = 20.;
 	for (int i = 0; i < led_get_max_lines(); i++) {
 		led_config.channel[i].mode = mode;
-		led_config.channel[i].sx = led_config.channel[i].sy = 6;
+		led_config.channel[i].sx = led_config.channel[i].sy = 10;
 		led_config.channel[i].ox = led_config.channel[i].oy = 0;
 		led_config.channel[i].orientation = LED_ORI0_ZIGZAG;
 		led_config.channel[i].black[0] = led_config.channel[i].black[1] =

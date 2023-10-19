@@ -86,6 +86,7 @@ static struct FX_SEGMENT { // 20 bytes
   uint16_t speed;
   uint8_t mode;
   uint8_t options;
+
   uint32_t colors[NUM_COLORS];
   uint32_t rgbColor;
 
@@ -122,7 +123,8 @@ void WS2812FX_init(int line, int n, uint32_t color) {
   // fx_segments[line].colors[0] = GREEN;
   // fx_segments[line].colors[1] = RED;
   // fx_segments[line].colors[2] = BLUE;
-  fx_segments[line].colors[0] = (color & 0XFF0000); //G
+  // fx_segments[line].colors[0] = (color & 0XFF0000); //G
+  fx_segments[line].colors[0] = color; //G
   fx_segments[line].colors[1] = (color & 0X00FF00); //R
   fx_segments[line].colors[2] = (color & 0X0000FF); //B
   fx_segments[line].rgbColor = color;
@@ -220,7 +222,7 @@ static inline void setPixelColorRGBW(int line, uint16_t i, uint8_t r, uint8_t g,
  */
 uint16_t WS2812FX_mode_static(int line) {
   for (uint16_t i = fx_segments[line].start; i <= fx_segments[line].stop; i++) {
-    setPixelColor(line, i, fx_segments[line].rgbColor);
+    setPixelColor(line, i, fx_segments[line].colors[2]);
   }
   return 500;
 }

@@ -30,7 +30,7 @@ void app_main(void)
     config_init();
     led_on();
 	config_update_channels(); 	
-
+    config_setColor(0xFFFFFF);
     while (1)
     {
         printf("Hello world!\n");
