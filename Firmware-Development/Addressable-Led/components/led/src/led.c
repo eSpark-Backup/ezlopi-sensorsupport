@@ -162,11 +162,13 @@ void led_set_color(uint8_t c, uint16_t p, uint8_t r, uint8_t g, uint8_t b) {
 	float fb = BYTEtoFLOAT(b);
 
 	hsv(&fr, &fg, &fb);
+
 	contrasts(&fr, &fg, &fb);
 
 	r = FLOATtoBYTE(fr);
 	g = FLOATtoBYTE(fg);
 	b = FLOATtoBYTE(fb);
+
 
 	if (p == led_config.channel[c].black[0]
 			|| p == led_config.channel[c].black[1]
@@ -533,9 +535,10 @@ static void task(void *args) {
 		/**
 		 * generate LED data
 		 */
-		if (xQueueReceive(q, &led_config, 0) == pdTRUE) {
+		if (xQueueReceive(q, &led_config, 0) == pdTRUE) 
 			handleNewConfig();
-		} else {
+		// } 
+		// else {
 			led_counter++;
 
 			TickType_t now = xTaskGetTickCount();
@@ -598,7 +601,7 @@ static void task(void *args) {
 				// 	fillSquare(i);
 				// 	break;
 				case LED_MODE_SOLID:
-					fill(i, 255, 200, 150);
+					fill(i, 0, 255, 255);
 					break;
 				// case LED_MODE_PRODUCTION_TEST:
 				// 	fillProductionTest(i);
@@ -780,8 +783,8 @@ static void task(void *args) {
 					break;
 				}
 			}
-		}
-		vTaskDelay(10/portTICK_PERIOD_MS);
+		// }
+		// vTaskDelay(10/portTICK_PERIOD_MS);
 	}
 }
 

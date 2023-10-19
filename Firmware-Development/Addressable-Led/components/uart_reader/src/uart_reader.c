@@ -85,7 +85,7 @@ void parse_json(char* start){
                         cJSON* subsubitem = cJSON_GetArrayItem(subitem, j);
                         ESP_LOGI(TAG, "JSON COL %d : %u",j, subsubitem->valueint);
                         uint8_t color = subsubitem->valueint;
-                        rgbcolor += (color << (j*8));
+                        rgbcolor += (color << ((2-j)*8));
                     }
             }
         	config_setColor(rgbcolor);

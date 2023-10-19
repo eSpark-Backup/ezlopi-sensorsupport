@@ -83,13 +83,26 @@ const float ratio = (float)FREQ_INPUT / LED_STRIP_RMT_CLK_DIV / 1e09f;
 // const float ratio = FREQ_INPUT / (380000 * 100.);
 // const float factor = FREQ_INPUT / (380000 * 100.);
 
-IRAM_ATTR rmt_item32_t cs8812_high = {
+// IRAM_ATTR rmt_item32_t cs8812_high = {
+// 	.duration0 = (uint32_t)(ratio * WS2812_T0H_NS),
+// 	.level0 = 1,
+// 	.duration1 = (uint32_t)(ratio * WS2812_T0L_NS),
+// 	.level1 = 0};
+
+// IRAM_ATTR rmt_item32_t cs8812_low = {
+// 	.duration0 = (uint32_t)(ratio * WS2812_T1H_NS),
+// 	.level0 = 1,
+// 	.duration1 = (uint32_t)(ratio * WS2812_T1L_NS),
+// 	.level1 = 0,
+// };
+
+IRAM_ATTR rmt_item32_t cs8812_low = {
 	.duration0 = (uint32_t)(ratio * WS2812_T0H_NS),
 	.level0 = 1,
 	.duration1 = (uint32_t)(ratio * WS2812_T0L_NS),
 	.level1 = 0};
 
-IRAM_ATTR rmt_item32_t cs8812_low = {
+IRAM_ATTR rmt_item32_t cs8812_high = {
 	.duration0 = (uint32_t)(ratio * WS2812_T1H_NS),
 	.level0 = 1,
 	.duration1 = (uint32_t)(ratio * WS2812_T1L_NS),
@@ -346,10 +359,10 @@ void ownled_set_default()
 	// cs8812_low.duration0 = (uint32_t)(ratio * WS2812_T0H_NS);
 	// cs8812_low.duration1 = (uint32_t)(ratio * WS2812_T0L_NS);
 
-	cs8812_high.duration0 = (uint32_t)(ratio * WS2812_T0H_NS);
-	cs8812_high.duration1 = (uint32_t)(ratio * WS2812_T0L_NS);
-	cs8812_low.duration0 = (uint32_t)(ratio * WS2812_T1H_NS);
-	cs8812_low.duration1 = (uint32_t)(ratio * WS2812_T1L_NS);
+	cs8812_low.duration0 = (uint32_t)(ratio * WS2812_T0H_NS);
+	cs8812_low.duration1 = (uint32_t)(ratio * WS2812_T0L_NS);
+	cs8812_high.duration0 = (uint32_t)(ratio * WS2812_T1H_NS);
+	cs8812_high.duration1 = (uint32_t)(ratio * WS2812_T1L_NS);
 	
 
 	// cs8812_high.duration0 = DEFAULT_PULSE_LENGTH * DEFAULT_ONE_PULSE_LENGTH;
