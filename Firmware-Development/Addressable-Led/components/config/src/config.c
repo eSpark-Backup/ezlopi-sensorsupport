@@ -106,34 +106,20 @@ static void getPassword(const char *in, char output[32]) {
 
 // set values to default
 static void setDefaults() {
-	// uint8_t mac[6];
-	// esp_read_mac(mac, ESP_MAC_WIFI_STA);
-
-	// snprintf(wifi_ap_ssid, sizeof(wifi_ap_ssid),
-	// 		"Symonics%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3],
-	// 		mac[4], mac[5]);
-	// strcpy(wifi_ap_password, "controller");
-	// //	getPassword(wifi_ap_ssid, wifi_ap_password);
-	// ESP_LOGI(TAG, "AP:%s:%s", wifi_ap_ssid, wifi_ap_password);
-
-	// strcpy(wifi_sta_ssid, "SymonicsController");
-	// strcpy(wifi_sta_password, "controller");
-	// //	strncpy(wifi_sta_ssid, "Internet", sizeof(wifi_sta_ssid));
-	// //	strncpy(wifi_sta_password, wifi_ap_password, sizeof(wifi_sta_password));
-
-	// strncpy(udp_server, "www.symonics.com", sizeof(udp_server));
-	// udp_port = 6454;
 
 	led_config.channels = 1;
 	led_config.prefix_leds = 0;
 	led_config.refresh_rate = 20.;
 	for (int i = 0; i < led_get_max_lines(); i++) {
+		led_config.channel[i].selected = true;
 		led_config.channel[i].mode = LED_MODE_SOLID;
 		led_config.channel[i].sx = led_config.channel[i].sy = 6;
 		led_config.channel[i].ox = led_config.channel[i].oy = 0;
 		led_config.channel[i].orientation = LED_ORI0_ZIGZAG;
 		led_config.channel[i].black[0] = led_config.channel[i].black[1] =
 				led_config.channel[i].black[2] = -1;
+		led_config.channel[i].start = 0;
+		led_config.channel[i].stop = 50;
 	}
 
 	config_coloring_defaults();
@@ -143,7 +129,7 @@ static void setDefaults() {
 
 	ownled_set_default();
 
-	playlist_defaultConfig();
+	// playlist_defaultConfig();
 }
 
 // set values to default
@@ -162,7 +148,7 @@ void config_setMode(uint8_t mode) {
 	// 	0  /*hue*/
 	// 	};
 	
-	led_coloring.brightness = 0.1;
+	led_coloring.brightness = 1;
 	led_coloring.contrast = 1;
 
 	led_coloring.red_brightness = 1;
@@ -181,12 +167,14 @@ void config_setMode(uint8_t mode) {
 	led_config.prefix_leds = 0;
 	led_config.refresh_rate = 20.;
 	for (int i = 0; i < led_get_max_lines(); i++) {
-		led_config.channel[i].mode = mode;
-		led_config.channel[i].sx = led_config.channel[i].sy = 10;
-		led_config.channel[i].ox = led_config.channel[i].oy = 0;
-		led_config.channel[i].orientation = LED_ORI0_ZIGZAG;
-		led_config.channel[i].black[0] = led_config.channel[i].black[1] =
+		if(led_config.channel[i].selected){
+			led_config.channel[i].mode = mode;
+			led_config.channel[i].sx = led_config.channel[i].sy = 10;
+			led_config.channel[i].ox = led_config.channel[i].oy = 0;
+			led_config.channel[i].orientation = LED_ORI0_ZIGZAG;
+			led_config.channel[i].black[0] = led_config.channel[i].black[1] =
 				led_config.channel[i].black[2] = -1;
+		}		
 	}
 	ownled_setColorOrder(OWNLED_GRB);
 	led_set_config(&led_config);
@@ -196,9 +184,11 @@ void config_setMode(uint8_t mode) {
 
 void config_setColor(uint32_t* client_color) {
 	for (int i = 0; i < led_get_max_lines(); i++) {
-		for(int j = 0; j<3; j++){
-			ESP_LOGI(TAG, "COLOR RECIEVED : %x", client_color[j]);
-			led_config.config_color[j] = *(client_color+j);
+		if(led_config.channel[i].selected){
+			for(int j = 0; j<3; j++){
+				ESP_LOGI(TAG, "COLOR RECIEVED : %x", client_color[j]);
+				led_config.config_color[j] = *(client_color+j);
+			}
 		}
 	}
 	led_set_config(&led_config);
@@ -210,6 +200,16 @@ void config_set_brightness(uint8_t bri){
 	fBri = (bri/255.f);
 	
 	led_coloring.brightness = fBri;
+}
+
+void config_set_selected_flag(int id, bool select_flag){
+	led_config.channel[id].selected = select_flag;
+}
+
+void config_set_segment_start_stop(int seg_id, int seg_start, int seg_stop){
+	led_config.channel[seg_id].start = seg_start;
+	led_config.channel[seg_id].stop = seg_stop;
+	led_set_config(&led_config);
 }
 
 /*
@@ -646,7 +646,7 @@ void config_coloring_reload() {
 	nvs_close(my_handle);
 }
 
-static struct LED_COLORING defaults_led_coloring = { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 };
+static struct LED_COLORING defaults_led_coloring = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 // static struct LED_COLORING defaults_led_coloring = { 0, 1, 0, 1, 0, 1, 0, 1, 0, 1 };
 
 void config_coloring_defaults() {

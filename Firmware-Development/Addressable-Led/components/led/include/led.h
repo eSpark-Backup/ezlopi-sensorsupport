@@ -13,6 +13,7 @@
 #define MAIN_LED_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 enum LED_ORIENTATION {
   LED_ORI0_ZIGZAG,
@@ -136,6 +137,8 @@ struct LED_CONFIG_CHANNEL {
   int16_t ox;
   int16_t oy;
   int16_t black[3];
+  bool selected;
+  int start, stop;
 };
 
 struct LED_CONFIG {
