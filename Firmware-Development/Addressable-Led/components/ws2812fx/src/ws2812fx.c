@@ -115,7 +115,7 @@ static uint16_t segmentLength(int line) {
 #define DEFAULT_MODE (uint8_t)0
 #define DEFAULT_SPEED (uint16_t)1000
 
-void WS2812FX_init(int line, int n, uint32_t color) {
+void WS2812FX_init(int line, int n, uint32_t colorPrimary, uint32_t colorSecondary, uint32_t colorTertiary) {
   assert(line >= 0 && line < 8);
   memset(fx_segments + line, 0, sizeof(*fx_segments));
   fx_segments[line].mode = DEFAULT_MODE;
@@ -124,10 +124,10 @@ void WS2812FX_init(int line, int n, uint32_t color) {
   // fx_segments[line].colors[1] = RED;
   // fx_segments[line].colors[2] = BLUE;
   // fx_segments[line].colors[0] = (color & 0XFF0000); //G
-  fx_segments[line].colors[0] = color; //G
-  fx_segments[line].colors[1] = (color & 0X00FF00); //R
-  fx_segments[line].colors[2] = (color & 0X0000FF); //B
-  fx_segments[line].rgbColor = color;
+  fx_segments[line].colors[0] = colorPrimary; //G
+  fx_segments[line].colors[1] = colorSecondary; //R
+  fx_segments[line].colors[2] = colorTertiary; //B
+  fx_segments[line].rgbColor = colorPrimary;
   fx_segments[line].start = 0;
   fx_segments[line].stop = n - 1;
   fx_segments[line].speed = DEFAULT_SPEED;
@@ -850,7 +850,7 @@ uint16_t WS2812FX_mode_hyper_sparkle(int line) {
  */
 uint16_t WS2812FX_mode_multi_strobe(int line) {
   for (uint16_t i = fx_segments[line].start; i <= fx_segments[line].stop; i++) {
-    setPixelColor(line, i, BLACK);
+    setPixelColor(line, i, fx_segments[line].colors[1]);
   }
 
   uint16_t delay = 200 + ((9 - (fx_segments[line].speed % 10)) * 100);

@@ -162,17 +162,17 @@ void config_setMode(uint8_t mode) {
 	// 	0  /*hue*/
 	// 	};
 	
-	// led_coloring.brightness = 1-0.5;
-	// led_coloring.contrast = 1-1;
+	led_coloring.brightness = 0.1;
+	led_coloring.contrast = 1;
 
-	// led_coloring.red_brightness = 1 - 0.5;
-	// led_coloring.red_contrast = 1 - 0.5;
+	led_coloring.red_brightness = 1;
+	led_coloring.red_contrast = 1;
 
-	// led_coloring.blue_brightness = 1 - 0;
-	// led_coloring.blue_contrast = 1 - 0;
+	led_coloring.blue_brightness = 1;
+	led_coloring.blue_contrast = 1;
 
-	// led_coloring.green_brightness = 1 - 0;
-	// led_coloring.green_contrast = 1 - 0;
+	led_coloring.green_brightness = 1 ;
+	led_coloring.green_contrast = 1;
 
 	// led_coloring.saturation = 1 - 0.5;
 	// led_coloring.hue = 1 - 0;
@@ -194,12 +194,22 @@ void config_setMode(uint8_t mode) {
 
 }
 
-void config_setColor(uint32_t client_color) {
-	ESP_LOGI(TAG, "COLOR RECIEVED : %x", client_color);
+void config_setColor(uint32_t* client_color) {
 	for (int i = 0; i < led_get_max_lines(); i++) {
-		led_config.config_color = client_color;
+		for(int j = 0; j<3; j++){
+			ESP_LOGI(TAG, "COLOR RECIEVED : %x", client_color[j]);
+			led_config.config_color[j] = *(client_color+j);
+		}
 	}
 	led_set_config(&led_config);
+}
+
+void config_set_brightness(uint8_t bri){
+	
+	float fBri = 0;
+	fBri = (bri/255.f);
+	
+	led_coloring.brightness = fBri;
 }
 
 /*

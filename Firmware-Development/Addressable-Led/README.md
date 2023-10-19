@@ -46,8 +46,22 @@ Change is "fx" value to change animations on the led strip (0-66)
   "time": 1697181431
 }
 ```
-Change is "col":[r,g,b,w] values to change RGB Colors on the led strip (0-255)
+Change the "col":[[r,g,b,w], [r,g,b,w], [r,g,b,w]] values to change RGB Colors on the led strip (0-255)
 
+```
+"col" : [[Primary], [Secondary], [Tertiary]] 
+```
+
+3. To Change Brightness of the Strip
+
+```
+{
+  "bri": 210,
+  "v": true,
+  "time": 1697181526
+}
+```
+Change the "bri": X value to control strip brightness (0-255)
 
 Select the instructions depending on Espressif chip installed on your development board:
 
@@ -56,10 +70,12 @@ Select the instructions depending on Espressif chip installed on your developmen
 
 ## TODOs
 - [X] Effect Control using JSON
-- [x] Color Control using JSON
-- [ ] Add Custom Effects from WLED
-- [ ] Brightness Control
+- [x] Primary Color Control using JSON
+- [x] Secondary Color Control using JSON
+- [x] Tertiary Color Control using JSON
+- [x] Brightness Control using JSON
 - [ ] Segments Control
+- [ ] Add Custom Effects from WLED
 
 
 ## Project folder contents

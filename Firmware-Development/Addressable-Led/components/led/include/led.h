@@ -145,7 +145,7 @@ struct LED_CONFIG {
   struct LED_CONFIG_CHANNEL channel[8];
   uint16_t artnet_width;
   uint16_t artnet_universe_offset;
-  uint32_t config_color;
+  uint32_t config_color[3];
 };
 
 void led_on();

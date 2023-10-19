@@ -147,12 +147,12 @@ static void hsv(float *r, float *g, float *b) {
 }
 
 static void contrasts(float *r, float *g, float *b) {
-	*r = *r * led_coloring.contrast * led_coloring.red_contrast
-			+ led_coloring.brightness + led_coloring.red_brightness;
-	*g = *g * led_coloring.contrast * led_coloring.green_contrast
-			+ led_coloring.brightness + led_coloring.green_brightness;
-	*b = *b * led_coloring.contrast * led_coloring.blue_contrast
-			+ led_coloring.brightness + led_coloring.blue_brightness;
+	*r = *r * (led_coloring.contrast * led_coloring.red_contrast)
+			* (led_coloring.brightness * led_coloring.red_brightness);
+	*g = *g * (led_coloring.contrast * led_coloring.green_contrast)
+			* (led_coloring.brightness * led_coloring.green_brightness);
+	*b = *b * (led_coloring.contrast * led_coloring.blue_contrast)
+			* (led_coloring.brightness * led_coloring.blue_brightness);
 }
 
 void led_set_color(uint8_t c, uint16_t p, uint8_t r, uint8_t g, uint8_t b) {
@@ -287,7 +287,7 @@ void led_block(int x, int y, uint8_t *r, uint8_t *g, uint8_t *b) {
 static void handleNewConfig() {
 	ESP_LOGI(TAG, "HADNLING NEW CONFIG");
 	for (int i = 0; i < led_get_max_lines(); i++) {
-		WS2812FX_init(i, led_config.channel[i].sx * led_config.channel[i].sy, led_config.config_color);
+		WS2812FX_init(i, led_config.channel[i].sx * led_config.channel[i].sy, led_config.config_color[0], led_config.config_color[1], led_config.config_color[2]);
 		ownled_setSize(i,
 				led_config.channel[i].sx * led_config.channel[i].sy
 						+ led_config.prefix_leds);

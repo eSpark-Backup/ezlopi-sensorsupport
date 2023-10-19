@@ -64,7 +64,7 @@ void uart_task(void *arg)
 
 void parse_json(char* start){
     cJSON* root = cJSON_Parse(start);
-    uint32_t rgbcolor = 0;
+    uint32_t rgbcolor[3] = {0};
     if(root != NULL){
         char *string = cJSON_Print(root);
 
@@ -85,10 +85,14 @@ void parse_json(char* start){
                         cJSON* subsubitem = cJSON_GetArrayItem(subitem, j);
                         ESP_LOGI(TAG, "JSON COL %d : %u",j, subsubitem->valueint);
                         uint8_t color = subsubitem->valueint;
-                        rgbcolor += (color << ((2-j)*8));
+                        rgbcolor[i] += (color << ((2-j)*8));
                     }
             }
         	config_setColor(rgbcolor);
+        }
+        cJSON* bri = cJSON_GetObjectItemCaseSensitive(root, "bri");
+        if(bri != NULL){
+            config_set_brightness(bri->valueint);
         }
 
         
