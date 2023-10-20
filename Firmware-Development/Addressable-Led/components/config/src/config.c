@@ -106,10 +106,10 @@ static void getPassword(const char *in, char output[32]) {
 
 // set values to default
 static void setDefaults() {
-	// int number_of_leds = 300;
 	led_config.channels = 1;
 	led_config.prefix_leds = 0;
 	led_config.refresh_rate = 20.;
+	led_config.total_leds = 300;
 	for (int i = 0; i < led_get_max_lines(); i++) {
 		led_config.channel[i].selected = false;
 		led_config.channel[0].selected = true;
@@ -120,9 +120,9 @@ static void setDefaults() {
 		led_config.channel[i].black[0] = led_config.channel[i].black[1] =
 				led_config.channel[i].black[2] = -1;
 		led_config.channel[i].start = i*0;
-		led_config.channel[i].stop = led_config.channel[i].start+50;
+		led_config.channel[i].stop = led_config.channel[i].start+30;
 		led_config.channel[i].segment_id = i;
-		led_config.channel[i].number_of_leds = 100;
+		led_config.channel[i].number_of_leds = 30;
 	}
 
 	config_coloring_defaults();
@@ -131,6 +131,7 @@ static void setDefaults() {
 	led_config.artnet_width = 512 / 3;
 
 	ownled_set_default();
+	
 
 	// playlist_defaultConfig();
 }
@@ -214,6 +215,7 @@ void config_set_segment_start_stop(int seg_id, int seg_start, int seg_stop){
 	if((led_config.channel[seg_id].selected)){
 		led_config.channel[seg_id].start = seg_start;
 		led_config.channel[seg_id].stop = seg_stop;
+		led_config.channel[seg_id].number_of_leds = seg_stop-seg_start;
 		led_set_config(&led_config);
 	}
 	else{

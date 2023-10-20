@@ -565,8 +565,8 @@ void ownled_setSize(uint8_t channel, uint16_t _numPixels)
 {
 	uint16_t numBytes = 0;
 
-	// if (channel >= ownled_getChannels())
-	// 	return;
+	if (channel >= ownled_getChannels())
+		return;
 
 	free(lines[channel].frameBuffer);
 	switch (color_order)

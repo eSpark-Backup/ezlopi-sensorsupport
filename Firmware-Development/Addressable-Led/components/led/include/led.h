@@ -151,6 +151,7 @@ struct LED_CONFIG {
   uint16_t artnet_width;
   uint16_t artnet_universe_offset;
   uint32_t config_color[3];
+  int total_leds;
 };
 
 void led_on();

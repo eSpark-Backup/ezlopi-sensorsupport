@@ -35,7 +35,7 @@ Change is "fx" value to change animations on the led strip (0-66)
       [
         180,
         180,
-        255,
+        0,
         0
       ],
       [
@@ -46,7 +46,7 @@ Change is "fx" value to change animations on the led strip (0-66)
       ],
       [
         180,
-        180,
+        0,
         255,
         0
       ]
@@ -66,7 +66,7 @@ Change the "col":[[r,g,b,w], [r,g,b,w], [r,g,b,w]] values to change RGB Colors o
 
 ```
 {
-  "bri": 210,
+  "bri": 50,
   "v": true,
   "time": 1697181526
 }
@@ -75,12 +75,28 @@ Change the "bri": X value to control strip brightness (0-255)
 
 4. To Select/Deselect Segment
 
+> Select
+
 ```
 {
   "seg": {
     "id": 0,
     "n": "name",
     "sel": false
+  },
+  "v": true,
+  "time": 1697725589
+}
+```
+
+> Deselect
+
+```
+{
+  "seg": {
+    "id": 0,
+    "n": "name",
+    "sel": true
   },
   "v": true,
   "time": 1697725589
@@ -95,10 +111,22 @@ any segment that is deselected will not be modifiable by any command
 ```
 {
   "seg": {
-    "id": 1,
+    "id": 0,
     "n": "name",
     "start": 0,
     "stop": 30
+  },
+  "v": true,
+  "time": 1697725589
+}
+```
+```
+{
+  "seg": {
+    "id": 0,
+    "n": "name",
+    "start": 10,
+    "stop": 50
   },
   "v": true,
   "time": 1697725589
