@@ -288,7 +288,7 @@ void led_block(int x, int y, uint8_t *r, uint8_t *g, uint8_t *b) {
 static void handleNewConfig() {
 	ESP_LOGI(TAG, "HADNLING NEW CONFIG");
 	for (int i = 0; i < led_get_max_lines(); i++) {
-		if(led_config.channel[i].selected == TRUE){
+		if(led_config.channel[i].selected == true){
 			WS2812FX_init(i, 
 				led_config.channel[i].stop - led_config.channel[i].start,
 				led_config.config_color[0], 
@@ -298,8 +298,11 @@ static void handleNewConfig() {
 				led_config.channel[i].stop,
 				led_config.channel[i].mode
 			);
+			// ESP_LOGI(TAG, "BEFORE SETSIZE");
 			ownled_setSize(i,
-					led_config.channel[i].number_of_leds);
+					led_config.total_leds);
+			// ESP_LOGI(TAG, "AFTER SETSIZE");
+
 		}
 	}
 	framerate = led_config.refresh_rate;
@@ -308,18 +311,23 @@ static void handleNewConfig() {
 static void fill(int line, uint8_t r, uint8_t g, uint8_t b) {
 	int size = led_config.channel[line].stop - led_config.channel[line].start;
 	int seg_length_total = led_config.channel[line].number_of_leds;
-	// while (size > 0) {
-	// 	size--;
-	// 	led_set_color(line, size, r, g, b);
+	int total_strip_leds = led_config.total_leds;
+	// while(total_strip_leds > 0){
+	// 	total_strip_leds--;
+	// 	led_set_color(line, total_strip_leds, 0, 0, 0);
 	// }
-	for(int i = ((line*seg_length_total)); i<((line+1)*seg_length_total); i++){
-		if(i<led_config.channel[line].stop && i>led_config.channel[line].start){
-			led_set_color(line, i, r, g, b);
-		}
-		else{
-			led_set_color(line, i, 0, 0 ,0);
-		}
+	while (size > 0) {
+		size--;
+		led_set_color(line, led_config.channel[line].start+size, r, g, b);
 	}
+	// for(int i = ((line*seg_length_total)); i<((line+1)*seg_length_total); i++){
+	// 	if(i<led_config.channel[line].stop && i>led_config.channel[line].start){
+	// 		led_set_color(line, i, r, g, b);
+	// 	}
+	// 	else{
+	// 		led_set_color(line, i, 0, 0 ,0);
+	// 	}
+	// }
 }
 
 static void fillFadeX(int line) {
