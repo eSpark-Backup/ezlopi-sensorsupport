@@ -38,8 +38,18 @@ Change is "fx" value to change animations on the led strip (0-66)
         255,
         0
       ],
-      [],
-      []
+      [
+        0,
+        180,
+        255,
+        0
+      ],
+      [
+        180,
+        180,
+        255,
+        0
+      ]
     ]
   },
   "v": true,
@@ -62,6 +72,40 @@ Change the "col":[[r,g,b,w], [r,g,b,w], [r,g,b,w]] values to change RGB Colors o
 }
 ```
 Change the "bri": X value to control strip brightness (0-255)
+
+4. To Select/Deselect Segment
+
+```
+{
+  "seg": {
+    "id": 0,
+    "n": "name",
+    "sel": false
+  },
+  "v": true,
+  "time": 1697725589
+}
+```
+
+Change the "sel": X bool value either true or false to control segment selection (true/flase)
+any segment that is deselected will not be modifiable by any command
+
+5. To Change Segment Start and End Pixels
+
+```
+{
+  "seg": {
+    "id": 1,
+    "n": "name",
+    "start": 0,
+    "stop": 30
+  },
+  "v": true,
+  "time": 1697725589
+}
+```
+
+Change the "start": x and "stop":x to modify segment length.
 
 Select the instructions depending on Espressif chip installed on your development board:
 

@@ -236,7 +236,8 @@ static const uint8_t version_gpio[CONFIG_CONTROLLER_LED_LINES] = {CONFIG_CONTROL
  */
 uint8_t ownled_getChannels()
 {
-	return CONFIG_CONTROLLER_LED_LINES;
+	return CONFIG_CONTROLLER_LED_LINES; //FIXME:
+	// return 8;
 }
 
 uint8_t ownled_getBlocksize()
@@ -564,8 +565,8 @@ void ownled_setSize(uint8_t channel, uint16_t _numPixels)
 {
 	uint16_t numBytes = 0;
 
-	if (channel >= ownled_getChannels())
-		return;
+	// if (channel >= ownled_getChannels())
+	// 	return;
 
 	free(lines[channel].frameBuffer);
 	switch (color_order)

@@ -32,9 +32,10 @@ static float framerate = 20.f;
 static struct LED_CONFIG led_config;
 static int32_t led_counter = 0;
 
-#define LED_MAX_LINES  (sizeof(led_config.channel) / sizeof(led_config.channel[0]))
+// #define LED_MAX_LINES  (sizeof(led_config.channel) / sizeof(led_config.channel[0]))
 
 // #define LED_MAX_LINES led_config.channels
+#define LED_MAX_LINES 8
 
 struct LED_COLORING led_coloring = { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 };
 
@@ -287,26 +288,37 @@ void led_block(int x, int y, uint8_t *r, uint8_t *g, uint8_t *b) {
 static void handleNewConfig() {
 	ESP_LOGI(TAG, "HADNLING NEW CONFIG");
 	for (int i = 0; i < led_get_max_lines(); i++) {
-		WS2812FX_init(i, 
-			led_config.channel[i].stop - led_config.channel[i].start,
-			led_config.config_color[0], 
-			led_config.config_color[1], 
-			led_config.config_color[2],
-			led_config.channel[i].start,
-			led_config.channel[i].stop
-		);
-		ownled_setSize(i,
-				led_config.channel[i].stop - led_config.channel[i].start
-						+ led_config.prefix_leds);
+		if(led_config.channel[i].selected == TRUE){
+			WS2812FX_init(i, 
+				led_config.channel[i].stop - led_config.channel[i].start,
+				led_config.config_color[0], 
+				led_config.config_color[1], 
+				led_config.config_color[2],
+				led_config.channel[i].start,
+				led_config.channel[i].stop,
+				led_config.channel[i].mode
+			);
+			ownled_setSize(i,
+					led_config.channel[i].number_of_leds);
+		}
 	}
 	framerate = led_config.refresh_rate;
 }
 
 static void fill(int line, uint8_t r, uint8_t g, uint8_t b) {
 	int size = led_config.channel[line].stop - led_config.channel[line].start;
-	while (size > 0) {
-		size--;
-		led_set_color(line, size, r, g, b);
+	int seg_length_total = led_config.channel[line].number_of_leds;
+	// while (size > 0) {
+	// 	size--;
+	// 	led_set_color(line, size, r, g, b);
+	// }
+	for(int i = ((line*seg_length_total)); i<((line+1)*seg_length_total); i++){
+		if(i<led_config.channel[line].stop && i>led_config.channel[line].start){
+			led_set_color(line, i, r, g, b);
+		}
+		else{
+			led_set_color(line, i, 0, 0 ,0);
+		}
 	}
 }
 

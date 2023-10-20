@@ -106,20 +106,23 @@ static void getPassword(const char *in, char output[32]) {
 
 // set values to default
 static void setDefaults() {
-
+	// int number_of_leds = 300;
 	led_config.channels = 1;
 	led_config.prefix_leds = 0;
 	led_config.refresh_rate = 20.;
 	for (int i = 0; i < led_get_max_lines(); i++) {
-		led_config.channel[i].selected = true;
+		led_config.channel[i].selected = false;
+		led_config.channel[0].selected = true;
 		led_config.channel[i].mode = LED_MODE_SOLID;
 		led_config.channel[i].sx = led_config.channel[i].sy = 6;
 		led_config.channel[i].ox = led_config.channel[i].oy = 0;
 		led_config.channel[i].orientation = LED_ORI0_ZIGZAG;
 		led_config.channel[i].black[0] = led_config.channel[i].black[1] =
 				led_config.channel[i].black[2] = -1;
-		led_config.channel[i].start = 0;
-		led_config.channel[i].stop = 50;
+		led_config.channel[i].start = i*0;
+		led_config.channel[i].stop = led_config.channel[i].start+50;
+		led_config.channel[i].segment_id = i;
+		led_config.channel[i].number_of_leds = 100;
 	}
 
 	config_coloring_defaults();
@@ -148,17 +151,17 @@ void config_setMode(uint8_t mode) {
 	// 	0  /*hue*/
 	// 	};
 	
-	led_coloring.brightness = 1;
-	led_coloring.contrast = 1;
+	// led_coloring.brightness = 1;
+	// led_coloring.contrast = 1;
 
-	led_coloring.red_brightness = 1;
-	led_coloring.red_contrast = 1;
+	// led_coloring.red_brightness = 1;
+	// led_coloring.red_contrast = 1;
 
-	led_coloring.blue_brightness = 1;
-	led_coloring.blue_contrast = 1;
+	// led_coloring.blue_brightness = 1;
+	// led_coloring.blue_contrast = 1;
 
-	led_coloring.green_brightness = 1 ;
-	led_coloring.green_contrast = 1;
+	// led_coloring.green_brightness = 1 ;
+	// led_coloring.green_contrast = 1;
 
 	// led_coloring.saturation = 1 - 0.5;
 	// led_coloring.hue = 1 - 0;
@@ -207,9 +210,15 @@ void config_set_selected_flag(int id, bool select_flag){
 }
 
 void config_set_segment_start_stop(int seg_id, int seg_start, int seg_stop){
-	led_config.channel[seg_id].start = seg_start;
-	led_config.channel[seg_id].stop = seg_stop;
-	led_set_config(&led_config);
+	//TODO: ADD check is that segment id exists
+	if((led_config.channel[seg_id].selected)){
+		led_config.channel[seg_id].start = seg_start;
+		led_config.channel[seg_id].stop = seg_stop;
+		led_set_config(&led_config);
+	}
+	else{
+		ESP_LOGI(TAG, "SEGMENT ID IS NULL or NOT SELECTED"); //TODO: ADD segment if it doesnt exist
+	}
 }
 
 /*

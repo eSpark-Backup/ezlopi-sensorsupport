@@ -19,7 +19,8 @@ void WS2812FX_init(int line, int n,
     uint32_t colorSecondary, 
     uint32_t colorTertiary,
     uint8_t start,
-    uint8_t stop    
+    uint8_t stop,
+    int mode
 );
 void WS2812FX_call(int line, uint16_t (*fct)(int));
 
