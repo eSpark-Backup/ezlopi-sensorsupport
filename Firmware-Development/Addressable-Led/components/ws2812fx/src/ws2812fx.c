@@ -115,10 +115,10 @@ static uint16_t segmentLength(int line) {
 #define DEFAULT_MODE (uint8_t)0
 #define DEFAULT_SPEED (uint16_t)1000
 
-void WS2812FX_init(int line, int n, uint32_t colorPrimary, uint32_t colorSecondary, uint32_t colorTertiary, uint8_t start, uint8_t stop ) {
+void WS2812FX_init(int line, int n, uint32_t colorPrimary, uint32_t colorSecondary, uint32_t colorTertiary, uint8_t start, uint8_t stop, int mode ) {
   assert(line >= 0 && line < 8);
   memset(fx_segments + line, 0, sizeof(*fx_segments));
-  fx_segments[line].mode = DEFAULT_MODE;
+  fx_segments[line].mode = mode;
   fx_segments[line].colors[0] = colorPrimary; //G
   fx_segments[line].colors[1] = colorSecondary; //R
   fx_segments[line].colors[2] = colorTertiary; //B
