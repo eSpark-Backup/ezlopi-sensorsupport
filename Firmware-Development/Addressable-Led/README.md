@@ -118,7 +118,8 @@ Select the instructions depending on Espressif chip installed on your developmen
 - [x] Secondary Color Control using JSON
 - [x] Tertiary Color Control using JSON
 - [x] Brightness Control using JSON
-- [ ] Segments Control
+- [x] Segment Length Control
+- [ ] Add Multiple Segments 
 - [ ] Add Custom Effects from WLED
 
 
