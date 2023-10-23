@@ -175,6 +175,7 @@ void led_set_color(uint8_t c, uint16_t p, uint8_t r, uint8_t g, uint8_t b) {
 			|| p == led_config.channel[c].black[1]
 			|| p == led_config.channel[c].black[2])
 		r = b = g = 0;
+	c=0;
 	ownled_setPixel(c, p + led_config.prefix_leds, g, b, r);
 }
 
@@ -299,7 +300,7 @@ static void handleNewConfig() {
 				led_config.channel[i].mode
 			);
 			// ESP_LOGI(TAG, "BEFORE SETSIZE");
-			ownled_setSize(i,
+			ownled_setSize(0,
 					led_config.total_leds);
 			// ESP_LOGI(TAG, "AFTER SETSIZE");
 
@@ -316,18 +317,18 @@ static void fill(int line, uint8_t r, uint8_t g, uint8_t b) {
 	// 	total_strip_leds--;
 	// 	led_set_color(line, total_strip_leds, 0, 0, 0);
 	// }
-	while (size > 0) {
-		size--;
-		led_set_color(line, led_config.channel[line].start+size, r, g, b);
-	}
-	// for(int i = ((line*seg_length_total)); i<((line+1)*seg_length_total); i++){
-	// 	if(i<led_config.channel[line].stop && i>led_config.channel[line].start){
-	// 		led_set_color(line, i, r, g, b);
-	// 	}
-	// 	else{
-	// 		led_set_color(line, i, 0, 0 ,0);
-	// 	}
+	// while (size > 0) {
+	// 	size--;
+	// 	led_set_color(0, led_config.channel[line].start+size, r, g, b);
 	// }
+	for(int i = ((led_config.channel[line].start)); i<(led_config.channel[line].stop); i++){
+		if((i<=led_config.channel[line].stop) & (i>=led_config.channel[line].start)){
+			led_set_color(0, i, r, g, b);
+		}
+		else{
+			led_set_color(0, i, r, g, b);
+		}
+	}
 }
 
 static void fillFadeX(int line) {
