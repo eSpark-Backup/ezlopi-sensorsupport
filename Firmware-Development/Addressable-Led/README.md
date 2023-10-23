@@ -82,7 +82,7 @@ Change the "bri": X value to control strip brightness (0-255)
   "seg": {
     "id": 0,
     "n": "name",
-    "sel": false
+    "sel": true
   },
   "v": true,
   "time": 1697725589
@@ -96,7 +96,7 @@ Change the "bri": X value to control strip brightness (0-255)
   "seg": {
     "id": 0,
     "n": "name",
-    "sel": true
+    "sel": false
   },
   "v": true,
   "time": 1697725589

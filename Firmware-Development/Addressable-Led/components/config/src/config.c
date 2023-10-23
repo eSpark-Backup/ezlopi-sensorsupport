@@ -119,7 +119,7 @@ static void setDefaults() {
 		led_config.channel[i].orientation = LED_ORI0_ZIGZAG;
 		led_config.channel[i].black[0] = led_config.channel[i].black[1] =
 				led_config.channel[i].black[2] = -1;
-		led_config.channel[i].start = i*0;
+		led_config.channel[i].start = i*30;
 		led_config.channel[i].stop = led_config.channel[i].start+30;
 		led_config.channel[i].segment_id = i;
 		led_config.channel[i].number_of_leds = 30;
