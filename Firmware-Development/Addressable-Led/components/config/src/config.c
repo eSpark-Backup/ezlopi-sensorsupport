@@ -109,8 +109,9 @@ static void setDefaults() {
 	led_config.channels = 1;
 	led_config.prefix_leds = 0;
 	led_config.refresh_rate = 20.;
-	led_config.total_leds = 300;
-	for (int i = 0; i < led_get_max_lines(); i++) {
+	led_config.total_leds = 250;
+	ESP_LOGI(TAG, "CHANNELS ACTIVE : %d", config_get_channels());
+	for (int i = 0; i < config_get_channels(); i++) {
 		led_config.channel[i].selected = false;
 		led_config.channel[0].selected = true;
 		led_config.channel[i].mode = LED_MODE_SOLID;
@@ -120,12 +121,13 @@ static void setDefaults() {
 		led_config.channel[i].black[0] = led_config.channel[i].black[1] =
 				led_config.channel[i].black[2] = -1;
 		led_config.channel[i].start = i*30;
-		led_config.channel[i].stop = led_config.channel[i].start+30;
+		led_config.channel[i].stop = led_config.total_leds;
 		led_config.channel[i].segment_id = i;
-		led_config.channel[i].number_of_leds = 30;
+		led_config.channel[i].number_of_leds = led_config.channel[i].stop - led_config.channel[i].start;
 	}
 
 	config_coloring_defaults();
+	config_set_brightness(50);
 
 	led_config.artnet_universe_offset = 0;
 	led_config.artnet_width = 512 / 3;
@@ -167,10 +169,7 @@ void config_setMode(uint8_t mode) {
 	// led_coloring.saturation = 1 - 0.5;
 	// led_coloring.hue = 1 - 0;
 
-	led_config.channels = 1;
-	led_config.prefix_leds = 0;
-	led_config.refresh_rate = 20.;
-	for (int i = 0; i < led_get_max_lines(); i++) {
+	for (int i = 0; i < config_get_channels(); i++) {
 		if(led_config.channel[i].selected){
 			led_config.channel[i].mode = mode;
 			led_config.channel[i].sx = led_config.channel[i].sy = 10;
@@ -187,7 +186,7 @@ void config_setMode(uint8_t mode) {
 }
 
 void config_setColor(uint32_t* client_color) {
-	for (int i = 0; i < led_get_max_lines(); i++) {
+	for (int i = 0; i < config_get_channels(); i++) {
 		if(led_config.channel[i].selected){
 			for(int j = 0; j<3; j++){
 				ESP_LOGI(TAG, "COLOR RECIEVED : %x", client_color[j]);
@@ -211,16 +210,22 @@ void config_set_selected_flag(int id, bool select_flag){
 }
 
 void config_set_segment_start_stop(int seg_id, int seg_start, int seg_stop){
-	//TODO: ADD check is that segment id exists
-	if((led_config.channel[seg_id].selected)){
-		led_config.channel[seg_id].start = seg_start;
-		led_config.channel[seg_id].stop = seg_stop;
-		led_config.channel[seg_id].number_of_leds = seg_stop-seg_start;
-		led_set_config(&led_config);
+	if(seg_id < config_get_channels()){
+		if((led_config.channel[seg_id].selected)){
+			led_config.channel[seg_id].start = seg_start;
+			led_config.channel[seg_id].stop = seg_stop;
+			led_config.channel[seg_id].number_of_leds = seg_stop-seg_start;
+			//update neighbouring segments start and stop
+			led_set_config(&led_config);
+		}
 	}
 	else{
-		ESP_LOGI(TAG, "SEGMENT ID IS NULL or NOT SELECTED"); //TODO: ADD segment if it doesnt exist
+		ESP_LOGI(TAG, "ADDING NEW SEGMENT");
+		int channels = config_get_channels();
+		config_set_channels(channels+1);
+		led_set_config(&led_config);
 	}
+	
 }
 
 /*
@@ -582,7 +587,7 @@ static int compare_short(const void *p1, const void *p2) {
 void config_set_led_line(int line, enum LED_MODE mode, int size_x, int size_y,
 		int offset_x, int offset_y, enum LED_ORIENTATION orientation,
 		const char *options) {
-	if (line < 0 || line >= led_get_max_lines())
+	if (line < 0 || line >= config_get_channels())
 		return;
 
 	led_config.channel[line].mode = mode;
@@ -619,7 +624,7 @@ void config_set_led_line(int line, enum LED_MODE mode, int size_x, int size_y,
 void config_get_led_line(int line, enum LED_MODE *mode, int *size_x,
 		int *size_y, int *offset_x, int *offset_y,
 		enum LED_ORIENTATION *orientation, char options[65]) {
-	if (line < 0 || line >= led_get_max_lines())
+	if (line < 0 || line >= config_get_channels())
 		return;
 
 	*size_x = led_config.channel[line].sx;
@@ -680,8 +685,7 @@ uint8_t config_get_channels() {
 }
 
 void config_set_channels(uint8_t value) {
-	if (value < 1 || value > led_get_max_lines())
-		return;
+
 	led_config.channels = value;
 }
 
