@@ -76,6 +76,7 @@ idf_component_register(
         sensor_0062_other_MQ7_CO_gas_detector
         sensor_0063_other_MQ9_LPG_flameable_gas_detector
         device_0064_motor_driver
+        sensor_0065_i2c_sen0291_digital_wattmeter
         )
 
 
