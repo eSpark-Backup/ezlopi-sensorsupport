@@ -408,19 +408,12 @@ static const char *test_device_constant_config =
         \"dev_detail\":\
         [\{\
                 \"dev_type\": 2,\
-                \"dev_name\": \"TestSensor\",\
+                \"dev_name\": \"Digital Wattmeter\",\
                 \"id_room\": \"\",\
-                \"id_item\": 64,\
-                \"gpio_en\":21,\
-                \"gpio_dir\":19,\
-                \"gpio_step\":18,\
-                \"gpio_counter\":4,\
-                \"steps_per_rev\":200,\
-                \"microsteps\":16,\
-                \"micro_step_gpio_control\":true,\
-                \"gpio_ms1\":5,\
-                \"gpio_ms2\":22,\
-                \"gpio_ms3\":23,\
+                \"id_item\": 65,\
+                \"gpio_sda\": 26,\
+                \"gpio_scl\": 27,\
+                \"i2c_address\":69,\
                 \"logic_inv\": false\
             }\
         ],\
