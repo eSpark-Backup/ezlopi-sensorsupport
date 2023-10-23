@@ -63,6 +63,8 @@ void config_set_artnet_width(uint16_t);
 void config_set_artnet_universe_offset(uint16_t);
 uint16_t config_get_artnet_width();
 uint16_t config_get_artnet_universe_offset();
+uint8_t config_get_channels();
+void config_set_channels(uint8_t value);
 
 // const char *config_get_compile_date();
 // const char *config_get_version();

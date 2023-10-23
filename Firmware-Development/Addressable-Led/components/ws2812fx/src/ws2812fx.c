@@ -16,6 +16,7 @@
 
 #include "freertos/FreeRTOS.h"
 #include "led.h"
+#include "config.h"
 #include <freertos/task.h>
 
 /* A PROGMEM (flash mem) table containing 8-bit unsigned sine wave (0-255).

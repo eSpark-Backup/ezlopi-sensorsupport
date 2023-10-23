@@ -37,7 +37,7 @@ static int32_t led_counter = 0;
 // #define LED_MAX_LINES led_config.channels
 #define LED_MAX_LINES 8
 
-struct LED_COLORING led_coloring = { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 };
+struct LED_COLORING led_coloring = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
 static float diagonale(float x, float y) {
 	return sqrtf(x * x + y * y);
@@ -48,6 +48,7 @@ static float diagonale(float x, float y) {
  */
 int led_get_max_lines() {
 	return LED_MAX_LINES;
+	// return (int)led_config.channels;  //uint8_t led_config.channels
 }
 
 /**
@@ -162,7 +163,7 @@ void led_set_color(uint8_t c, uint16_t p, uint8_t r, uint8_t g, uint8_t b) {
 	float fg = BYTEtoFLOAT(g);
 	float fb = BYTEtoFLOAT(b);
 
-	hsv(&fr, &fg, &fb);
+	// hsv(&fr, &fg, &fb);
 
 	contrasts(&fr, &fg, &fb);
 
