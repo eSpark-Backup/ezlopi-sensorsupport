@@ -106,24 +106,25 @@ static void getPassword(const char *in, char output[32]) {
 
 // set values to default
 static void setDefaults() {
-	led_config.channels = 16;
+	led_config.channels = 1;
 	led_config.prefix_leds = 0;
 	led_config.refresh_rate = 20.;
 	led_config.total_leds = 250;
 	ESP_LOGI(TAG, "CHANNELS ACTIVE : %d", config_get_channels());
+	led_config.channel[0] = (struct LED_CONFIG_CHANNEL*)malloc(sizeof(struct LED_CONFIG_CHANNEL));
 	for (int i = 0; i < config_get_channels(); i++) {
-		led_config.channel[i].selected = true;
-		led_config.channel[0].selected = true;
-		led_config.channel[i].mode = LED_MODE_SOLID;
-		led_config.channel[i].sx = led_config.channel[i].sy = 6;
-		led_config.channel[i].ox = led_config.channel[i].oy = 0;
-		led_config.channel[i].orientation = LED_ORI0_ZIGZAG;
-		led_config.channel[i].black[0] = led_config.channel[i].black[1] =
-				led_config.channel[i].black[2] = -1;
-		led_config.channel[i].start = i*10;
-		led_config.channel[i].stop = led_config.channel[i].start+10;
-		led_config.channel[i].segment_id = i;
-		led_config.channel[i].number_of_leds = led_config.channel[i].stop - led_config.channel[i].start;
+		led_config.channel[i]->selected = true;
+		// led_config.channel[0]->selected = true;
+		led_config.channel[i]->mode = LED_MODE_SOLID;
+		// led_config.channel[i]->sx = led_config.channel[i].sy = 6;
+		// led_config.channel[i]->ox = led_config.channel[i].oy = 0;
+		// led_config.channel[i]->orientation = LED_ORI0_ZIGZAG;
+		led_config.channel[i]->black[0] = led_config.channel[i]->black[1] =
+				led_config.channel[i]->black[2] = -1;
+		led_config.channel[i]->start = i*10;
+		led_config.channel[i]->stop = led_config.channel[i]->start+10;
+		led_config.channel[i]->segment_id = i;
+		led_config.channel[i]->number_of_leds = led_config.channel[i]->stop - led_config.channel[i]->start;
 	}
 
 	config_coloring_defaults();
@@ -170,13 +171,13 @@ void config_setMode(uint8_t mode) {
 	// led_coloring.hue = 1 - 0;
 
 	for (int i = 0; i < config_get_channels(); i++) {
-		if(led_config.channel[i].selected){
-			led_config.channel[i].mode = mode;
-			led_config.channel[i].sx = led_config.channel[i].sy = 10;
-			led_config.channel[i].ox = led_config.channel[i].oy = 0;
-			led_config.channel[i].orientation = LED_ORI0_ZIGZAG;
-			led_config.channel[i].black[0] = led_config.channel[i].black[1] =
-				led_config.channel[i].black[2] = -1;
+		if(led_config.channel[i] != NULL && led_config.channel[i]->selected){
+			led_config.channel[i]->mode = mode;
+			led_config.channel[i]->sx = led_config.channel[i]->sy = 10;
+			led_config.channel[i]->ox = led_config.channel[i]->oy = 0;
+			led_config.channel[i]->orientation = LED_ORI0_ZIGZAG;
+			led_config.channel[i]->black[0] = led_config.channel[i]->black[1] =
+				led_config.channel[i]->black[2] = -1;
 		}		
 	}
 	ownled_setColorOrder(OWNLED_GRB);
@@ -187,7 +188,7 @@ void config_setMode(uint8_t mode) {
 
 void config_setColor(uint32_t* client_color) {
 	for (int i = 0; i < config_get_channels(); i++) {
-		if(led_config.channel[i].selected){
+		if(led_config.channel[i] != NULL && led_config.channel[i]->selected){
 			for(int j = 0; j<3; j++){
 				ESP_LOGI(TAG, "COLOR RECIEVED : %x", client_color[j]);
 				led_config.config_color[j] = *(client_color+j);
@@ -206,23 +207,25 @@ void config_set_brightness(uint8_t bri){
 }
 
 void config_set_selected_flag(int id, bool select_flag){
-	led_config.channel[id].selected = select_flag;
+	if(led_config.channel[id] != NULL){
+		led_config.channel[id]->selected = select_flag;
+	}
 }
 
 void config_set_segment_start_stop(int seg_id, int seg_start, int seg_stop){
-	if(seg_id < config_get_channels()){
-		if((led_config.channel[seg_id].selected)){
-			led_config.channel[seg_id].start = seg_start;
-			led_config.channel[seg_id].stop = seg_stop;
-			led_config.channel[seg_id].number_of_leds = seg_stop-seg_start;
+	if(led_config.channel[seg_id] != NULL && led_config.channel[seg_id]->segment_id == seg_id){
+		if((led_config.channel[seg_id]->selected == true)){
+			led_config.channel[seg_id]->start = seg_start;
+			led_config.channel[seg_id]->stop = seg_stop;
+			led_config.channel[seg_id]->number_of_leds = seg_stop-seg_start;
 			//update neighbouring segments start and stop
 			led_set_config(&led_config);
 		}
 	}
 	else{
 		ESP_LOGI(TAG, "ADDING NEW SEGMENT");
-		int channels = config_get_channels();
-		config_set_channels(channels+1);
+		// int channels = config_get_channels();
+		config_set_channels(seg_id);
 		led_set_config(&led_config);
 	}
 	
@@ -271,187 +274,187 @@ static void testConfig() {
 
 
 // reads configuration (if any)
-static void readConfig() {
-	nvs_handle my_handle;
-	int res;
-	if ((res=nvs_open_from_partition(partition_name,"config", NVS_READONLY, &my_handle))) {
-		ESP_LOGI(TAG, "cannot open config %d", res);
-		return;
-	}
+// static void readConfig() {
+// 	nvs_handle my_handle;
+// 	int res;
+// 	if ((res=nvs_open_from_partition(partition_name,"config", NVS_READONLY, &my_handle))) {
+// 		ESP_LOGI(TAG, "cannot open config %d", res);
+// 		return;
+// 	}
 
-	size_t size = sizeof(wifi_sta_ssid);
-	nvs_get_blob(my_handle, "wifi_sta_ssid", wifi_sta_ssid, &size);
-	size = sizeof(wifi_ap_ssid);
-	nvs_get_blob(my_handle, "wifi_ap_ssid", wifi_ap_ssid, &size);
-	size = sizeof(wifi_sta_password);
-	nvs_get_blob(my_handle, "wifi_sta_pw", wifi_sta_password, &size);
-	size = sizeof(wifi_ap_password);
-	nvs_get_blob(my_handle, "wifi_ap_pw", wifi_ap_password, &size);
+// 	size_t size = sizeof(wifi_sta_ssid);
+// 	nvs_get_blob(my_handle, "wifi_sta_ssid", wifi_sta_ssid, &size);
+// 	size = sizeof(wifi_ap_ssid);
+// 	nvs_get_blob(my_handle, "wifi_ap_ssid", wifi_ap_ssid, &size);
+// 	size = sizeof(wifi_sta_password);
+// 	nvs_get_blob(my_handle, "wifi_sta_pw", wifi_sta_password, &size);
+// 	size = sizeof(wifi_ap_password);
+// 	nvs_get_blob(my_handle, "wifi_ap_pw", wifi_ap_password, &size);
 
-	size = sizeof(udp_server);
-	nvs_get_blob(my_handle, "udp_server", udp_server, &size);
+// 	size = sizeof(udp_server);
+// 	nvs_get_blob(my_handle, "udp_server", udp_server, &size);
 
-	nvs_get_u16(my_handle, "udp_port", &udp_port);
+// 	nvs_get_u16(my_handle, "udp_port", &udp_port);
 
-	size = sizeof(struct LED_CONFIG_V1_1);// is larger than sizeof(struct LED_CONFIG_V1_0));
-	struct LED_CONFIG_V1_1 tmp;
-	if (nvs_get_blob(my_handle, "leds", &tmp, &size) == ESP_OK) {
-		if (size == sizeof(struct LED_CONFIG_V1_1)) {
-			ESP_LOGI(TAG, "led bin config size %d v1.1", size);
-			for (int i = 0; i < 8; i++) {
-				led_config.channel[i].mode = tmp.channel[i].mode;
-				led_config.channel[i].orientation = tmp.channel[i].orientation;
-				led_config.channel[i].sx = tmp.channel[i].sx;
-				led_config.channel[i].sy = tmp.channel[i].sy;
-				led_config.channel[i].ox = tmp.channel[i].ox;
-				led_config.channel[i].oy = tmp.channel[i].oy;
-				led_config.channel[i].black[0] = tmp.channel[i].black[0];
-				led_config.channel[i].black[1] = tmp.channel[i].black[1];
-				led_config.channel[i].black[2] = tmp.channel[i].black[2];
-			}
-		} else if (size == sizeof(struct LED_CONFIG_V1_0)) {
-			ESP_LOGI(TAG, "led bin config size %d v1.0", size);
-			struct LED_CONFIG_V1_0 *ptmp = (struct LED_CONFIG_V1_0 *) &tmp;
-			for (int i = 0; i < 8; i++) {
-				led_config.channel[i].mode = ptmp->channel[i].mode;
-				led_config.channel[i].orientation =
-						ptmp->channel[i].orientation;
-				led_config.channel[i].sx = ptmp->channel[i].sx;
-				led_config.channel[i].sy = ptmp->channel[i].sy;
-				led_config.channel[i].ox = ptmp->channel[i].ox;
-				led_config.channel[i].oy = ptmp->channel[i].oy;
-			}
-		}
-	}
+// 	size = sizeof(struct LED_CONFIG_V1_1);// is larger than sizeof(struct LED_CONFIG_V1_0));
+// 	struct LED_CONFIG_V1_1 tmp;
+// 	if (nvs_get_blob(my_handle, "leds", &tmp, &size) == ESP_OK) {
+// 		if (size == sizeof(struct LED_CONFIG_V1_1)) {
+// 			ESP_LOGI(TAG, "led bin config size %d v1.1", size);
+// 			for (int i = 0; i < 8; i++) {
+// 				led_config.channel[i]->mode = tmp.channel[i]->mode;
+// 				led_config.channel[i]->orientation = tmp.channel[i]->orientation;
+// 				led_config.channel[i]->sx = tmp.channel[i]->sx;
+// 				led_config.channel[i]->sy = tmp.channel[i]->sy;
+// 				led_config.channel[i]->ox = tmp.channel[i]->ox;
+// 				led_config.channel[i]->oy = tmp.channel[i]->oy;
+// 				led_config.channel[i]->black[0] = tmp.channel[i]->black[0];
+// 				led_config.channel[i]->black[1] = tmp.channel[i]->black[1];
+// 				led_config.channel[i]->black[2] = tmp.channel[i]->black[2];
+// 			}
+// 		} else if (size == sizeof(struct LED_CONFIG_V1_0)) {
+// 			ESP_LOGI(TAG, "led bin config size %d v1.0", size);
+// 			struct LED_CONFIG_V1_0 *ptmp = (struct LED_CONFIG_V1_0 *) &tmp;
+// 			for (int i = 0; i < 8; i++) {
+// 				led_config.channel[i].mode = ptmp->channel[i].mode;
+// 				led_config.channel[i].orientation =
+// 						ptmp->channel[i].orientation;
+// 				led_config.channel[i].sx = ptmp->channel[i].sx;
+// 				led_config.channel[i].sy = ptmp->channel[i].sy;
+// 				led_config.channel[i].ox = ptmp->channel[i].ox;
+// 				led_config.channel[i].oy = ptmp->channel[i].oy;
+// 			}
+// 		}
+// 	}
 
-	for (int i = 0; i < 8; i++) {
-		char varname[32];
+// 	for (int i = 0; i < 8; i++) {
+// 		char varname[32];
 
-		uint8_t mode = led_config.channel[i].mode;
-		sprintf(varname, "leds%dmode", i);
-		nvs_get_u8(my_handle, varname, &mode);
-		led_config.channel[i].mode = mode;
+// 		uint8_t mode = led_config.channel[i].mode;
+// 		sprintf(varname, "leds%dmode", i);
+// 		nvs_get_u8(my_handle, varname, &mode);
+// 		led_config.channel[i].mode = mode;
 
-		uint8_t orientation = led_config.channel[i].orientation;
-		sprintf(varname, "leds%dori", i);
-		nvs_get_u8(my_handle, varname, &orientation);
-		led_config.channel[i].orientation = orientation;
+// 		uint8_t orientation = led_config.channel[i].orientation;
+// 		sprintf(varname, "leds%dori", i);
+// 		nvs_get_u8(my_handle, varname, &orientation);
+// 		led_config.channel[i].orientation = orientation;
 
-		sprintf(varname, "leds%dsx", i);
-		nvs_get_i16(my_handle, varname, &led_config.channel[i].sx);
-		sprintf(varname, "leds%dsy", i);
-		nvs_get_i16(my_handle, varname, &led_config.channel[i].sy);
-		sprintf(varname, "leds%dox", i);
-		nvs_get_i16(my_handle, varname, &led_config.channel[i].ox);
-		sprintf(varname, "leds%doy", i);
-		nvs_get_i16(my_handle, varname, &led_config.channel[i].oy);
-		sprintf(varname, "leds%db0", i);
-		nvs_get_i16(my_handle, varname, &led_config.channel[i].black[0]);
-		sprintf(varname, "leds%db1", i);
-		nvs_get_i16(my_handle, varname, &led_config.channel[i].black[1]);
-		sprintf(varname, "leds%db2", i);
-		nvs_get_i16(my_handle, varname, &led_config.channel[i].black[2]);
-	}
+// 		sprintf(varname, "leds%dsx", i);
+// 		nvs_get_i16(my_handle, varname, &led_config.channel[i].sx);
+// 		sprintf(varname, "leds%dsy", i);
+// 		nvs_get_i16(my_handle, varname, &led_config.channel[i].sy);
+// 		sprintf(varname, "leds%dox", i);
+// 		nvs_get_i16(my_handle, varname, &led_config.channel[i].ox);
+// 		sprintf(varname, "leds%doy", i);
+// 		nvs_get_i16(my_handle, varname, &led_config.channel[i].oy);
+// 		sprintf(varname, "leds%db0", i);
+// 		nvs_get_i16(my_handle, varname, &led_config.channel[i].black[0]);
+// 		sprintf(varname, "leds%db1", i);
+// 		nvs_get_i16(my_handle, varname, &led_config.channel[i].black[1]);
+// 		sprintf(varname, "leds%db2", i);
+// 		nvs_get_i16(my_handle, varname, &led_config.channel[i].black[2]);
+// 	}
 
-	size = sizeof(led_coloring);
-	nvs_get_blob(my_handle, "coloring", &led_coloring, &size);
+// 	size = sizeof(led_coloring);
+// 	nvs_get_blob(my_handle, "coloring", &led_coloring, &size);
 
-	nvs_get_u8(my_handle, "channels", &led_config.channels);
-	nvs_get_u8(my_handle, "prefix_leds", &led_config.prefix_leds);
-	nvs_get_i16(my_handle, "refresh_rate", &led_config.refresh_rate);
+// 	nvs_get_u8(my_handle, "channels", &led_config.channels);
+// 	nvs_get_u8(my_handle, "prefix_leds", &led_config.prefix_leds);
+// 	nvs_get_i16(my_handle, "refresh_rate", &led_config.refresh_rate);
 
-	nvs_get_u16(my_handle, "artnet_width", &led_config.artnet_width);
-	nvs_get_u16(my_handle, "artnet_u_offset",
-			&led_config.artnet_universe_offset);
+// 	nvs_get_u16(my_handle, "artnet_width", &led_config.artnet_width);
+// 	nvs_get_u16(my_handle, "artnet_u_offset",
+// 			&led_config.artnet_universe_offset);
 
-	uint32_t frequency;
-	uint8_t one, zero, order;
-	nvs_get_u32(my_handle, "led_frequency", &frequency);
-	nvs_get_u8(my_handle, "led_one", &one);
-	nvs_get_u8(my_handle, "led_zero", &zero);
-	nvs_get_u8(my_handle, "led_order", &order);
-	// ownled_set_pulses(frequency, one, zero);
-	ownled_setColorOrder(OWNLED_GRB);
+// 	uint32_t frequency;
+// 	uint8_t one, zero, order;
+// 	nvs_get_u32(my_handle, "led_frequency", &frequency);
+// 	nvs_get_u8(my_handle, "led_one", &one);
+// 	nvs_get_u8(my_handle, "led_zero", &zero);
+// 	nvs_get_u8(my_handle, "led_order", &order);
+// 	// ownled_set_pulses(frequency, one, zero);
+// 	ownled_setColorOrder(OWNLED_GRB);
 
-	playlist_readConfig(my_handle);
+// 	playlist_readConfig(my_handle);
 
-	nvs_close(my_handle);
-}
+// 	nvs_close(my_handle);
+// }
 
-// write configuration
-void config_write_all() {
-	nvs_handle my_handle;
-	ESP_ERROR_CHECK(nvs_open_from_partition(partition_name,"config", NVS_READWRITE, &my_handle));
+// // write configuration
+// void config_write_all() {
+// 	nvs_handle my_handle;
+// 	ESP_ERROR_CHECK(nvs_open_from_partition(partition_name,"config", NVS_READWRITE, &my_handle));
 
-	ESP_ERROR_CHECK(
-			nvs_set_blob(my_handle, "wifi_sta_ssid", wifi_sta_ssid,
-					sizeof(wifi_sta_ssid)));
-	ESP_ERROR_CHECK(
-			nvs_set_blob(my_handle, "wifi_ap_ssid", wifi_ap_ssid,
-					sizeof(wifi_ap_ssid)));
-	ESP_ERROR_CHECK(
-			nvs_set_blob(my_handle, "wifi_sta_pw", wifi_sta_password,
-					sizeof(wifi_sta_password)));
-	ESP_ERROR_CHECK(
-			nvs_set_blob(my_handle, "wifi_ap_pw", wifi_ap_password,
-					sizeof(wifi_ap_password)));
-	ESP_ERROR_CHECK(
-			nvs_set_blob(my_handle, "udp_server", udp_server,
-					sizeof(udp_server)));
-	ESP_ERROR_CHECK(nvs_set_u16(my_handle, "udp_port", udp_port));
+// 	ESP_ERROR_CHECK(
+// 			nvs_set_blob(my_handle, "wifi_sta_ssid", wifi_sta_ssid,
+// 					sizeof(wifi_sta_ssid)));
+// 	ESP_ERROR_CHECK(
+// 			nvs_set_blob(my_handle, "wifi_ap_ssid", wifi_ap_ssid,
+// 					sizeof(wifi_ap_ssid)));
+// 	ESP_ERROR_CHECK(
+// 			nvs_set_blob(my_handle, "wifi_sta_pw", wifi_sta_password,
+// 					sizeof(wifi_sta_password)));
+// 	ESP_ERROR_CHECK(
+// 			nvs_set_blob(my_handle, "wifi_ap_pw", wifi_ap_password,
+// 					sizeof(wifi_ap_password)));
+// 	ESP_ERROR_CHECK(
+// 			nvs_set_blob(my_handle, "udp_server", udp_server,
+// 					sizeof(udp_server)));
+// 	ESP_ERROR_CHECK(nvs_set_u16(my_handle, "udp_port", udp_port));
 
-	nvs_erase_key(my_handle, "leds");	// remove config from version 1.0
+// 	nvs_erase_key(my_handle, "leds");	// remove config from version 1.0
 
-	for (int i = 0; i < 8; i++) {
-		char varname[32];
+// 	for (int i = 0; i < 8; i++) {
+// 		char varname[32];
 
-		uint8_t mode = led_config.channel[i].mode;
-		sprintf(varname, "leds%dmode", i);
-		nvs_set_u8(my_handle, varname, mode);
+// 		uint8_t mode = led_config.channel[i].mode;
+// 		sprintf(varname, "leds%dmode", i);
+// 		nvs_set_u8(my_handle, varname, mode);
 
-		uint8_t orientation = led_config.channel[i].orientation;
-		sprintf(varname, "leds%dori", i);
-		nvs_set_u8(my_handle, varname, orientation);
+// 		uint8_t orientation = led_config.channel[i].orientation;
+// 		sprintf(varname, "leds%dori", i);
+// 		nvs_set_u8(my_handle, varname, orientation);
 
-		sprintf(varname, "leds%dsx", i);
-		nvs_set_i16(my_handle, varname, led_config.channel[i].sx);
-		sprintf(varname, "leds%dsy", i);
-		nvs_set_i16(my_handle, varname, led_config.channel[i].sy);
-		sprintf(varname, "leds%dox", i);
-		nvs_set_i16(my_handle, varname, led_config.channel[i].ox);
-		sprintf(varname, "leds%doy", i);
-		nvs_set_i16(my_handle, varname, led_config.channel[i].oy);
-		sprintf(varname, "leds%db0", i);
-		nvs_set_i16(my_handle, varname, led_config.channel[i].black[0]);
-		sprintf(varname, "leds%db1", i);
-		nvs_set_i16(my_handle, varname, led_config.channel[i].black[1]);
-		sprintf(varname, "leds%db2", i);
-		nvs_set_i16(my_handle, varname, led_config.channel[i].black[2]);
-	}
+// 		sprintf(varname, "leds%dsx", i);
+// 		nvs_set_i16(my_handle, varname, led_config.channel[i].sx);
+// 		sprintf(varname, "leds%dsy", i);
+// 		nvs_set_i16(my_handle, varname, led_config.channel[i].sy);
+// 		sprintf(varname, "leds%dox", i);
+// 		nvs_set_i16(my_handle, varname, led_config.channel[i].ox);
+// 		sprintf(varname, "leds%doy", i);
+// 		nvs_set_i16(my_handle, varname, led_config.channel[i].oy);
+// 		sprintf(varname, "leds%db0", i);
+// 		nvs_set_i16(my_handle, varname, led_config.channel[i].black[0]);
+// 		sprintf(varname, "leds%db1", i);
+// 		nvs_set_i16(my_handle, varname, led_config.channel[i].black[1]);
+// 		sprintf(varname, "leds%db2", i);
+// 		nvs_set_i16(my_handle, varname, led_config.channel[i].black[2]);
+// 	}
 
-	ESP_ERROR_CHECK(nvs_set_u8(my_handle, "channels", led_config.channels));
-	ESP_ERROR_CHECK(
-			nvs_set_u8(my_handle, "prefix_leds", led_config.prefix_leds));
-	ESP_ERROR_CHECK(
-			nvs_set_u8(my_handle, "refresh_rate", led_config.refresh_rate));
+// 	ESP_ERROR_CHECK(nvs_set_u8(my_handle, "channels", led_config.channels));
+// 	ESP_ERROR_CHECK(
+// 			nvs_set_u8(my_handle, "prefix_leds", led_config.prefix_leds));
+// 	ESP_ERROR_CHECK(
+// 			nvs_set_u8(my_handle, "refresh_rate", led_config.refresh_rate));
 
-	ESP_ERROR_CHECK(
-			nvs_set_u16(my_handle, "artnet_width", led_config.artnet_width));
-	ESP_ERROR_CHECK(
-			nvs_set_u16(my_handle, "artnet_u_offset",
-					led_config.artnet_universe_offset));
+// 	ESP_ERROR_CHECK(
+// 			nvs_set_u16(my_handle, "artnet_width", led_config.artnet_width));
+// 	ESP_ERROR_CHECK(
+// 			nvs_set_u16(my_handle, "artnet_u_offset",
+// 					led_config.artnet_universe_offset));
 
-	ESP_ERROR_CHECK(
-			nvs_set_u32(my_handle, "led_frequency",
-					ownled_get_pulse_frequency()));
-	ESP_ERROR_CHECK(nvs_set_u8(my_handle, "led_one", ownled_get_pulse_one()));
-	ESP_ERROR_CHECK(nvs_set_u8(my_handle, "led_zero", ownled_get_pulse_zero()));
-	ESP_ERROR_CHECK(nvs_set_u8(my_handle, "led_order", ownled_getColorOrder()));
+// 	ESP_ERROR_CHECK(
+// 			nvs_set_u32(my_handle, "led_frequency",
+// 					ownled_get_pulse_frequency()));
+// 	ESP_ERROR_CHECK(nvs_set_u8(my_handle, "led_one", ownled_get_pulse_one()));
+// 	ESP_ERROR_CHECK(nvs_set_u8(my_handle, "led_zero", ownled_get_pulse_zero()));
+// 	ESP_ERROR_CHECK(nvs_set_u8(my_handle, "led_order", ownled_getColorOrder()));
 
-	playlist_writeConfig(my_handle);
+// 	playlist_writeConfig(my_handle);
 
-	nvs_close(my_handle);
-}
+// 	nvs_close(my_handle);
+// }
 
 void config_update_channels() {
 	led_set_config(&led_config);
@@ -584,68 +587,68 @@ static int compare_short(const void *p1, const void *p2) {
 	return a - b;
 }
 
-void config_set_led_line(int line, enum LED_MODE mode, int size_x, int size_y,
-		int offset_x, int offset_y, enum LED_ORIENTATION orientation,
-		const char *options) {
-	if (line < 0 || line >= config_get_channels())
-		return;
+// void config_set_led_line(int line, enum LED_MODE mode, int size_x, int size_y,
+// 		int offset_x, int offset_y, enum LED_ORIENTATION orientation,
+// 		const char *options) {
+// 	if (line < 0 || line >= config_get_channels())
+// 		return;
 
-	led_config.channel[line].mode = mode;
-	led_config.channel[line].sx = size_x;
-	led_config.channel[line].sy = size_y;
-	led_config.channel[line].ox = offset_x;
-	led_config.channel[line].oy = offset_y;
-	led_config.channel[line].orientation = orientation;
-	led_config.channel[line].black[0] = -1;
-	led_config.channel[line].black[1] = -1;
-	led_config.channel[line].black[2] = -1;
+// 	led_config.channel[line].mode = mode;
+// 	led_config.channel[line].sx = size_x;
+// 	led_config.channel[line].sy = size_y;
+// 	led_config.channel[line].ox = offset_x;
+// 	led_config.channel[line].oy = offset_y;
+// 	led_config.channel[line].orientation = orientation;
+// 	led_config.channel[line].black[0] = -1;
+// 	led_config.channel[line].black[1] = -1;
+// 	led_config.channel[line].black[2] = -1;
 
-	if (0 == strncmp(options, "black=", 6)) {
-		int16_t *black = led_config.channel[line].black;
-		int res = sscanf(options + 6, "%hd,%hd,%hd", &black[0], &black[1],
-				&black[2]);
-		ESP_LOGI(TAG, "option res %d", res);
+// 	if (0 == strncmp(options, "black=", 6)) {
+// 		int16_t *black = led_config.channel[line].black;
+// 		int res = sscanf(options + 6, "%hd,%hd,%hd", &black[0], &black[1],
+// 				&black[2]);
+// 		ESP_LOGI(TAG, "option res %d", res);
 
-		for (int i = 0; i < res; i++) {
-			if (black[i] < 0 || black[i] >= size_x * size_y) {
-				black[i] = black[res - 1];
-				res--;
-				i--;
-			}
-		}
-		qsort(black, res, sizeof(int16_t), compare_short);
-		for (int i = res; i < 3; i++)
-			black[i] = -1;
+// 		for (int i = 0; i < res; i++) {
+// 			if (black[i] < 0 || black[i] >= size_x * size_y) {
+// 				black[i] = black[res - 1];
+// 				res--;
+// 				i--;
+// 			}
+// 		}
+// 		qsort(black, res, sizeof(int16_t), compare_short);
+// 		for (int i = res; i < 3; i++)
+// 			black[i] = -1;
 
-		ESP_LOGI(TAG, "options %d %d %d %d", res, black[0], black[1], black[2]);
-	}
-}
+// 		ESP_LOGI(TAG, "options %d %d %d %d", res, black[0], black[1], black[2]);
+// 	}
+// }
 
-void config_get_led_line(int line, enum LED_MODE *mode, int *size_x,
-		int *size_y, int *offset_x, int *offset_y,
-		enum LED_ORIENTATION *orientation, char options[65]) {
-	if (line < 0 || line >= config_get_channels())
-		return;
+// void config_get_led_line(int line, enum LED_MODE *mode, int *size_x,
+// 		int *size_y, int *offset_x, int *offset_y,
+// 		enum LED_ORIENTATION *orientation, char options[65]) {
+// 	if (line < 0 || line >= config_get_channels())
+// 		return;
 
-	*size_x = led_config.channel[line].sx;
-	*size_y = led_config.channel[line].sy;
-	*offset_x = led_config.channel[line].ox;
-	*offset_y = led_config.channel[line].oy;
-	*orientation = led_config.channel[line].orientation;
-	*mode = led_config.channel[line].mode;
+// 	*size_x = led_config.channel[line].sx;
+// 	*size_y = led_config.channel[line].sy;
+// 	*offset_x = led_config.channel[line].ox;
+// 	*offset_y = led_config.channel[line].oy;
+// 	*orientation = led_config.channel[line].orientation;
+// 	*mode = led_config.channel[line].mode;
 
-	if (led_config.channel[line].black[0] == -1)
-		options[0] = 0;
-	else if (led_config.channel[line].black[1] == -1)
-		sprintf(options, "black=%d", led_config.channel[line].black[0]);
-	else if (led_config.channel[line].black[2] == -1)
-		sprintf(options, "black=%d,%d", led_config.channel[line].black[0],
-				led_config.channel[line].black[1]);
-	else
-		sprintf(options, "black=%d,%d,%d", led_config.channel[line].black[0],
-				led_config.channel[line].black[1],
-				led_config.channel[line].black[2]);
-}
+// 	if (led_config.channel[line].black[0] == -1)
+// 		options[0] = 0;
+// 	else if (led_config.channel[line].black[1] == -1)
+// 		sprintf(options, "black=%d", led_config.channel[line].black[0]);
+// 	else if (led_config.channel[line].black[2] == -1)
+// 		sprintf(options, "black=%d,%d", led_config.channel[line].black[0],
+// 				led_config.channel[line].black[1]);
+// 	else
+// 		sprintf(options, "black=%d,%d,%d", led_config.channel[line].black[0],
+// 				led_config.channel[line].black[1],
+// 				led_config.channel[line].black[2]);
+// }
 
 /**
  * handle the coloring information
@@ -684,9 +687,11 @@ uint8_t config_get_channels() {
 	return led_config.channels;
 }
 
-void config_set_channels(uint8_t value) {
+void config_set_channels(uint8_t seg_id) {
 
-	led_config.channels = value;
+	led_config.channels = seg_id+1;
+	led_config.channel[seg_id] = (struct LED_CONFIG_CHANNEL*)malloc(sizeof(struct LED_CONFIG_CHANNEL));
+	led_config.channel[seg_id]->segment_id = seg_id;
 }
 
 uint8_t config_get_prefix_leds() {

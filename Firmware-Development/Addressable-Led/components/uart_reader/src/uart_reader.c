@@ -105,7 +105,10 @@ void parse_json(char* start){
                 int seg_id = id->valueint;
                 cJSON* start = cJSON_GetObjectItemCaseSensitive(seg, "start");
                 cJSON* stop = cJSON_GetObjectItemCaseSensitive(seg, "stop");
-                if((start != NULL) & (stop != NULL)){
+                if(start == NULL && stop == NULL){
+                    
+                }
+                else if((start != NULL) & (stop != NULL)){
                     int seg_start, seg_stop;
                     seg_start = start->valueint;
                     seg_stop = stop->valueint;
