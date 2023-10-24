@@ -98,7 +98,7 @@ static struct FX_SEGMENT { // 20 bytes
       aux_param; // auxilary param (usually stores a WS2812FX_color_wheel index)
   uint8_t aux_param2;  // auxilary param (usually stores bitwise options)
   uint16_t aux_param3; // auxilary param (usually stores a segment index)
-} fx_segments[8];
+} fx_segments[16];
 
 #define CYCLE (uint8_t)0x40
 
@@ -117,7 +117,7 @@ static uint16_t segmentLength(int line) {
 #define DEFAULT_SPEED (uint16_t)1000
 
 void WS2812FX_init(int line, int n, uint32_t colorPrimary, uint32_t colorSecondary, uint32_t colorTertiary, uint8_t start, uint8_t stop, int mode ) {
-  assert(line >= 0 && line < 8);
+  assert(line >= 0 && line <= 16);
   memset(fx_segments + line, 0, sizeof(*fx_segments));
   fx_segments[line].mode = mode;
   fx_segments[line].colors[0] = colorPrimary; //G

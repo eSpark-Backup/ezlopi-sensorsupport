@@ -32,10 +32,10 @@ static float framerate = 20.f;
 static struct LED_CONFIG led_config;
 static int32_t led_counter = 0;
 
-// #define LED_MAX_LINES  (sizeof(led_config.channel) / sizeof(led_config.channel[0]))
+#define LED_MAX_LINES  (sizeof(led_config.channel) / sizeof(led_config.channel[0]))
 
 // #define LED_MAX_LINES led_config.channels
-#define LED_MAX_LINES 8
+// #define LED_MAX_LINES 8
 
 struct LED_COLORING led_coloring = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
@@ -289,7 +289,7 @@ void led_block(int x, int y, uint8_t *r, uint8_t *g, uint8_t *b) {
 
 static void handleNewConfig() {
 	ESP_LOGI(TAG, "HADNLING NEW CONFIG");
-	for (int i = 0; i < led_get_max_lines(); i++) {
+	for (int i = 0; i < led_get_max_lines(); i++) { //this loop runs LED_MAX_LINES times
 		if(led_config.channel[i].selected == true){
 			WS2812FX_init(i, 
 				led_config.channel[i].stop - led_config.channel[i].start,
