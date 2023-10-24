@@ -106,13 +106,13 @@ static void getPassword(const char *in, char output[32]) {
 
 // set values to default
 static void setDefaults() {
-	led_config.channels = 1;
+	led_config.channels = 16;
 	led_config.prefix_leds = 0;
 	led_config.refresh_rate = 20.;
 	led_config.total_leds = 250;
 	ESP_LOGI(TAG, "CHANNELS ACTIVE : %d", config_get_channels());
 	for (int i = 0; i < config_get_channels(); i++) {
-		led_config.channel[i].selected = false;
+		led_config.channel[i].selected = true;
 		led_config.channel[0].selected = true;
 		led_config.channel[i].mode = LED_MODE_SOLID;
 		led_config.channel[i].sx = led_config.channel[i].sy = 6;
@@ -120,8 +120,8 @@ static void setDefaults() {
 		led_config.channel[i].orientation = LED_ORI0_ZIGZAG;
 		led_config.channel[i].black[0] = led_config.channel[i].black[1] =
 				led_config.channel[i].black[2] = -1;
-		led_config.channel[i].start = i*30;
-		led_config.channel[i].stop = led_config.total_leds;
+		led_config.channel[i].start = i*10;
+		led_config.channel[i].stop = led_config.channel[i].start+10;
 		led_config.channel[i].segment_id = i;
 		led_config.channel[i].number_of_leds = led_config.channel[i].stop - led_config.channel[i].start;
 	}
