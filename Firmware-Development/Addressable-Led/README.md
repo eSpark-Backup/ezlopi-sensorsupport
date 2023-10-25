@@ -8,7 +8,10 @@
 - Upload the firmware using `idf.py -p PORT flash`
 - Send JSON Packet using Serial Monitor
      - Arduino Serial Recommended
+- Or use Web Application in test Directory
 
+## Web Application
+![App Image](https://github.com/eSpark-Consultants/ezlopi-sensorsupport/tree/Addressable-Led/Firmware-Development/Addressable-Led/testApp/images/app_image.png?raw=true)
 
 ## Example JSON Packets:
 
@@ -82,7 +85,7 @@ Change the "bri": X value to control strip brightness (0-255)
   "seg": {
     "id": 0,
     "n": "name",
-    "sel": true
+    "sel": false
   },
   "v": true,
   "time": 1697725589
@@ -96,7 +99,7 @@ Change the "bri": X value to control strip brightness (0-255)
   "seg": {
     "id": 0,
     "n": "name",
-    "sel": false
+    "sel": true
   },
   "v": true,
   "time": 1697725589
