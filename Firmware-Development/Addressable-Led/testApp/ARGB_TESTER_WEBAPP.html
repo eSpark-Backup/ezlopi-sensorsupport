@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Serial JSON Sender</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        button {
+            margin: 10px;
+        }
+        input {
+            /* border: none; */
+            border-radius: 5px;
+            border-color: #FFFFFF;
+        }
+        .light-text-input {
+        color: #FFFFFF; /* Set the text color to a light color using a hex code */
+        }
+    </style>
+</head>
+<body class="bg-dark">
+    <h1 class="text-light">ARGB Led Controller</h1>
+    <button id="connectButton" class="btn btn-warning" >Connect</button>
+
+<!-- HTML and CSS remain the same as in the previous example -->
+
+<div>
+<input type="number" class="bg-dark light-text-input" id="startValue"  placeholder="Enter 'start' value" />
+<input type="number" class="bg-dark light-text-input" id="stopValue" placeholder="Enter 'stop' value" />
+<input type="number" class="bg-dark light-text-input" id="idValue" placeholder="Enter 'id' value" />
+<button id="sendButton" class="btn btn-outline-light btn-sm">Send START and STOP with ID</button>
+</div>
+
+<div>
+<input type="number" class="bg-dark light-text-input" id="idValueSegment" placeholder="Enter 'id' value" />
+<label for="selValue">Select 'sel' value:</label>
+<select  class="bg-dark light-text-input" id="selValue">
+    <option value="true">True</option>
+    <option value="false">False</option>
+</select>
+<button id="sendButton2" class="btn btn-outline-light btn-sm">Select Segment</button>
+</div>
+
+<input type="number" class="bg-dark light-text-input" id="fxValue" placeholder="Enter 'fx' value" />
+<label for="fxdefValue">Select 'fxdef' value:</label>
+<select class="bg-dark light-text-input" id="fxdefValue">
+    <option value="true">True</option>
+    <option value="false">False</option>
+</select>
+<button id="sendFXButton" class="btn btn-outline-light btn-sm">Change FX</button>
+
+<div id="colorValues">
+    <h3 class="text-light">Primary RGB</h3>
+    <label for="primaryRedSlider">Green:</label>
+    <input type="range" id="primaryRedSlider" min="0" max="255" step="1" value="180" />
+    <label for="primaryGreenSlider">Red:</label>
+    <input type="range" id="primaryGreenSlider" min="0" max="255" step="1" value="180" />
+    <label for="primaryBlueSlider">Blue:</label>
+    <input type="range" id="primaryBlueSlider" min="0" max="255" step="1" value="0" />
+
+    <h3 class="text-light">Secondary RGB</h3>
+    <label for="secondaryRedSlider">Green:</label>
+    <input type="range" id="secondaryRedSlider" min="0" max="255" step="1" value="0" />
+    <label for="secondaryGreenSlider">Red:</label>
+    <input type="range" id="secondaryGreenSlider" min="0" max="255" step="1" value="180" />
+    <label for="secondaryBlueSlider">Blue:</label>
+    <input type="range" id="secondaryBlueSlider" min="0" max="255" step="1" value="255" />
+
+    <h3 class="text-light">Tertiary RGB </h3>
+    <label for="tertiaryRedSlider">Green:</label>
+    <input type="range" id="tertiaryRedSlider" min="0" max="255" step="1" value="180" />
+    <label for="tertiaryGreenSlider">Red:</label>
+    <input type="range" id="tertiaryGreenSlider" min="0" max="255" step="1" value="0" />
+    <label for="tertiaryBlueSlider">Blue:</label>
+    <input type="range" id="tertiaryBlueSlider" min="0" max="255" step="1" value="255" />
+</div>
+<button id="sendColorButton" class="btn btn-outline-light btn-sm">Change Colors</button>
+
+<div class="container">
+    <h2 class="text-light">Change Brightness</h2>
+    <input type="range" id="brightnessSlider" min="0" max="255" step="1" value="50" />
+    <p class="text-light">Brightness: <span id="brightnessValue">50</span></p>
+    <button id="sendBrightnessButton" class="btn btn-primary">Send Brightness</button>
+</div>
+
+<script>
+    let port;
+    let writer;
+    const baudRate = 115200;
+
+    document.getElementById("connectButton").addEventListener("click", async () => {
+        try {
+            port = await navigator.serial.requestPort();
+            await port.open({ baudRate });
+            writer = port.writable.getWriter();
+            document.getElementById("connectButton").disabled = true;
+        } catch (error) {
+            console.error("Error connecting to the serial port:", error);
+        }
+    });
+
+    const sendJSON = async () => {
+        if (writer) {
+            const startValue = parseInt(document.getElementById("startValue").value);
+            const stopValue = parseInt(document.getElementById("stopValue").value);
+            const idValue = parseInt(document.getElementById("idValue").value);
+
+            const json = {
+                "seg": {
+                    "id": idValue,
+                    "n": "name",
+                    "start": startValue,
+                    "stop": stopValue
+                },
+                "v": true,
+                "time": 12312312
+            };
+
+            const data = JSON.stringify(json);
+            await writer.write(new TextEncoder().encode(data));
+        } else {
+            console.error("Serial port not open or not writable.");
+        }
+    };
+
+
+    const sendJSON2 = async () => {
+        if (writer) {
+            const idValue = parseInt(document.getElementById("idValueSegment").value);
+            const selValue = document.getElementById("selValue").value === "false" ? false : true;
+
+            const json = {
+                seg: {
+                    id: idValue,
+                    n: "name",
+                    sel: selValue
+                },
+                v: true,
+                time: Date.now()
+            };
+            console.log(json);
+            const data = JSON.stringify(json);
+            await writer.write(new TextEncoder().encode(data));
+        } else {
+            console.error("Serial port not open or not writable.");
+        }
+    };
+
+    const changeFX = async () => {
+        if (writer) {
+            const fxValue = parseInt(document.getElementById("fxValue").value);
+            const fxdefValue = document.getElementById("fxdefValue").value === "true";
+
+            const json = {
+                seg: {
+                    fx: fxValue,
+                    fxdef: fxdefValue
+                },
+                v: true,
+                time: Date.now()
+            };
+
+            const data = JSON.stringify(json);
+            await writer.write(new TextEncoder().encode(data));
+        } else {
+            console.error("Serial port not open or not writable.");
+        }
+    };
+
+    const updateJSON = () => {
+        primaryRGB = [
+            parseInt(document.getElementById("primaryRedSlider").value),
+            parseInt(document.getElementById("primaryGreenSlider").value),
+            parseInt(document.getElementById("primaryBlueSlider").value),
+            0
+        ];
+
+        secondaryRGB = [
+            parseInt(document.getElementById("secondaryRedSlider").value),
+            parseInt(document.getElementById("secondaryGreenSlider").value),
+            parseInt(document.getElementById("secondaryBlueSlider").value),
+            0
+        ];
+
+        tertiaryRGB = [
+            parseInt(document.getElementById("tertiaryRedSlider").value),
+            parseInt(document.getElementById("tertiaryGreenSlider").value),
+            parseInt(document.getElementById("tertiaryBlueSlider").value),
+            0
+        ];
+
+        // Update the JSON object with the new color values
+        const json = {
+            seg: {
+                col: [primaryRGB, secondaryRGB, tertiaryRGB]
+            },
+            v: true,
+            time: Date.now()
+        };
+
+        const data = JSON.stringify(json);
+        return data;
+    };
+
+    const updateBrightness = () => {
+            const brightnessSlider = document.getElementById("brightnessSlider");
+            const brightnessValue = document.getElementById("brightnessValue");
+            const selectedBrightness = brightnessSlider.value;
+            brightnessValue.textContent = selectedBrightness;
+
+            // Update the JSON object with the new brightness value
+            const json = {
+                bri: parseInt(selectedBrightness),
+                v: true,
+                time: Date.now()
+            };
+
+            const data = JSON.stringify(json);
+            return data;
+        };
+
+        document.getElementById("sendBrightnessButton").addEventListener("click", async () => {
+            if (writer) {
+                const data = updateBrightness();
+                await writer.write(new TextEncoder().encode(data));
+            } else {
+                console.error("Serial port not open or not writable.");
+            }
+        });
+
+    document.getElementById("sendColorButton").addEventListener("click", async () => {
+        if (writer) {
+            const data = updateJSON();
+            await writer.write(new TextEncoder().encode(data));
+        } else {
+            console.error("Serial port not open or not writable.");
+        }
+    });
+
+    document.getElementById("sendFXButton").addEventListener("click", () => {
+        changeFX();
+    });
+
+    document.getElementById("sendButton2").addEventListener("click", () => {
+        sendJSON2();
+    });
+
+    document.getElementById("sendButton").addEventListener("click", () => {
+        sendJSON();
+    });
+</script>
+
+
+</body>
+</html>

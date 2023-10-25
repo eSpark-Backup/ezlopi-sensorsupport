@@ -207,27 +207,58 @@ void config_set_brightness(uint8_t bri){
 }
 
 void config_set_selected_flag(int id, bool select_flag){
-	if(led_config.channel[id] != NULL){
-		led_config.channel[id]->selected = select_flag;
+	// if(led_config.channel[id] != NULL){
+	// 	led_config.channel[id]->selected = select_flag;
+	// }
+
+	for(int i = 0; i < led_config.channels; i++){
+		if((led_config.channel[i]->segment_id == id)){
+			led_config.channel[i]->selected = select_flag;
+			break;
+		}
 	}
+	led_set_config(&led_config);
+
 }
 
 void config_set_segment_start_stop(int seg_id, int seg_start, int seg_stop){
-	if(led_config.channel[seg_id] != NULL && led_config.channel[seg_id]->segment_id == seg_id){
-		if((led_config.channel[seg_id]->selected == true)){
-			led_config.channel[seg_id]->start = seg_start;
-			led_config.channel[seg_id]->stop = seg_stop;
-			led_config.channel[seg_id]->number_of_leds = seg_stop-seg_start;
-			//update neighbouring segments start and stop
+
+	// if(seg_id > (led_config.channels-1) ){led_config.channel[seg_id] = (struct LED_CONFIG_CHANNEL*)calloc(1,sizeof(struct LED_CONFIG_CHANNEL));}
+	bool found = false;
+
+	for(int i = 0; i < led_config.channels; i++){
+		if((led_config.channel[i]->segment_id == seg_id)){
+			led_config.channel[i]->start = seg_start;
+			led_config.channel[i]->stop = seg_stop;
+			led_config.channel[i]->number_of_leds = seg_stop-seg_start;
 			led_set_config(&led_config);
+			found = true;
+			break;
 		}
 	}
-	else{
+
+	// if(led_config.channel[seg_id] != NULL && led_config.channel[seg_id]->segment_id == seg_id){
+	// 	if((led_config.channel[seg_id]->selected == true)){
+	// 		led_config.channel[seg_id]->start = seg_start;
+	// 		led_config.channel[seg_id]->stop = seg_stop;
+	// 		led_config.channel[seg_id]->number_of_leds = seg_stop-seg_start;
+	// 		//update neighbouring segments start and stop
+	// 		led_set_config(&led_config);
+	// 	}
+	// }
+	// else{
+	// 	ESP_LOGI(TAG, "ADDING NEW SEGMENT");
+	// 	// int channels = config_get_channels();
+	// 	config_set_channels(seg_id);
+	// 	led_set_config(&led_config);
+	// }
+
+	if(!found){
 		ESP_LOGI(TAG, "ADDING NEW SEGMENT");
-		// int channels = config_get_channels();
 		config_set_channels(seg_id);
 		led_set_config(&led_config);
 	}
+
 	
 }
 
@@ -689,9 +720,12 @@ uint8_t config_get_channels() {
 
 void config_set_channels(uint8_t seg_id) {
 
-	led_config.channels = seg_id+1;
-	led_config.channel[seg_id] = (struct LED_CONFIG_CHANNEL*)malloc(sizeof(struct LED_CONFIG_CHANNEL));
-	led_config.channel[seg_id]->segment_id = seg_id;
+	// led_config.channels = seg_id < led_config.channels ? led_config.channels : seg_id+1;
+	led_config.channel[led_config.channels] = (struct LED_CONFIG_CHANNEL*)calloc(1,sizeof(struct LED_CONFIG_CHANNEL));
+	led_config.channel[led_config.channels]->segment_id = seg_id;
+	led_config.channel[led_config.channels]->selected = true;
+	led_config.channel[led_config.channels]->mode = LED_MODE_SOLID;
+	led_config.channels++;
 }
 
 uint8_t config_get_prefix_leds() {
