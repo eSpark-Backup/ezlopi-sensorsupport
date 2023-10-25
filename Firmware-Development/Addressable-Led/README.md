@@ -11,7 +11,7 @@
 - Or use Web Application in test Directory
 
 ## Web Application
-![App Image](https://github.com/eSpark-Consultants/ezlopi-sensorsupport/tree/Addressable-Led/Firmware-Development/Addressable-Led/testApp/images/app_image.png?raw=true)
+![app_image](https://github.com/eSpark-Consultants/ezlopi-sensorsupport/assets/143803999/63137a9d-017b-40bd-9947-ac0d2989f6ea)
 
 ## Example JSON Packets:
 
@@ -85,7 +85,7 @@ Change the "bri": X value to control strip brightness (0-255)
   "seg": {
     "id": 0,
     "n": "name",
-    "sel": false
+    "sel": true
   },
   "v": true,
   "time": 1697725589
@@ -99,7 +99,7 @@ Change the "bri": X value to control strip brightness (0-255)
   "seg": {
     "id": 0,
     "n": "name",
-    "sel": true
+    "sel": false
   },
   "v": true,
   "time": 1697725589
@@ -150,7 +150,8 @@ Select the instructions depending on Espressif chip installed on your developmen
 - [x] Tertiary Color Control using JSON
 - [x] Brightness Control using JSON
 - [x] Segment Length Control
-- [ ] Add Multiple Segments 
+- [x] Add Multiple Segments 
+- [x] Dynamic Segment Allocation
 - [ ] Add Custom Effects from WLED
 
 
@@ -202,6 +203,9 @@ Below is short explanation of remaining files in the project folder.
 │   ├── component.mk           Component make file
 │   ├── kconfig.projbuild
 │   └── main.c
+├── testApp
+│   ├── ARGB_TESTER_WEBAPP.html
+│   └── images
 ├── Makefile                   Makefile used by legacy GNU Make
 ├── README.md                  This is the file you are currently reading
 ├── sdkconfig
