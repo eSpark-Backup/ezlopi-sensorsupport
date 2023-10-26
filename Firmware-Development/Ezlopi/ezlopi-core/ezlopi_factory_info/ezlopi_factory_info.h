@@ -410,10 +410,10 @@ static const char *test_device_constant_config =
                 \"dev_type\": 2,\
                 \"dev_name\": \"Digital Wattmeter\",\
                 \"id_room\": \"\",\
-                \"id_item\": 65,\
-                \"gpio_sda\": 26,\
-                \"gpio_scl\": 27,\
-                \"i2c_address\":69,\
+                \"id_item\": 66,\
+                \"rows\": 4,\
+                \"cols\": 4,\
+                \"gpio_array\": [13, 12, 14, 27, 26, 25, 33, 32],\
                 \"logic_inv\": false\
             }\
         ],\

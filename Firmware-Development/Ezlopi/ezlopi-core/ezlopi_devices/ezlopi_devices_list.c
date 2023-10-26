@@ -71,6 +71,7 @@
 #include "sensor_0056_ADC_Force_Sensitive_Resistor.h"
 #include "device_0064_motor_driver_a4988.h"
 #include "sensor_0065_i2c_sen0291_digital_wattmeter.h"
+#include "sensor_0066_matrix_keypad.h"
 
 static s_ezlopi_device_t device_array[] = {
 
@@ -514,6 +515,13 @@ static s_ezlopi_device_t device_array[] = {
     {
         .id = EZLOPI_SENSOR_0065_DIGITAL_WATTMETER_SEN0291,
         .func = sensor_0065_i2c_sen0291_digital_wattmeter,
+    },
+#endif
+
+#ifdef EZLOPI_SENSOR_0066_MATRIX_KEYPAD
+    {
+        .id = EZLOPI_SENSOR_0066_MATRIX_KEYPAD,
+        .func = sensor_0066_matrix_keypad,
     },
 #endif
 

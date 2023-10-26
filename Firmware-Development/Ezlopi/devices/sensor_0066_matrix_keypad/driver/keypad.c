@@ -110,15 +110,18 @@ void turnon_cols()
 
 esp_err_t keypad_initalize(gpio_num_t keypad_pins[], uint8_t rows, uint8_t cols)
 {
+    if (NULL == keypad_pins)
+        return ESP_FAIL;
+    
     _rows = rows;
     _cols = cols;
     _total_gpios = rows + cols;
 
     // Create a lookup table for the keypad configurations
     keypad_config_t keypad_configs[] = {
-        {4, 4, keypad4x4},
-        {4, 3, keypad4x3},
-        {1, 4, keypad1x4},
+        {4, 4, keypad4x4, NULL},
+        {4, 3, keypad4x3, NULL},
+        {1, 4, keypad1x4, NULL},
     };
 
     // Default to the general keypad configuration

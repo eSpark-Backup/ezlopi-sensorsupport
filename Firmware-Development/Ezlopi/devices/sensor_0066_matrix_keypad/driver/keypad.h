@@ -35,6 +35,7 @@ typedef struct keypad_config
     uint8_t rows;
     uint8_t cols;
     const char* mapping_layout;
+    gpio_num_t* gpios;
 } keypad_config_t;
 
 /**
