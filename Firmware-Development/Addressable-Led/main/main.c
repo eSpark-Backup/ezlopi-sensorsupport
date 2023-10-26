@@ -15,7 +15,7 @@
 #include "esp_system.h"
 #include "esp_spi_flash.h"
 #include "led.h"
-#include "status.h"
+// #include "status.h"
 #include "config.h"
 #include "uart_reader.h"
 
@@ -26,7 +26,7 @@ void app_main(void)
 {
     xTaskCreate(uart_task, "uart_select_task", 4*1024, NULL, 5, NULL);
     printf("Hello world!\n");
-	status_init();
+	// status_init();
     config_init();
     led_on();
 	config_update_channels(); 	

@@ -13,14 +13,14 @@
 
 #include <string.h>
 
-#include "playlist.h"
+// #include "playlist.h"
 // #include "bonjour.h"
 #include "esp_err.h"
 #include "esp_log.h"
-#include "esp_ota_ops.h"
+// #include "esp_ota_ops.h"
 #include "esp_system.h"
-#include "mbedtls/base64.h"
-#include "mbedtls/md.h"
+// #include "mbedtls/base64.h"
+// #include "mbedtls/md.h"
 #include "nvs_flash.h"
 #include "ownled.h"
 
@@ -508,17 +508,18 @@ void config_init() {
 
 const char *config_get_compile_date() {
 	static char date[67] = "";
-	if (date[0] == 0) {
-		const esp_app_desc_t *description = esp_ota_get_app_description();
-		snprintf(date, sizeof(date), "%s %s %s", description->project_name,
-				description->date, description->time);
-	}
+	// if (date[0] == 0) {
+	// 	const esp_app_desc_t *description = esp_ota_get_app_description();
+	// 	snprintf(date, sizeof(date), "%s %s %s", description->project_name,
+	// 			description->date, description->time);
+	// }
 	return date;
 }
 
 const char *config_get_version() {
-	const esp_app_desc_t *description = esp_ota_get_app_description();
-	return description->version;
+	// const esp_app_desc_t *description = esp_ota_get_app_description();
+	// return description->version;
+	return 'a';
 }
 
 //***********************************************************************************************
@@ -528,22 +529,22 @@ const char *config_get_version() {
 // factory image, ignoring previous OTA updates.     *
 //***********************************************************************************************
 static void back2factory() {
-	esp_partition_iterator_t pi;    // Iterator for find
-	const esp_partition_t *factory; // Factory partition
+	// esp_partition_iterator_t pi;    // Iterator for find
+	// const esp_partition_t *factory; // Factory partition
 
-	pi = esp_partition_find(ESP_PARTITION_TYPE_APP, // Get partition iterator for
-			ESP_PARTITION_SUBTYPE_APP_FACTORY, // factory partition
-			"factory");
+	// pi = esp_partition_find(ESP_PARTITION_TYPE_APP, // Get partition iterator for
+	// 		ESP_PARTITION_SUBTYPE_APP_FACTORY, // factory partition
+	// 		"factory");
 
-	// Check result
-	if (pi == NULL) {
-		ESP_LOGE(TAG, "Failed to find factory partition");
-		ESP_ERROR_CHECK(ESP_ERR_INVALID_ARG);
-	}
+	// // Check result
+	// if (pi == NULL) {
+	// 	ESP_LOGE(TAG, "Failed to find factory partition");
+	// 	ESP_ERROR_CHECK(ESP_ERR_INVALID_ARG);
+	// }
 
-	factory = esp_partition_get(pi);    // Get partition struct
-	esp_partition_iterator_release(pi); // Release the iterator
-	ESP_ERROR_CHECK(esp_ota_set_boot_partition(factory)); // Set partition for boot
+	// factory = esp_partition_get(pi);    // Get partition struct
+	// esp_partition_iterator_release(pi); // Release the iterator
+	// ESP_ERROR_CHECK(esp_ota_set_boot_partition(factory)); // Set partition for boot
 }
 
 void config_reset_to_defaults() {

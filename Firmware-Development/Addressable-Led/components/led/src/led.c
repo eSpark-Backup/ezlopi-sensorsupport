@@ -19,10 +19,10 @@
 #include "esp_err.h"
 #include "esp_log.h"
 #include "ownled.h"
-#include "status.h"
+// #include "status.h"
 #include "ws2812fx.h"
 // #include "mysntp.h"
-#include "playlist.h"
+// #include "playlist.h"
 
 static const char *TAG = "#led";
 
@@ -533,14 +533,14 @@ static void task(void *args) {
 								xTaskGetTickCount() - xLastWakeTime);
 						missed = true;
 					}
-					status_led_top_too_late();
+					// status_led_top_too_late();
 					continue;
 				} else if (xTaskGetTickCount() - xLastWakeTime > 2
 						&& xLastWakeTime < xTaskGetTickCount()) {
 					if (!missed)
 						ESP_LOGD(TAG, "frame late %d",
 								xTaskGetTickCount() - xLastWakeTime);
-					status_led_top_too_late();
+					// status_led_top_too_late();
 					continue;
 				}
 			} else {
@@ -553,10 +553,10 @@ static void task(void *args) {
 			 */
 			if (ownled_isFinished() != ESP_OK) {
 				ESP_LOGD(TAG, "led write out early");
-				status_led_bottom_too_slow();
+				// status_led_bottom_too_slow();
 				continue;
 			} else
-				status_led_on_time();
+				// status_led_on_time();
 			missed = false;
 			break;
 		}
@@ -807,7 +807,7 @@ static void task(void *args) {
 					WS2812FX_call(i, WS2812FX_mode_icu);
 					break;
 				case FX_MODE_PLAYLIST:
-					playlist_next(now, i);
+					// playlist_next(now, i);
 					break;
 				default:
 					break;
