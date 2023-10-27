@@ -141,6 +141,7 @@ struct LED_CONFIG_CHANNEL {
   int start, stop;
   int segment_id;
   int number_of_leds;
+  uint32_t color[3];
 };
 
 struct LED_CONFIG {
