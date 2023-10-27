@@ -293,9 +293,14 @@ static void handleNewConfig() {
 		if(led_config.channel[i] != NULL && led_config.channel[i]->selected == true){
 			WS2812FX_init(i, 
 				led_config.channel[i]->stop - led_config.channel[i]->start,
-				led_config.config_color[0], 
-				led_config.config_color[1], 
-				led_config.config_color[2],
+				// led_config.config_color[0], 
+				// led_config.config_color[1], 
+				// led_config.config_color[2],
+
+				led_config.channel[i]->color[0],
+				led_config.channel[i]->color[1],
+				led_config.channel[i]->color[2],
+				
 				led_config.channel[i]->start,
 				led_config.channel[i]->stop,
 				led_config.channel[i]->mode
@@ -322,12 +327,12 @@ static void fill(int line, uint8_t r, uint8_t g, uint8_t b) {
 	// 	size--;
 	// 	led_set_color(0, led_config.channel[line].start+size, r, g, b);
 	// }
-	for(int i = ((led_config.channel[line]->start)); i<(led_config.channel[line]->stop); i++){
+	for(int i = ((led_config.channel[line]->start)); i<=(led_config.channel[line]->stop); i++){
 		if((i<=led_config.channel[line]->stop) & (i>=led_config.channel[line]->start)){
 			led_set_color(0, i, r, g, b);
 		}
 		else{
-			led_set_color(0, i, r, g, b);
+			led_set_color(0, i, 0, 0, 0);
 		}
 	}
 }
@@ -567,7 +572,7 @@ static void task(void *args) {
 		if (xQueueReceive(q, &led_config, 0) == pdTRUE) {handleNewConfig();}
 			
 		// } 
-		// else {
+		else {
 		led_counter++;
 
 		TickType_t now = xTaskGetTickCount();
@@ -814,7 +819,7 @@ static void task(void *args) {
 				}
 			}				
 		}
-		// }
+		}
 		// vTaskDelay(10/portTICK_PERIOD_MS);
 	}
 }

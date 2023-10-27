@@ -251,6 +251,7 @@ static uint16_t blink(int line, uint32_t color1, uint32_t color2, int strobe) {
       ((fx_segments[line]->counter_mode_call & 1) == 0) ? color1 : color2;
   if (isReverse(line))
     color = (color == color1) ? color2 : color1;
+    
   for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
     setPixelColor(line, i, color);
   }

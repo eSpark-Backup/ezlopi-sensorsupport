@@ -109,7 +109,7 @@ static void setDefaults() {
 	led_config.channels = 1;
 	led_config.prefix_leds = 0;
 	led_config.refresh_rate = 20.;
-	led_config.total_leds = 250;
+	led_config.total_leds = 300;
 	ESP_LOGI(TAG, "CHANNELS ACTIVE : %d", config_get_channels());
 	led_config.channel[0] = (struct LED_CONFIG_CHANNEL*)malloc(sizeof(struct LED_CONFIG_CHANNEL));
 	for (int i = 0; i < config_get_channels(); i++) {
@@ -128,7 +128,7 @@ static void setDefaults() {
 	}
 
 	config_coloring_defaults();
-	config_set_brightness(50);
+	config_set_brightness(25);
 
 	led_config.artnet_universe_offset = 0;
 	led_config.artnet_width = 512 / 3;
@@ -192,6 +192,7 @@ void config_setColor(uint32_t* client_color) {
 			for(int j = 0; j<3; j++){
 				ESP_LOGI(TAG, "COLOR RECIEVED : %x", client_color[j]);
 				led_config.config_color[j] = *(client_color+j);
+				led_config.channel[i]->color[j] = *(client_color+j);
 			}
 		}
 	}
