@@ -293,18 +293,19 @@ static void handleNewConfig() {
 	for (int i = 0; i < led_get_max_lines(); i++) { //this loop runs LED_MAX_LINES times
 		if(led_config.channel[i] != NULL && led_config.channel[i]->selected == true){
 			WS2812FX_init(i, 
-				led_config.channel[i]->stop - led_config.channel[i]->start,
-				led_config.config_color[0], 
-				led_config.config_color[1], 
-				led_config.config_color[2],
+				led_config.channel[i]->stop - led_config.channel[i]->start,  //length of a single segment
 
-				// led_config.channel[i]->color[0],
-				// led_config.channel[i]->color[1],
-				// led_config.channel[i]->color[2],
+				// led_config.config_color[0], 
+				// led_config.config_color[1], 
+				// led_config.config_color[2],
+
+				led_config.channel[i]->color[0],
+				led_config.channel[i]->color[1],
+				led_config.channel[i]->color[2],
 				
-				// led_config.channel[i]->start,
-				0, 300,
-				// led_config.channel[i]->stop,
+				led_config.channel[i]->start,
+				// 0, 300,
+				led_config.channel[i]->stop,
 				led_config.channel[i]->mode
 			);
 			ESP_LOGI(TAG, "BEFORE SETSIZE %d", i);

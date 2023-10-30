@@ -209,8 +209,8 @@ static uint8_t get_random_wheel_index(uint8_t pos) {
 }
 
 static inline void setPixelColor(int line, uint16_t i, uint32_t c) {  //0x0000ff00 //TODO: Add all colouring
-  uint8_t g = (c >> 16) & 0xFF;
-  uint8_t r = (c >> 8) & 0xFF;
+  uint8_t r = (c >> 16) & 0xFF;
+  uint8_t g = (c >> 8) & 0xFF;
   uint8_t b = c & 0xFF;
   led_set_color(line, i, r, g, b);
 }
@@ -225,7 +225,7 @@ static inline void setPixelColorRGBW(int line, uint16_t i, uint8_t r, uint8_t g,
  */
 uint16_t WS2812FX_mode_static(int line) {
   for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
-    setPixelColor(line, i, fx_segments[line]->colors[2]);
+    setPixelColor(line, i, fx_segments[line]->colors[0]);
   }
   return 500;
 }
@@ -270,7 +270,7 @@ static uint16_t blink(int line, uint32_t color1, uint32_t color2, int strobe) {
  * Normal blinking. 50% on/off time.
  */
 uint16_t WS2812FX_mode_blink(int line) {
-  return blink(line, fx_segments[line]->colors[2], fx_segments[line]->colors[1],
+  return blink(line, fx_segments[line]->colors[0], fx_segments[line]->colors[1],
                false);
 }
 
