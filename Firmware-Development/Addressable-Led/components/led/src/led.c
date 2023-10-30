@@ -57,7 +57,8 @@ int led_get_max_lines() {
  * updated with the latest configuration.
  */
 void led_set_config(struct LED_CONFIG *config) {
-	xQueueOverwrite(q, (void *) config);
+	// xQueueOverwrite(q, (void *) config);
+	xQueueSend(q, (void *) config, ( TickType_t ) 10 );
 	vTaskResume(taskHandle);
 }
 
@@ -293,16 +294,17 @@ static void handleNewConfig() {
 		if(led_config.channel[i] != NULL && led_config.channel[i]->selected == true){
 			WS2812FX_init(i, 
 				led_config.channel[i]->stop - led_config.channel[i]->start,
-				// led_config.config_color[0], 
-				// led_config.config_color[1], 
-				// led_config.config_color[2],
+				led_config.config_color[0], 
+				led_config.config_color[1], 
+				led_config.config_color[2],
 
-				led_config.channel[i]->color[0],
-				led_config.channel[i]->color[1],
-				led_config.channel[i]->color[2],
+				// led_config.channel[i]->color[0],
+				// led_config.channel[i]->color[1],
+				// led_config.channel[i]->color[2],
 				
-				led_config.channel[i]->start,
-				led_config.channel[i]->stop,
+				// led_config.channel[i]->start,
+				0, 300,
+				// led_config.channel[i]->stop,
 				led_config.channel[i]->mode
 			);
 			ESP_LOGI(TAG, "BEFORE SETSIZE %d", i);
@@ -510,6 +512,7 @@ static void task(void *args) {
 		/**
 		 * start sending LED data
 		 */
+		// ESP_LOGI(TAG, "LED STRIP TASK");
 		ownled_send();
 
 		for (;;) {
@@ -569,7 +572,8 @@ static void task(void *args) {
 		/**
 		 * generate LED data
 		 */
-		if (xQueueReceive(q, &led_config, 0) == pdTRUE) {handleNewConfig();}
+		// if (xQueueReceive(q, &led_config, 0) == pdTRUE) {handleNewConfig();}
+		if (xQueueReceive(q, &led_config, ( TickType_t ) 1) == pdTRUE) {handleNewConfig();}
 			
 		// } 
 		else {

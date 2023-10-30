@@ -138,7 +138,7 @@ struct LED_CONFIG_CHANNEL {
   int16_t oy;
   int16_t black[3];
   bool selected;
-  int start, stop;
+  uint16_t start, stop;
   int segment_id;
   int number_of_leds;
   uint32_t color[3];
