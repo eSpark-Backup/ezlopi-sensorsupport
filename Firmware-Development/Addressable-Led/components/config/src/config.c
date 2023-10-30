@@ -128,6 +128,7 @@ static void setDefaults() {
 	}
 
 	config_coloring_defaults();
+	ownled_setColorOrder(OWNLED_GRB);
 	config_set_brightness(25);
 
 	led_config.artnet_universe_offset = 0;
@@ -192,8 +193,8 @@ void config_setColor(uint32_t* client_color) {
 		if(led_config.channel[i] != NULL && led_config.channel[i]->selected){
 			for(int j = 0; j<3; j++){
 				ESP_LOGI(TAG, "COLOR RECIEVED : %x", client_color[j]);
-				led_config.config_color[j] = *(client_color+j);
-				// led_config.channel[i]->color[j] = *(client_color+j);
+				// led_config.config_color[j] = *(client_color+j);
+				led_config.channel[i]->color[j] = *(client_color+j);
 			}
 		}
 	}
