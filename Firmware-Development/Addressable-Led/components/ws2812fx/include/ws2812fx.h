@@ -73,6 +73,7 @@ uint16_t WS2812FX_mode_sparkle(int line);
 uint16_t WS2812FX_mode_static(int line);
 uint16_t WS2812FX_mode_strobe(int line);
 uint16_t WS2812FX_mode_strobe_rainbow(int line);
+uint16_t WS2812FX_mode_police_strobe(int line);
 uint16_t WS2812FX_mode_theater_chase(int line);
 uint16_t WS2812FX_mode_theater_chase_rainbow(int line);
 uint16_t WS2812FX_mode_tricolor_chase(int line);

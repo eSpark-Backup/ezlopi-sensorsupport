@@ -875,6 +875,48 @@ uint16_t WS2812FX_mode_multi_strobe(int line) {
 }
 
 /*
+ * Police Strobe effect with different strobe count and pause, controlled by speed.
+ */
+uint16_t WS2812FX_mode_police_strobe(int line) {
+
+  //turn all off
+  for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
+    setPixelColor(line, i, 0);
+  }
+
+  uint16_t delay = -900 + ((9 - (fx_segments[line]->speed % 10)) * 100); //209
+  uint16_t count = 2 * ((fx_segments[line]->speed / 100) + 1);  //2*11 = 22
+
+  if ((fx_segments[line]->counter_mode_step > 0) && (fx_segments[line]->counter_mode_step < count/2)) {
+    if ((fx_segments[line]->counter_mode_step & 1) == 0) {
+      for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
+        if(i <= (fx_segments[line]->stop - fx_segments[line]->start)/2)
+          setPixelColor(line, i, fx_segments[line]->colors[0]);
+      }
+      delay = 20;
+    } else {
+      delay = 50;
+    }
+  }  
+
+  if ((fx_segments[line]->counter_mode_step > count/2) && (fx_segments[line]->counter_mode_step < count)) {
+    if ((fx_segments[line]->counter_mode_step & 1) == 0) {
+      for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
+        if(i >= (fx_segments[line]->stop - fx_segments[line]->start)/2)
+          setPixelColor(line, i, fx_segments[line]->colors[1]);
+      }
+      delay = 20;
+    } else {
+      delay = 50;
+    }
+  }  
+
+  fx_segments[line]->counter_mode_step =
+      (fx_segments[line]->counter_mode_step + 1) % (count + 1);   
+  return delay;
+}
+
+/*
  * color chase function.
  * color1 = background color
  * color2 and color3 = colors of two adjacent leds
