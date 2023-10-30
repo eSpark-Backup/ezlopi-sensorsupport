@@ -22,6 +22,13 @@ void WS2812FX_init(int line, int n,
     uint16_t stop,
     int mode
 );
+
+#define SEGMENT          fx_segments[line]
+#define SEGENV           fx_segments[line]
+#define SEGLEN           segmentLength(line)
+// #define SEGLEN           10
+
+#define SEGCOLOR(x)      fx_segments[line]->colors[x]
 void WS2812FX_call(int line, uint16_t (*fct)(int));
 
 uint16_t WS2812FX_mode_bicolor_chase(int line);
@@ -81,5 +88,6 @@ uint16_t WS2812FX_mode_twinkle(int line);
 // uint16_t WS2812FX_mode_twinkle_fade(int line);
 // uint16_t   WS2812FX_mode_twinkle_fade_random(int line);
 uint16_t WS2812FX_mode_twinkle_random(int line);
+uint16_t WS2812FX_mode_android(int line);
 
 #endif /* WS2812FX */
