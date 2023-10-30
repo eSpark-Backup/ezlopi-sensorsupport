@@ -118,7 +118,7 @@ static uint16_t segmentLength(int line) {
 #define DEFAULT_MODE (uint8_t)0
 #define DEFAULT_SPEED (uint16_t)1000
 
-void WS2812FX_init(int line, int n, uint32_t colorPrimary, uint32_t colorSecondary, uint32_t colorTertiary, uint8_t start, uint8_t stop, int mode ) {
+void WS2812FX_init(int line, int n, uint32_t colorPrimary, uint32_t colorSecondary, uint32_t colorTertiary, uint16_t start, uint16_t stop, int mode ) {
   assert(line >= 0 && line <= 16);
   if(fx_segments[line] == NULL){
     fx_segments[line] = calloc(1,sizeof(struct FX_SEGMENT));
@@ -132,6 +132,8 @@ void WS2812FX_init(int line, int n, uint32_t colorPrimary, uint32_t colorSeconda
   fx_segments[line]->start = start;
   fx_segments[line]->stop = stop;
   fx_segments[line]->speed = DEFAULT_SPEED;
+  fx_segments[line]->counter_mode_step = 0;
+  // fx_segments[line]->counter_mode_call = 0;
 }
 
 void WS2812FX_call(int line, uint16_t (*fct)(int)) {
@@ -819,7 +821,7 @@ uint16_t WS2812FX_mode_flash_sparkle(int line) {
 
   if (random8(5) == 0) {
     fx_segments[line]->aux_param3 =
-        random32(segmentLength(line)); // aux_param3 stores the random led index
+        random32(segmentLength(line)); // aux_param3 stores the random led index//FIXME: random32 is returning pixels greater than the segment length
     setPixelColor(line, fx_segments[line]->start + fx_segments[line]->aux_param3,
                   WHITE);
     return 20;

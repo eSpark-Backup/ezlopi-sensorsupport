@@ -169,6 +169,7 @@ void config_setMode(uint8_t mode) {
 
 	// led_coloring.saturation = 1 - 0.5;
 	// led_coloring.hue = 1 - 0;
+	ESP_LOGI(TAG, "SET MODE");
 
 	for (int i = 0; i < config_get_channels(); i++) {
 		if(led_config.channel[i] != NULL && led_config.channel[i]->selected){
@@ -192,7 +193,7 @@ void config_setColor(uint32_t* client_color) {
 			for(int j = 0; j<3; j++){
 				ESP_LOGI(TAG, "COLOR RECIEVED : %x", client_color[j]);
 				led_config.config_color[j] = *(client_color+j);
-				led_config.channel[i]->color[j] = *(client_color+j);
+				// led_config.channel[i]->color[j] = *(client_color+j);
 			}
 		}
 	}

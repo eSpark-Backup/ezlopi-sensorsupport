@@ -18,7 +18,7 @@
 // #include "status.h"
 #include "config.h"
 #include "uart_reader.h"
-
+#include "esp_heap_caps.h"
 
 
 
@@ -33,6 +33,7 @@ void app_main(void)
     while (1)
     {
         printf("Hello world!\n");
+        heap_caps_print_heap_info(MALLOC_CAP_DEFAULT);
         vTaskDelay(10000/portTICK_PERIOD_MS);
     }
 
