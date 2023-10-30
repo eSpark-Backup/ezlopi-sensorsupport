@@ -658,6 +658,10 @@ static void task(void *args) {
 				case FX_MODE_POLICE_STROBE:
 					WS2812FX_call(i, WS2812FX_mode_police_strobe);
 					break;
+				case FX_MODE_ANDROID:
+					WS2812FX_call(i, WS2812FX_mode_android);
+					// WS2812FX_mode_android(i);
+					break;
 				case FX_MODE_COLOR_WIPE_INV:
 					WS2812FX_call(i, WS2812FX_mode_color_wipe_inv);
 					break;
