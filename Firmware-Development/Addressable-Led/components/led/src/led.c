@@ -299,14 +299,17 @@ static void handleNewConfig() {
 				// led_config.config_color[1], 
 				// led_config.config_color[2],
 
-				led_config.channel[i]->color[0],
-				led_config.channel[i]->color[1],
-				led_config.channel[i]->color[2],
+				led_config.channel[i]->color[0],	//primary
+				led_config.channel[i]->color[1],	//secondary
+				led_config.channel[i]->color[2],	//tertiary
 				
-				led_config.channel[i]->start,
-				// 0, 300,
-				led_config.channel[i]->stop,
-				led_config.channel[i]->mode
+				led_config.channel[i]->start,		//segment start
+				led_config.channel[i]->stop,		//segment stop
+
+				led_config.channel[i]->mode,		//selected mode
+				led_config.channel[i]->intensity,	//selected intensity
+				led_config.channel[i]->speed		//selected effect speed
+
 			);
 			ESP_LOGI(TAG, "BEFORE SETSIZE %d", i);
 			ownled_setSize(0,

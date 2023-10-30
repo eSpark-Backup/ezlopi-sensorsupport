@@ -265,6 +265,30 @@ void config_set_segment_start_stop(int seg_id, int seg_start, int seg_stop){
 	
 }
 
+void config_set_effect_intensity(uint8_t intensity){
+	for(int i = 0; i < led_config.channels; i++){
+		if(led_config.channel[i]->selected){
+			led_config.channel[i]->intensity = intensity;
+			led_set_config(&led_config);
+		}
+		
+	}
+}
+
+void config_set_effect_speed(uint8_t speed){
+
+	//TODO: Map 0-255 to 0-2000(maybe 1000)
+
+	for(int i = 0; i < led_config.channels; i++){
+		if(led_config.channel[i]->selected){
+			led_config.channel[i]->speed = speed;
+			led_set_config(&led_config);
+		}
+		
+	}
+}
+
+
 /*
  * test the NVS storage
  */

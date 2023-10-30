@@ -75,6 +75,17 @@ void parse_json(char* start){
             config_setMode((uint8_t)fx->valueint);
         }
 
+        cJSON* sx = cJSON_GetObjectItemCaseSensitive(seg, "sx");
+        if(sx != NULL){
+            //TODO: set effect speed from the value recieved in JSON packer
+            config_set_effect_speed((uint8_t)sx->valueint);
+        }
+
+        cJSON* ix = cJSON_GetObjectItemCaseSensitive(seg, "ix");
+        if(ix != NULL){
+            config_set_effect_intensity((uint8_t)ix->valueint);
+        }
+
         cJSON* col = cJSON_GetObjectItemCaseSensitive(seg, "col");
         if(col != NULL){
             for (int i = 0 ; i < cJSON_GetArraySize(col) ; i++)
