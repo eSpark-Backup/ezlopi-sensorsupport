@@ -29,6 +29,8 @@ void config_setColor(uint32_t* client_color);
 void config_set_brightness(uint8_t bri);
 void config_set_selected_flag(int id, bool select_flag);
 void config_set_segment_start_stop(int seg_id, int seg_start, int seg_stop);
+void config_set_effect_intensity(uint8_t intensity);
+void config_set_effect_speed(uint8_t speed);
 
 // const char *config_get_wifi_sta_ssid();
 // const char *config_get_wifi_sta_password();

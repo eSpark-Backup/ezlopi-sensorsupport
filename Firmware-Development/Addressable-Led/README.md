@@ -9,13 +9,14 @@
 - Send JSON Packet using Serial Monitor
      - Arduino Serial Recommended
 - Or use Web Application in test Directory
+  :red_circle: Effect and Intensity control is currently unavailable
 
 ## Web Application
 ![app_image](https://github.com/eSpark-Consultants/ezlopi-sensorsupport/assets/143803999/63137a9d-017b-40bd-9947-ac0d2989f6ea)
 
 ## Example JSON Packets:
 
-1. To Change Effects
+### 1. To Change Effects
 
 ```
 {
@@ -29,7 +30,7 @@
 ```
 Change is "fx" value to change animations on the led strip (0-66)
 
-2. To Change RGB Color Values
+### 2. To Change RGB Color Values
 
 ```
 {
@@ -65,7 +66,7 @@ Change the "col":[[r,g,b,w], [r,g,b,w], [r,g,b,w]] values to change RGB Colors o
 "col" : [[Primary], [Secondary], [Tertiary]] 
 ```
 
-3. To Change Brightness of the Strip
+### 3. To Change Brightness of the Strip
 
 ```
 {
@@ -76,7 +77,7 @@ Change the "col":[[r,g,b,w], [r,g,b,w], [r,g,b,w]] values to change RGB Colors o
 ```
 Change the "bri": X value to control strip brightness (0-255)
 
-4. To Select/Deselect Segment
+### 4. To Select/Deselect Segment
 
 > Select
 
@@ -109,7 +110,7 @@ Change the "bri": X value to control strip brightness (0-255)
 Change the "sel": X bool value either true or false to control segment selection (true/flase)
 any segment that is deselected will not be modifiable by any command
 
-5. To Change Segment Start and End Pixels
+### 5. To Change Segment Start and End Pixels (same is used to create a segment)
 
 ```
 {
@@ -138,12 +139,40 @@ any segment that is deselected will not be modifiable by any command
 
 Change the "start": x and "stop":x to modify segment length.
 
+### 6. To Change Selected Effects Speed
+
+```
+{
+  "seg": {
+    "sx": 255
+  },
+  "v": true,
+  "time": 1698672533
+}
+```
+Change "sx" : x value to change the speed of all selected effects (0-255)
+
+
+### 7. To Change Selected Effects Intensity
+
+```
+{
+  "seg": {
+    "ix": 255
+  },
+  "v": true,
+  "time": 1698672533
+}
+```
+Change "ix" : x value to change the intensity of all selected effects (0-255)
+:red_circle: TODO: Map the 0-255 intensity to 0-2000
+
 Select the instructions depending on Espressif chip installed on your development board:
 
 - [ESP32 Getting Started Guide](https://docs.espressif.com/projects/esp-idf/en/stable/get-started/index.html)
 - [ESP32-S2 Getting Started Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/get-started/index.html)
 
-## TODOs
+## Progress
 - [X] Effect Control using JSON
 - [x] Primary Color Control using JSON
 - [x] Secondary Color Control using JSON
@@ -152,7 +181,12 @@ Select the instructions depending on Espressif chip installed on your developmen
 - [x] Segment Length Control
 - [x] Add Multiple Segments 
 - [x] Dynamic Segment Allocation
-- [ ] Add Custom Effects from WLED
+- [x] Effect Intensity Control
+- [ ] Effect Speed Control
+- [ ] Effect Reverse
+- [ ] Delete Segements
+
+:white_circle: Add Custom Effects from WLED (in-progress)
 
 
 ## Project folder contents

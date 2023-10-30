@@ -119,7 +119,17 @@ static uint16_t segmentLength(int line) {
 #define DEFAULT_MODE (uint8_t)0
 #define DEFAULT_SPEED (uint16_t)1000
 
-void WS2812FX_init(int line, int n, uint32_t colorPrimary, uint32_t colorSecondary, uint32_t colorTertiary, uint16_t start, uint16_t stop, int mode ) {
+void WS2812FX_init(
+    int line, int n, 
+    uint32_t colorPrimary, 
+    uint32_t colorSecondary, 
+    uint32_t colorTertiary,
+    uint16_t start,
+    uint16_t stop,
+    int mode,
+    uint8_t intensity,
+    uint8_t speed
+) {
   assert(line >= 0 && line <= 16);
   if(fx_segments[line] == NULL){
     fx_segments[line] = calloc(1,sizeof(struct FX_SEGMENT));
@@ -132,10 +142,11 @@ void WS2812FX_init(int line, int n, uint32_t colorPrimary, uint32_t colorSeconda
   fx_segments[line]->rgbColor = colorPrimary;
   fx_segments[line]->start = start;
   fx_segments[line]->stop = stop;
-  fx_segments[line]->speed = DEFAULT_SPEED;
   fx_segments[line]->counter_mode_step = 0;
-  fx_segments[line]->intensity  = 255;
   // fx_segments[line]->counter_mode_call = 0;
+  fx_segments[line]->intensity  = intensity;
+  // fx_segments[line]->speed = DEFAULT_SPEED;
+  fx_segments[line]->speed = speed;
 }
 
 void WS2812FX_call(int line, uint16_t (*fct)(int)) {
