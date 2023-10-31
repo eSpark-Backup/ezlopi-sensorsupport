@@ -22,7 +22,7 @@ void WS2812FX_init(int line, int n,
     uint16_t stop,
     int mode,
     uint8_t intensity,
-    uint8_t speed
+    uint16_t speed
 );
 
 #define SEGMENT          fx_segments[line]

@@ -128,7 +128,7 @@ void WS2812FX_init(
     uint16_t stop,
     int mode,
     uint8_t intensity,
-    uint8_t speed
+    uint16_t speed
 ) {
   assert(line >= 0 && line <= 16);
   if(fx_segments[line] == NULL){
@@ -271,11 +271,13 @@ static uint16_t blink(int line, uint32_t color1, uint32_t color2, int strobe) {
     setPixelColor(line, i, color);
   }
 
+  uint16_t delay = (200000/(fx_segments[line]->speed))+200;
+
   if ((fx_segments[line]->counter_mode_call & 1) == 0) {
-    return strobe ? 20 : (fx_segments[line]->speed / 2);
+    return strobe ? 20 : (delay / 2);
   } else {
-    return strobe ? fx_segments[line]->speed - 20
-                  : (fx_segments[line]->speed / 2);
+    return strobe ? delay - 20
+                  : (delay / 2);
   }
 }
 
@@ -449,7 +451,7 @@ uint16_t WS2812FX_mode_breath(int line) {
 
   uint16_t delay;
   if (lum == 15)
-    delay = 970; // 970 pause before each breath
+    delay = 400; // 970 pause before each breath
   else if (lum <= 25)
     delay = 38; // 19
   else if (lum <= 50)
@@ -474,9 +476,12 @@ uint16_t WS2812FX_mode_breath(int line) {
     setPixelColorRGBW(line, i, r, g, b, w);
   }
 
-  fx_segments[line]->counter_mode_step += 2;
+  fx_segments[line]->counter_mode_step += (uint32_t)(12*(fx_segments[line]->speed/2000.));  //this 12 defines the speed 
   if (fx_segments[line]->counter_mode_step > (512 - 15))
     fx_segments[line]->counter_mode_step = 15;
+
+  // delay *= 0.1;
+
   return delay;
 }
 
@@ -897,7 +902,7 @@ uint16_t WS2812FX_mode_police_strobe(int line) {
     setPixelColor(line, i, 0);
   }
 
-  uint16_t delay = -900 + ((9 - (fx_segments[line]->speed % 10)) * 100); //209
+  uint16_t delay = 200 + ((9 - (fx_segments[line]->speed % 10)) * 100); //209
   uint16_t count = 2 * ((fx_segments[line]->speed / 100) + 1);  //2*11 = 22
 
   if ((fx_segments[line]->counter_mode_step > 0) && (fx_segments[line]->counter_mode_step < count/2)) {
@@ -976,7 +981,7 @@ uint16_t WS2812FX_mode_android(int line) {
   }
   SEGENV->counter_mode_step = a;
 
-  return 3 + ((8 * (uint32_t)(1000 -SEGMENT->speed)) / SEGLEN);
+  return 3 + ((16 * (uint32_t)(2000 -SEGMENT->speed)) / SEGLEN);
   // return 20;
 }
 

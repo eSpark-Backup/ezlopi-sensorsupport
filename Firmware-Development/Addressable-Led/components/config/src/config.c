@@ -115,21 +115,31 @@ static void setDefaults() {
 	for (int i = 0; i < config_get_channels(); i++) {
 		led_config.channel[i]->selected = true;
 		// led_config.channel[0]->selected = true;
-		led_config.channel[i]->mode = LED_MODE_SOLID;
+
+		// led_config.channel[i]->mode = LED_MODE_SOLID; :FIXME: Revert back to solid by default
+		led_config.channel[i]->mode = FX_MODE_BREATH;
+
 		// led_config.channel[i]->sx = led_config.channel[i].sy = 6;
 		// led_config.channel[i]->ox = led_config.channel[i].oy = 0;
+
 		// led_config.channel[i]->orientation = LED_ORI0_ZIGZAG;
+
 		led_config.channel[i]->black[0] = led_config.channel[i]->black[1] =
 				led_config.channel[i]->black[2] = -1;
+
 		led_config.channel[i]->start = i*10;
 		led_config.channel[i]->stop = led_config.channel[i]->start+10;
+
 		led_config.channel[i]->segment_id = i;
+
 		led_config.channel[i]->number_of_leds = led_config.channel[i]->stop - led_config.channel[i]->start;
+
+		led_config.channel[i]->speed = 1000;
 	}
 
 	config_coloring_defaults();
 	ownled_setColorOrder(OWNLED_GRB);
-	config_set_brightness(25);
+	config_set_brightness(50);
 
 	led_config.artnet_universe_offset = 0;
 	led_config.artnet_width = 512 / 3;
@@ -277,15 +287,21 @@ void config_set_effect_intensity(uint8_t intensity){
 
 void config_set_effect_speed(uint8_t speed){
 
+	speed = (speed > 255) | (speed < 0) ? 128 : speed;
+
 	//TODO: Map 0-255 to 0-2000(maybe 1000)
+	uint16_t new_speed;
+	new_speed = ((float)speed/255.)*2000.;
+	ESP_LOGI(TAG, "NEW SPEED  = %d", new_speed);
 
 	for(int i = 0; i < led_config.channels; i++){
 		if(led_config.channel[i]->selected){
-			led_config.channel[i]->speed = speed;
-			led_set_config(&led_config);
-		}
-		
+			// led_config.channel[i]->speed = (uint16_t)1000;
+			led_config.channel[i]->speed = (uint16_t)new_speed;
+		}		
 	}
+	led_set_config(&led_config);
+
 }
 
 
