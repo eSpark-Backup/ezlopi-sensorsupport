@@ -129,7 +129,6 @@ void parse_json(char* start){
             }
             cJSON* rev = cJSON_GetObjectItemCaseSensitive(seg, "rev");
             if(NULL != rev){
-                //TODO: Apply the reverse option to selected segment id
                 config_set_reverse_option(id->valueint, cJSON_IsTrue(rev));
             }
 

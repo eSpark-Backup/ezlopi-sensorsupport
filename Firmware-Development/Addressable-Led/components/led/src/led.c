@@ -577,11 +577,11 @@ static void task(void *args) {
 		/**
 		 * generate LED data
 		 */
-		// if (xQueueReceive(q, &led_config, 0) == pdTRUE) {handleNewConfig();}
-		if (xQueueReceive(q, &led_config, ( TickType_t ) 1) == pdTRUE) {handleNewConfig();}
+		if (xQueueReceive(q, &led_config, 0) == pdTRUE) {handleNewConfig();}
+		// if (xQueueReceive(q, &led_config, ( TickType_t ) 1) == pdTRUE) {handleNewConfig();}
 			
 		// } 
-		else {
+		// else {
 		led_counter++;
 
 		TickType_t now = xTaskGetTickCount();
@@ -835,7 +835,7 @@ static void task(void *args) {
 				}
 			}				
 		}
-		}
+		// }
 		// vTaskDelay(10/portTICK_PERIOD_MS);
 	}
 }

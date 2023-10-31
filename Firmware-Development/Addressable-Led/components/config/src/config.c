@@ -186,6 +186,7 @@ void config_setMode(uint8_t mode) {
 
 	for (int i = 0; i < config_get_channels(); i++) {
 		if(led_config.channel[i] != NULL && led_config.channel[i]->selected){
+			ESP_LOGI(TAG, "MODE SET for SEG  :%d with ID :%d", i, led_config.channel[i]->segment_id);
 			led_config.channel[i]->mode = mode;
 			led_config.channel[i]->sx = led_config.channel[i]->sy = 10;
 			led_config.channel[i]->ox = led_config.channel[i]->oy = 0;
@@ -782,6 +783,7 @@ void config_set_channels(uint8_t seg_id) {
 	led_config.channel[led_config.channels]->segment_id = seg_id;
 	led_config.channel[led_config.channels]->selected = true;
 	led_config.channel[led_config.channels]->mode = LED_MODE_SOLID;
+	led_config.channel[led_config.channels]->speed = 1000;
 	led_config.channels++;
 }
 
