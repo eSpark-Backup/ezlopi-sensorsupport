@@ -308,7 +308,8 @@ static void handleNewConfig() {
 
 				led_config.channel[i]->mode,		//selected mode
 				led_config.channel[i]->intensity,	//selected intensity
-				led_config.channel[i]->speed		//selected effect speed
+				led_config.channel[i]->speed,		//selected effect speed
+				led_config.channel[i]->options
 
 			);
 			ESP_LOGI(TAG, "BEFORE SETSIZE %d", i);

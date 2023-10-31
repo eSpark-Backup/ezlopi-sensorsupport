@@ -128,7 +128,8 @@ void WS2812FX_init(
     uint16_t stop,
     int mode,
     uint8_t intensity,
-    uint16_t speed
+    uint16_t speed,
+    uint8_t options
 ) {
   assert(line >= 0 && line <= 16);
   if(fx_segments[line] == NULL){
@@ -145,8 +146,8 @@ void WS2812FX_init(
   fx_segments[line]->counter_mode_step = 0;
   // fx_segments[line]->counter_mode_call = 0;
   fx_segments[line]->intensity  = intensity;
-  // fx_segments[line]->speed = DEFAULT_SPEED;
   fx_segments[line]->speed = speed;
+  fx_segments[line]->options = options;
 }
 
 void WS2812FX_call(int line, uint16_t (*fct)(int)) {
@@ -322,7 +323,7 @@ static uint16_t color_wipe(int line, uint32_t color1, uint32_t color2,
                            int rev) {
   if (fx_segments[line]->counter_mode_step < segmentLength(line)) {
     uint32_t led_offset = fx_segments[line]->counter_mode_step;
-    if (isReverse(line)) {
+    if (isReverse(line)) {  
       setPixelColor(line, fx_segments[line]->stop - led_offset, color1);
     } else {
       setPixelColor(line, fx_segments[line]->start + led_offset, color1);
@@ -637,7 +638,7 @@ static uint16_t theater_chase(int line, uint32_t color1, uint32_t color2) {
     }
   }
 
-  return (fx_segments[line]->speed / segmentLength(line));
+  return (uint16_t)(fx_segments[line]->speed / (float)segmentLength(line));
 }
 
 /*
@@ -940,7 +941,8 @@ uint16_t WS2812FX_mode_police_strobe(int line) {
 uint16_t WS2812FX_mode_android(int line) {
 
   for (int i = 0; i < SEGLEN; i++) {
-    setPixelColor(line, i, SEGCOLOR(1));
+    int j = i+SEGMENT->start;
+    setPixelColor(line, j, SEGCOLOR(1));
   }
 
   if (SEGENV->aux_param2 > (SEGMENT->intensity*SEGLEN)/255)
@@ -968,16 +970,20 @@ uint16_t WS2812FX_mode_android(int line) {
   if (a + SEGENV->aux_param2 < SEGLEN)
   {
     for (int i = a; i < a+SEGENV->aux_param2; i++) {
-      setPixelColor(line, i, SEGCOLOR(0));
+      int j = i+SEGMENT->start;
+      setPixelColor(line, j, SEGCOLOR(0));
     }
   } else
   {
     for (int i = a; i < SEGLEN; i++) {
-      setPixelColor(line, i, SEGCOLOR(0));
+      int j = i+SEGMENT->start;
+      setPixelColor(line, j, SEGCOLOR(0));
     }
     for (int i = 0; i < SEGENV->aux_param2 - (SEGLEN -a); i++) {
-      setPixelColor(line, i, SEGCOLOR(0));
+      int j = i+SEGMENT->start;
+      setPixelColor(line, j, SEGCOLOR(0));
     }
+
   }
   SEGENV->counter_mode_step = a;
 

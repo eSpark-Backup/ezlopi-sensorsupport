@@ -117,7 +117,7 @@ static void setDefaults() {
 		// led_config.channel[0]->selected = true;
 
 		// led_config.channel[i]->mode = LED_MODE_SOLID; :FIXME: Revert back to solid by default
-		led_config.channel[i]->mode = FX_MODE_BREATH;
+		led_config.channel[i]->mode = FX_MODE_COLOR_WIPE;
 
 		// led_config.channel[i]->sx = led_config.channel[i].sy = 6;
 		// led_config.channel[i]->ox = led_config.channel[i].oy = 0;
@@ -135,6 +135,8 @@ static void setDefaults() {
 		led_config.channel[i]->number_of_leds = led_config.channel[i]->stop - led_config.channel[i]->start;
 
 		led_config.channel[i]->speed = 1000;
+
+		led_config.channel[i]->options = 0;
 	}
 
 	config_coloring_defaults();
@@ -289,7 +291,7 @@ void config_set_effect_speed(uint8_t speed){
 
 	speed = (speed > 255) | (speed < 0) ? 128 : speed;
 
-	//TODO: Map 0-255 to 0-2000(maybe 1000)
+
 	uint16_t new_speed;
 	new_speed = ((float)speed/255.)*2000.;
 	ESP_LOGI(TAG, "NEW SPEED  = %d", new_speed);
@@ -302,6 +304,17 @@ void config_set_effect_speed(uint8_t speed){
 	}
 	led_set_config(&led_config);
 
+}
+
+//Sets reverse option of a particular segment selected using id parameter 
+void config_set_reverse_option(int id, bool rev_flag){
+	for(int i = 0; i < led_config.channels; i++){
+		if(led_config.channel[i]->segment_id == id){
+			led_config.channel[i]->options  = (rev_flag << 7)|(led_config.channel[i]->options & 0x7F);  //set/reset 16th bit for reverse option
+			ESP_LOGI(TAG, "OPTION %x", led_config.channel[i]->options);
+		}
+	}
+	led_set_config(&led_config);
 }
 
 
