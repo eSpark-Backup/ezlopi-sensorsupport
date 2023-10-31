@@ -54,38 +54,50 @@
 </select>
 <button id="sendFXButton" class="btn btn-outline-light btn-sm">Change FX</button>
 
-<div id="colorValues">
-    <h3 class="text-light">Primary RGB</h3>
-    <label for="primaryRedSlider">Green:</label>
+
+<div class="container">
+    <h2 class="text-light">Change Primary RGB</h2>
+    <label for="primaryRedSlider" class="text-light">Red:</label>
     <input type="range" id="primaryRedSlider" min="0" max="255" step="1" value="180" />
-    <label for="primaryGreenSlider">Red:</label>
+    <label for="primaryGreenSlider" class="text-light">Green:</label>
     <input type="range" id="primaryGreenSlider" min="0" max="255" step="1" value="180" />
-    <label for="primaryBlueSlider">Blue:</label>
+    <label for="primaryBlueSlider" class="text-light">Blue:</label>
     <input type="range" id="primaryBlueSlider" min="0" max="255" step="1" value="0" />
+    <p>Primary RGB: <span id="primaryRGBValue">R: 180, G: 180, B: 0</span></p>
 
-    <h3 class="text-light">Secondary RGB</h3>
-    <label for="secondaryRedSlider">Green:</label>
+    <h2 class="text-light">Change Secondary RGB</h2>
+    <label for="secondaryRedSlider" class="text-light">Red:</label>
     <input type="range" id="secondaryRedSlider" min="0" max="255" step="1" value="0" />
-    <label for="secondaryGreenSlider">Red:</label>
+    <label for="secondaryGreenSlider" class="text-light">Green:</label>
     <input type="range" id="secondaryGreenSlider" min="0" max="255" step="1" value="180" />
-    <label for="secondaryBlueSlider">Blue:</label>
+    <label for="secondaryBlueSlider" class="text-light">Blue:</label>
     <input type="range" id="secondaryBlueSlider" min="0" max="255" step="1" value="255" />
+    <p>Secondary RGB: <span id="secondaryRGBValue">R: 0, G: 180, B: 255</span></p>
 
-    <h3 class="text-light">Tertiary RGB </h3>
-    <label for="tertiaryRedSlider">Green:</label>
+    <h2 class="text-light">Change Tertiary RGB</h2>
+    <label for="tertiaryRedSlider" class="text-light">Red:</label>
     <input type="range" id="tertiaryRedSlider" min="0" max="255" step="1" value="180" />
-    <label for="tertiaryGreenSlider">Red:</label>
+    <label for="tertiaryGreenSlider" class="text-light">Green:</label>
     <input type="range" id="tertiaryGreenSlider" min="0" max="255" step="1" value="0" />
-    <label for="tertiaryBlueSlider">Blue:</label>
+    <label for="tertiaryBlueSlider" class="text-light">Blue:</label>
     <input type="range" id="tertiaryBlueSlider" min="0" max="255" step="1" value="255" />
+    <p>Tertiary RGB: <span id="tertiaryRGBValue">R: 180, G: 0, B: 255</span></p>
 </div>
-<button id="sendColorButton" class="btn btn-outline-light btn-sm">Change Colors</button>
 
 <div class="container">
     <h2 class="text-light">Change Brightness</h2>
     <input type="range" id="brightnessSlider" min="0" max="255" step="1" value="50" />
     <p class="text-light">Brightness: <span id="brightnessValue">50</span></p>
-    <button id="sendBrightnessButton" class="btn btn-primary">Send Brightness</button>
+</div>
+
+<div class="container">
+    <h2 class="text-light">Change Effect Speed</h2>
+    <input type="range" id="speedSlider" min="0" max="255" step="1" value="0" />
+    <p class="text-light">Speed: <span id="speedValue">0</span></p>
+
+    <h2 class="text-light">Change Effect Intensity</h2>
+    <input type="range" id="intensitySlider" min="0" max="255" step="1" value="0" />
+    <p class="text-light">Intensity: <span id="intensityValue">0</span></p>
 </div>
 
 <script>
@@ -171,42 +183,98 @@
             console.error("Serial port not open or not writable.");
         }
     };
+    const updateColorRGB = (sliderId, valueId, jsonKey) => {
+            const slider = document.getElementById(sliderId);
+            const value = document.getElementById(valueId);
+            const selectedValue = slider.value;
+            value.textContent = selectedValue;
 
-    const updateJSON = () => {
-        primaryRGB = [
-            parseInt(document.getElementById("primaryRedSlider").value),
-            parseInt(document.getElementById("primaryGreenSlider").value),
-            parseInt(document.getElementById("primaryBlueSlider").value),
-            0
-        ];
+            // Update the JSON object with the new color value
+            const json = {
+                seg: {
+                    col: [
+                        // The RGB values for Primary, Secondary, and Tertiary can be updated here
+                        [parseInt(document.getElementById("primaryRedSlider").value),
+                        parseInt(document.getElementById("primaryGreenSlider").value),
+                        parseInt(document.getElementById("primaryBlueSlider").value),0],
+                        [parseInt(document.getElementById("secondaryRedSlider").value),
+                        parseInt(document.getElementById("secondaryGreenSlider").value),
+                        parseInt(document.getElementById("secondaryBlueSlider").value),0],
+                        [parseInt(document.getElementById("tertiaryRedSlider").value),
+                        parseInt(document.getElementById("tertiaryGreenSlider").value),
+                        parseInt(document.getElementById("tertiaryBlueSlider").value),0]
+                    ]
+                },
+                v: true,
+                time: Date.now()
+            };
 
-        secondaryRGB = [
-            parseInt(document.getElementById("secondaryRedSlider").value),
-            parseInt(document.getElementById("secondaryGreenSlider").value),
-            parseInt(document.getElementById("secondaryBlueSlider").value),
-            0
-        ];
-
-        tertiaryRGB = [
-            parseInt(document.getElementById("tertiaryRedSlider").value),
-            parseInt(document.getElementById("tertiaryGreenSlider").value),
-            parseInt(document.getElementById("tertiaryBlueSlider").value),
-            0
-        ];
-
-        // Update the JSON object with the new color values
-        const json = {
-            seg: {
-                col: [primaryRGB, secondaryRGB, tertiaryRGB]
-            },
-            v: true,
-            time: Date.now()
+            const data = JSON.stringify(json);
+            return data;
         };
 
-        const data = JSON.stringify(json);
-        console.log(data);
-        return data;
-    };
+        const colorSliderIds = [
+            // Add the slider IDs you want to control here
+            ["primaryRedSlider", "primaryRGBValue", "primaryRed",],
+            ["primaryGreenSlider", "primaryRGBValue", "primaryGreen"],
+            ["primaryBlueSlider", "primaryRGBValue", "primaryBlue"],
+            ["secondaryRedSlider", "secondaryRGBValue", "secondaryRed"],
+            ["secondaryGreenSlider", "secondaryRGBValue", "secondaryGreen"],
+            ["secondaryBlueSlider", "secondaryRGBValue", "secondaryBlue"],
+            ["tertiaryRedSlider", "tertiaryRGBValue", "tertiaryRed"],
+            ["tertiaryGreenSlider", "tertiaryRGBValue", "tertiaryGreen"],
+            ["tertiaryBlueSlider", "tertiaryRGBValue", "tertiaryBlue"],
+        ];
+
+        colorSliderIds.forEach(([sliderId, valueId, jsonKey]) => {
+            const slider = document.getElementById(sliderId);
+
+            // Automatically send the updated color value when the slider changes
+            slider.addEventListener("input", async () => {
+                if (writer) {
+                    const data = updateColorRGB(sliderId, valueId, jsonKey);
+                    await writer.write(new TextEncoder().encode(data));
+                } else {
+                    console.error("Serial port not open or not writable.");
+                }
+            });
+        });
+
+    // const updateJSON = () => {
+    //     primaryRGB = [
+    //         parseInt(document.getElementById("primaryRedSlider").value),
+    //         parseInt(document.getElementById("primaryGreenSlider").value),
+    //         parseInt(document.getElementById("primaryBlueSlider").value),
+    //         0
+    //     ];
+
+    //     secondaryRGB = [
+    //         parseInt(document.getElementById("secondaryRedSlider").value),
+    //         parseInt(document.getElementById("secondaryGreenSlider").value),
+    //         parseInt(document.getElementById("secondaryBlueSlider").value),
+    //         0
+    //     ];
+
+    //     tertiaryRGB = [
+    //         parseInt(document.getElementById("tertiaryRedSlider").value),
+    //         parseInt(document.getElementById("tertiaryGreenSlider").value),
+    //         parseInt(document.getElementById("tertiaryBlueSlider").value),
+    //         0
+    //     ];
+
+    //     // Update the JSON object with the new color values
+    //     const json = {
+    //         seg: {
+    //             col: [primaryRGB, secondaryRGB, tertiaryRGB]
+    //         },
+    //         v: true,
+    //         time: Date.now()
+    //     };
+
+    //     const data = JSON.stringify(json);
+    //     console.log(data);
+    //     return data;
+    // };
 
     const updateBrightness = () => {
             const brightnessSlider = document.getElementById("brightnessSlider");
@@ -225,23 +293,86 @@
             return data;
         };
 
-        document.getElementById("sendBrightnessButton").addEventListener("click", async () => {
-            if (writer) {
-                const data = updateBrightness();
-                await writer.write(new TextEncoder().encode(data));
-            } else {
-                console.error("Serial port not open or not writable.");
-            }
-        });
+    const updateEffectSpeed = () => {
+        const speedSlider = document.getElementById("speedSlider");
+        const speedValue = document.getElementById("speedValue");
+        const selectedSpeed = speedSlider.value;
+        speedValue.textContent = selectedSpeed;
 
-    document.getElementById("sendColorButton").addEventListener("click", async () => {
+        // Update the JSON object with the new effect speed
+        const json = {
+            seg: {
+                sx: parseInt(selectedSpeed)
+            },
+            v: true,
+            time: Date.now()
+        };
+
+        const data = JSON.stringify(json);
+        return data;
+    };
+
+    const updateEffectIntensity = () => {
+            const intensitySlider = document.getElementById("intensitySlider");
+            const intensityValue = document.getElementById("intensityValue");
+            const selectedIntensity = intensitySlider.value;
+            intensityValue.textContent = selectedIntensity;
+
+            // Update the JSON object with the new effect intensity
+            const json = {
+                seg: {
+                    ix: parseInt(selectedIntensity)
+                },
+                v: true,
+                time: Date.now()
+            };
+
+            const data = JSON.stringify(json);
+            return data;
+        };
+
+    const intensitySlider = document.getElementById("intensitySlider");
+
+    // Automatically send the updated intensity value when the slider changes
+    intensitySlider.addEventListener("input", async () => {
         if (writer) {
-            const data = updateJSON();
+            const data = updateEffectIntensity();
             await writer.write(new TextEncoder().encode(data));
         } else {
             console.error("Serial port not open or not writable.");
         }
     });
+
+
+    const speedSlider = document.getElementById("speedSlider");
+
+    // Automatically send the updated speed value when the slider changes
+    speedSlider.addEventListener("input", async () => {
+        if (writer) {
+            const data = updateEffectSpeed();
+            await writer.write(new TextEncoder().encode(data));
+        } else {
+            console.error("Serial port not open or not writable.");
+        }
+    });
+
+    document.getElementById("brightnessSlider").addEventListener("input", async () => {
+        if (writer) {
+            const data = updateBrightness();
+            await writer.write(new TextEncoder().encode(data));
+        } else {
+            console.error("Serial port not open or not writable.");
+        }
+    });
+
+    // document.getElementById("sendColorButton").addEventListener("click", async () => {
+    //     if (writer) {
+    //         const data = updateJSON();
+    //         await writer.write(new TextEncoder().encode(data));
+    //     } else {
+    //         console.error("Serial port not open or not writable.");
+    //     }
+    // });
 
     document.getElementById("sendFXButton").addEventListener("click", () => {
         changeFX();

@@ -77,7 +77,6 @@ void parse_json(char* start){
 
         cJSON* sx = cJSON_GetObjectItemCaseSensitive(seg, "sx");
         if(sx != NULL){
-            //TODO: set effect speed from the value recieved in JSON packer
             config_set_effect_speed((uint8_t)sx->valueint);
         }
 
