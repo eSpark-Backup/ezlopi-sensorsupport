@@ -9,7 +9,6 @@
 - Send JSON Packet using Serial Monitor
      - Arduino Serial Recommended
 - Or use Web Application in test Directory
-  :red_circle: Effect and Intensity control is currently unavailable
 
 ## Web Application
 ![app_image](https://github.com/eSpark-Consultants/ezlopi-sensorsupport/assets/143803999/63137a9d-017b-40bd-9947-ac0d2989f6ea)
@@ -165,7 +164,20 @@ Change "sx" : x value to change the speed of all selected effects (0-255)
 }
 ```
 Change "ix" : x value to change the intensity of all selected effects (0-255)
-:red_circle: TODO: Map the 0-255 intensity to 0-2000
+
+### 8. To Change the Direction of the Effect
+
+```
+{
+  "seg": {
+    "id": 0,
+    "rev": true
+  },
+  "v": true,
+  "time": 1698747322
+}
+```
+Change "rev" : x value to change the direction of effect of segment of id "id" : y. (true/false)
 
 Select the instructions depending on Espressif chip installed on your development board:
 
@@ -182,7 +194,7 @@ Select the instructions depending on Espressif chip installed on your developmen
 - [x] Add Multiple Segments 
 - [x] Dynamic Segment Allocation
 - [x] Effect Intensity Control
-- [ ] Effect Speed Control
+- [x] Effect Speed Control
 - [ ] Effect Reverse
 - [ ] Delete Segements
 
