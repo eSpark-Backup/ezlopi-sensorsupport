@@ -106,23 +106,25 @@ static void getPassword(const char *in, char output[32]) {
 
 // set values to default
 static void setDefaults() {
-	led_config.channels = 1;
+	led_config.channels = 4;
 	led_config.prefix_leds = 0;
 	led_config.refresh_rate = 20.;
 	led_config.total_leds = 300;
 	ESP_LOGI(TAG, "CHANNELS ACTIVE : %d", config_get_channels());
-	led_config.channel[0] = (struct LED_CONFIG_CHANNEL*)malloc(sizeof(struct LED_CONFIG_CHANNEL));
 	for (int i = 0; i < config_get_channels(); i++) {
-		led_config.channel[i]->selected = true;
-		// led_config.channel[0]->selected = true;
-
-		// led_config.channel[i]->mode = LED_MODE_SOLID; :FIXME: Revert back to solid by default
-		led_config.channel[i]->mode = FX_MODE_COLOR_WIPE;
+	//allocate memory for a segment
+	led_config.channel[i] = (struct LED_CONFIG_CHANNEL*)malloc(sizeof(struct LED_CONFIG_CHANNEL));
 
 		// led_config.channel[i]->sx = led_config.channel[i].sy = 6;
 		// led_config.channel[i]->ox = led_config.channel[i].oy = 0;
 
 		// led_config.channel[i]->orientation = LED_ORI0_ZIGZAG;
+
+		led_config.channel[i]->selected = true;
+		// led_config.channel[0]->selected = true;
+
+		// led_config.channel[i]->mode = LED_MODE_SOLID; :FIXME: Revert back to solid by default
+		led_config.channel[i]->mode = FX_MODE_COLOR_WIPE;
 
 		led_config.channel[i]->black[0] = led_config.channel[i]->black[1] =
 				led_config.channel[i]->black[2] = -1;
@@ -135,13 +137,18 @@ static void setDefaults() {
 		led_config.channel[i]->number_of_leds = led_config.channel[i]->stop - led_config.channel[i]->start;
 
 		led_config.channel[i]->speed = 1000;
+		led_config.channel[i]->speed = 128;
 
 		led_config.channel[i]->options = 0;
+
+		led_config.channel[i]->color[0] = 0xFF0000;
+		led_config.channel[i]->color[1] = 0x00FF00;
+		led_config.channel[i]->color[2] = 0x0000FF;
 	}
 
 	config_coloring_defaults();
 	ownled_setColorOrder(OWNLED_GRB);
-	config_set_brightness(50);
+	config_set_brightness(10);
 
 	led_config.artnet_universe_offset = 0;
 	led_config.artnet_width = 512 / 3;
@@ -243,7 +250,7 @@ void config_set_segment_start_stop(int seg_id, int seg_start, int seg_stop){
 	bool found = false;
 
 	for(int i = 0; i < led_config.channels; i++){
-		if((led_config.channel[i]->segment_id == seg_id)){
+		if((NULL != led_config.channel[i])&&(led_config.channel[i]->segment_id == seg_id)){
 			led_config.channel[i]->start = seg_start;
 			led_config.channel[i]->stop = seg_stop;
 			led_config.channel[i]->number_of_leds = seg_stop-seg_start;
@@ -282,10 +289,9 @@ void config_set_effect_intensity(uint8_t intensity){
 	for(int i = 0; i < led_config.channels; i++){
 		if(led_config.channel[i]->selected){
 			led_config.channel[i]->intensity = intensity;
-			led_set_config(&led_config);
-		}
-		
+		}		
 	}
+	led_set_config(&led_config);
 }
 
 void config_set_effect_speed(uint8_t speed){
@@ -303,6 +309,7 @@ void config_set_effect_speed(uint8_t speed){
 			led_config.channel[i]->speed = (uint16_t)new_speed;
 		}		
 	}
+
 	led_set_config(&led_config);
 
 }
@@ -318,6 +325,46 @@ void config_set_reverse_option(int id, bool rev_flag){
 	led_set_config(&led_config);
 }
 
+
+/*Deletes Segment using its ID*/
+void config_delete_segment(int id){ //TODO: FIX segment deletion.
+	int deletion_index  ;
+	ESP_LOGI(TAG, "in Segmnet Delete func");
+
+	//iterates through every segment, frees, decrement total led_config.channels
+	for(int i = 0; i < led_config.channels; i++){
+		ESP_LOGI(TAG, "delete iteration %d", i);
+		if((NULL != led_config.channel[i]) && (led_config.channel[i]->segment_id == id)){
+			// free(led_config.channel[i]);
+			// led_config.channel[i] = NULL;
+			// led_config.channels--;
+			deletion_index = i;
+			break;
+		}
+		else{
+			deletion_index = -1;
+		}
+	}
+	ESP_LOGI(TAG, "segment Deleted!"); 
+
+	// iterates again and reconfigure the indexes
+	for(int i = 0; i < led_config.channels; i++){
+		if(deletion_index == -1) break;
+
+		if((i >= deletion_index)){
+			led_config.channel[i] = led_config.channel[i+1];
+		}
+	}
+
+
+	free(led_config.channel[led_config.channels]);
+	led_config.channel[led_config.channels] = NULL;
+
+	// led_config.channels--;
+
+	//update the queue
+	led_set_config(&led_config);
+}
 
 /*
  * test the NVS storage

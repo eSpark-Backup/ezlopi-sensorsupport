@@ -103,12 +103,14 @@ void parse_json(char* start){
 
         cJSON* id = cJSON_GetObjectItemCaseSensitive(seg, "id");
         if(id != NULL){
+
             //set the selected flag of segment to true or false
             cJSON* sel = cJSON_GetObjectItemCaseSensitive(seg, "sel");
             if(sel != NULL){
                 ESP_LOGI(TAG, "SEG id : %d is selected %d", id->valueint, cJSON_IsTrue(sel));
                 config_set_selected_flag(id->valueint, cJSON_IsTrue(sel));
             }
+
             cJSON* n = cJSON_GetObjectItemCaseSensitive(seg, "n");
             if(n != NULL){
                 ESP_LOGI(TAG, "Name of Segment : %s", n->valuestring);
@@ -127,9 +129,18 @@ void parse_json(char* start){
                 }
 
             }
+
+
             cJSON* rev = cJSON_GetObjectItemCaseSensitive(seg, "rev");
             if(NULL != rev){
                 config_set_reverse_option(id->valueint, cJSON_IsTrue(rev));
+            }
+            
+            cJSON* delete = cJSON_GetObjectItemCaseSensitive(seg, "stop");
+            if((NULL != delete) && (NULL == n)){
+                //TODO: Delete the segment of corresponding item
+                ESP_LOGI(TAG, "Delete Json parsing working");
+                config_delete_segment(id->valueint);
             }
 
         }
