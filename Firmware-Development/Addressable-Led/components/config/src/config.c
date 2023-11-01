@@ -106,7 +106,7 @@ static void getPassword(const char *in, char output[32]) {
 
 // set values to default
 static void setDefaults() {
-	led_config.channels = 4;
+	led_config.channels = 1;
 	led_config.prefix_leds = 0;
 	led_config.refresh_rate = 20.;
 	led_config.total_leds = 300;
@@ -129,15 +129,15 @@ static void setDefaults() {
 		led_config.channel[i]->black[0] = led_config.channel[i]->black[1] =
 				led_config.channel[i]->black[2] = -1;
 
-		led_config.channel[i]->start = i*10;
-		led_config.channel[i]->stop = led_config.channel[i]->start+10;
+		led_config.channel[i]->start = i*30;
+		led_config.channel[i]->stop = led_config.channel[i]->start+30;
 
 		led_config.channel[i]->segment_id = i;
 
 		led_config.channel[i]->number_of_leds = led_config.channel[i]->stop - led_config.channel[i]->start;
 
 		led_config.channel[i]->speed = 1000;
-		led_config.channel[i]->speed = 128;
+		led_config.channel[i]->intensity = 128;
 
 		led_config.channel[i]->options = 0;
 
@@ -235,7 +235,7 @@ void config_set_selected_flag(int id, bool select_flag){
 	// }
 
 	for(int i = 0; i < led_config.channels; i++){
-		if((led_config.channel[i]->segment_id == id)){
+		if((NULL != led_config.channel[i])&&(led_config.channel[i]->segment_id == id)){
 			led_config.channel[i]->selected = select_flag;
 			break;
 		}
@@ -279,7 +279,8 @@ void config_set_segment_start_stop(int seg_id, int seg_start, int seg_stop){
 	if(!found){
 		ESP_LOGI(TAG, "ADDING NEW SEGMENT");
 		config_set_channels(seg_id);
-		led_set_config(&led_config);
+		config_set_segment_start_stop( seg_id,  seg_start,  seg_stop);
+		// led_set_config(&led_config);
 	}
 
 	
@@ -287,7 +288,7 @@ void config_set_segment_start_stop(int seg_id, int seg_start, int seg_stop){
 
 void config_set_effect_intensity(uint8_t intensity){
 	for(int i = 0; i < led_config.channels; i++){
-		if(led_config.channel[i]->selected){
+		if((NULL != led_config.channel[i])&&(led_config.channel[i]->selected)){
 			led_config.channel[i]->intensity = intensity;
 		}		
 	}
@@ -304,7 +305,7 @@ void config_set_effect_speed(uint8_t speed){
 	ESP_LOGI(TAG, "NEW SPEED  = %d", new_speed);
 
 	for(int i = 0; i < led_config.channels; i++){
-		if(led_config.channel[i]->selected){
+		if((NULL != led_config.channel[i])&&(led_config.channel[i]->selected)){
 			// led_config.channel[i]->speed = (uint16_t)1000;
 			led_config.channel[i]->speed = (uint16_t)new_speed;
 		}		
@@ -317,7 +318,7 @@ void config_set_effect_speed(uint8_t speed){
 //Sets reverse option of a particular segment selected using id parameter 
 void config_set_reverse_option(int id, bool rev_flag){
 	for(int i = 0; i < led_config.channels; i++){
-		if(led_config.channel[i]->segment_id == id){
+		if((NULL != led_config.channel[i])&&(led_config.channel[i]->segment_id == id)){
 			led_config.channel[i]->options  = (rev_flag << 7)|(led_config.channel[i]->options & 0x7F);  //set/reset 16th bit for reverse option
 			ESP_LOGI(TAG, "OPTION %x", led_config.channel[i]->options);
 		}
@@ -327,7 +328,7 @@ void config_set_reverse_option(int id, bool rev_flag){
 
 
 /*Deletes Segment using its ID*/
-void config_delete_segment(int id){ //TODO: FIX segment deletion.
+void config_delete_segment(int id){ 
 	int deletion_index  ;
 	ESP_LOGI(TAG, "in Segmnet Delete func");
 
@@ -345,14 +346,14 @@ void config_delete_segment(int id){ //TODO: FIX segment deletion.
 			deletion_index = -1;
 		}
 	}
-	ESP_LOGI(TAG, "segment Deleted!"); 
+	ESP_LOGI(TAG, "Deletion Index :%d", deletion_index); 
 
 	// iterates again and reconfigure the indexes
 	for(int i = 0; i < led_config.channels; i++){
 		if(deletion_index == -1) break;
 
-		if((i >= deletion_index)){
-			led_config.channel[i] = led_config.channel[i+1];
+		if((i >= deletion_index) && (i < led_config.channels)){
+			led_config.channel[i] = (led_config.channel[i+1] != NULL) ? led_config.channel[i+1]: NULL;
 		}
 	}
 
@@ -831,6 +832,19 @@ void config_set_channels(uint8_t seg_id) {
 	led_config.channel[led_config.channels]->selected = true;
 	led_config.channel[led_config.channels]->mode = LED_MODE_SOLID;
 	led_config.channel[led_config.channels]->speed = 1000;
+
+	led_config.channel[led_config.channels]->black[0] = led_config.channel[led_config.channels]->black[1] =
+			led_config.channel[led_config.channels]->black[2] = -1;
+
+	led_config.channel[led_config.channels]->speed = 1000;
+	led_config.channel[led_config.channels]->intensity = 128;
+
+	led_config.channel[led_config.channels]->options = 0;
+
+	led_config.channel[led_config.channels]->color[0] = 0xFF0000;
+	led_config.channel[led_config.channels]->color[1] = 0x00FF00;
+	led_config.channel[led_config.channels]->color[2] = 0x0000FF;
+
 	led_config.channels++;
 }
 
