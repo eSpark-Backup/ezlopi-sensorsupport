@@ -289,6 +289,7 @@ void led_block(int x, int y, uint8_t *r, uint8_t *g, uint8_t *b) {
 }
 
 static void handleNewConfig() {
+	uint8_t new_channel_count = led_get_max_lines();
 	ESP_LOGI(TAG, "HADNLING NEW CONFIG");
 	for (int i = 0; i < led_get_max_lines(); i++) { //this loop runs LED_MAX_LINES times
 		if(led_config.channel[i] != NULL && led_config.channel[i]->selected == true){
@@ -318,12 +319,14 @@ static void handleNewConfig() {
 			ESP_LOGI(TAG, "AFTER SETSIZE %d", i);
 
 		}
-		else if(NULL == led_config.channel[i+1] ){
-			//TODO: deinit fx_segment using free()
-			led_config.channels--;
+		else if(NULL == led_config.channel[i] ){
 			ESP_LOGI(TAG," DEINIT SEGMENT %d", i);
+			WS2812FX_deinit(i);
+			// new_channel_count--;
+			// break;
 		}
 	}
+	led_config.channels = new_channel_count;
 	framerate = led_config.refresh_rate;
 }
 
@@ -522,7 +525,6 @@ static void task(void *args) {
 		/**
 		 * start sending LED data
 		 */
-		// ESP_LOGI(TAG, "LED STRIP TASK");
 		ownled_send();
 
 		for (;;) {
@@ -583,7 +585,10 @@ static void task(void *args) {
 		 * generate LED data
 		 */
 		// if (xQueueReceive(q, &led_config, 0) == pdTRUE) {handleNewConfig();}
-		if (xQueueReceive(q, &led_config, ( TickType_t ) 1) == pdTRUE) {handleNewConfig();}
+		if (xQueueReceive(q, &led_config, ( TickType_t ) 1) == pdTRUE) {
+			handleNewConfig(); 
+			ESP_LOGI(TAG, "SEGMENT COUNT = %d", led_config.channels);
+		}
 			
 		// } 
 		// else {

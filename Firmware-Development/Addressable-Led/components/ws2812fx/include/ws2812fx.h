@@ -26,6 +26,8 @@ void WS2812FX_init(int line, int n,
     uint8_t options
 );
 
+void WS2812FX_deinit(int line);
+
 #define SEGMENT          fx_segments[line]
 #define SEGENV           fx_segments[line]
 #define SEGLEN           segmentLength(line)

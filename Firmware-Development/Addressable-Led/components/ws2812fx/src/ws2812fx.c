@@ -150,6 +150,11 @@ void WS2812FX_init(
   fx_segments[line]->options = options;
 }
 
+void WS2812FX_deinit(int line){
+  free(fx_segments[line]);
+  fx_segments[line] = NULL;
+}
+
 void WS2812FX_call(int line, uint16_t (*fct)(int)) {
   uint32_t now = xTaskGetTickCount();
 
@@ -222,7 +227,7 @@ static uint8_t get_random_wheel_index(uint8_t pos) {
   return r;
 }
 
-static inline void setPixelColor(int line, uint16_t i, uint32_t c) {  //0x0000ff00 //TODO: Add all colouring
+static inline void setPixelColor(int line, uint16_t i, uint32_t c) {  
   uint8_t r = (c >> 16) & 0xFF;
   uint8_t g = (c >> 8) & 0xFF;
   uint8_t b = c & 0xFF;

@@ -192,6 +192,7 @@ Change "rev" : x value to change the direction of effect of segment of id "id" :
 }
 ```
 Give Segment ID "id":x (int) to delete not the segment index
+NOTE: Disable the delete button if there is only 1 segment left.
 
 Select the instructions depending on Espressif chip installed on your development board:
 

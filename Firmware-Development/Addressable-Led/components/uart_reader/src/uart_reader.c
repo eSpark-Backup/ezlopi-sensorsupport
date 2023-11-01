@@ -138,7 +138,6 @@ void parse_json(char* start){
             
             cJSON* delete = cJSON_GetObjectItemCaseSensitive(seg, "stop");
             if((NULL != delete) && (NULL == n)){
-                //TODO: Delete the segment of corresponding item
                 ESP_LOGI(TAG, "Delete Json parsing working");
                 config_delete_segment(id->valueint);
             }
