@@ -313,10 +313,15 @@ static void handleNewConfig() {
 
 			);
 			ESP_LOGI(TAG, "BEFORE SETSIZE %d", i);
-			ownled_setSize(0,
+			ownled_setSize(0,						//i could also be 0
 					led_config.total_leds);
 			ESP_LOGI(TAG, "AFTER SETSIZE %d", i);
 
+		}
+		else if(NULL == led_config.channel[i+1] ){
+			//TODO: deinit fx_segment using free()
+			led_config.channels--;
+			ESP_LOGI(TAG," DEINIT SEGMENT %d", i);
 		}
 	}
 	framerate = led_config.refresh_rate;
@@ -577,8 +582,8 @@ static void task(void *args) {
 		/**
 		 * generate LED data
 		 */
-		if (xQueueReceive(q, &led_config, 0) == pdTRUE) {handleNewConfig();}
-		// if (xQueueReceive(q, &led_config, ( TickType_t ) 1) == pdTRUE) {handleNewConfig();}
+		// if (xQueueReceive(q, &led_config, 0) == pdTRUE) {handleNewConfig();}
+		if (xQueueReceive(q, &led_config, ( TickType_t ) 1) == pdTRUE) {handleNewConfig();}
 			
 		// } 
 		// else {

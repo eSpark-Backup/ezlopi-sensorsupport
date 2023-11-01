@@ -32,6 +32,7 @@ void config_set_segment_start_stop(int seg_id, int seg_start, int seg_stop);
 void config_set_effect_intensity(uint8_t intensity);
 void config_set_effect_speed(uint8_t speed);
 void config_set_reverse_option(int id, bool rev_flag);
+void config_delete_segment(int id);
 
 // const char *config_get_wifi_sta_ssid();
 // const char *config_get_wifi_sta_password();

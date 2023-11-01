@@ -11,7 +11,7 @@
 - Or use Web Application in test Directory
 
 ## Web Application
-![app_image](https://github.com/eSpark-Consultants/ezlopi-sensorsupport/assets/143803999/57c69706-2037-4723-80e5-287a90169e63)
+![app_image](https://github.com/eSpark-Consultants/ezlopi-sensorsupport/assets/143803999/d8f14220-7454-4f12-9f24-acb23462a685)
 
 ## Example JSON Packets:
 
@@ -179,6 +179,20 @@ Change "ix" : x value to change the intensity of all selected effects (0-255)
 ```
 Change "rev" : x value to change the direction of effect of segment of id "id" : y. (true/false)
 
+### 9. To Delete Segment using segment ID
+
+```
+{
+  "seg": {
+    "id": 1,
+    "stop": 0
+  },
+  "v": true,
+  "time": 1698766318
+}
+```
+Give Segment ID "id":x (int) to delete not the segment index
+
 Select the instructions depending on Espressif chip installed on your development board:
 
 - [ESP32 Getting Started Guide](https://docs.espressif.com/projects/esp-idf/en/stable/get-started/index.html)
@@ -195,8 +209,9 @@ Select the instructions depending on Espressif chip installed on your developmen
 - [x] Dynamic Segment Allocation
 - [x] Effect Intensity Control
 - [x] Effect Speed Control
-- [ ] Effect Reverse
-- [ ] Delete Segements
+- [x] Effect Reverse
+- [x] Delete Segements
+- [ ] Understand Palettes
 
 :white_circle: Add Custom Effects from WLED (in-progress)
 
