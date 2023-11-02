@@ -124,7 +124,8 @@ static void setDefaults() {
 		// led_config.channel[0]->selected = true;
 
 		// led_config.channel[i]->mode = LED_MODE_SOLID; :FIXME: Revert back to solid by default
-		led_config.channel[i]->mode = FX_MODE_COLOR_WIPE;
+		// led_config.channel[i]->mode = FX_MODE_COLOR_WIPE;
+		led_config.channel[i]->mode = FX_MODE_STATIC;
 
 		led_config.channel[i]->black[0] = led_config.channel[i]->black[1] =
 				led_config.channel[i]->black[2] = -1;
@@ -148,7 +149,7 @@ static void setDefaults() {
 
 	config_coloring_defaults();
 	ownled_setColorOrder(OWNLED_GRB);
-	config_set_brightness(10);
+	config_set_brightness(50);
 
 	led_config.artnet_universe_offset = 0;
 	led_config.artnet_width = 512 / 3;
