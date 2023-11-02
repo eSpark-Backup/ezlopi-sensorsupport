@@ -27,7 +27,8 @@
   "time": 1697181639
 }
 ```
-Change is "fx" value to change animations on the led strip (0-66)
+Change is "fx" value to change animations on the led strip (0-66)\
+:red_circle: NOTE: From UI it will be a drop down list of all Effects.
 
 ### 2. To Change RGB Color Values
 
@@ -191,8 +192,24 @@ Change "rev" : x value to change the direction of effect of segment of id "id" :
   "time": 1698766318
 }
 ```
-Give Segment ID "id":x (int) to delete not the segment index
-NOTE: Disable the delete button if there is only 1 segment left.
+Give Segment ID "id":x (int) to delete not the segment index.\
+:red_circle: NOTE: Disable the delete button if there is only 1 segment left.
+
+### 10. To apply a Palette on Selected Segments if supported
+
+```
+{
+  "seg": {
+    "pal": 27
+  },
+  "v": true,
+  "time": 1698935917
+}
+```
+Change "pal":x (int) to apply palette on segments which are selected.\
+:red_circle: NOTE: From UI it will be a drop down list of all palettes.
+
+
 
 Select the instructions depending on Espressif chip installed on your development board:
 
@@ -212,7 +229,9 @@ Select the instructions depending on Espressif chip installed on your developmen
 - [x] Effect Speed Control
 - [x] Effect Reverse
 - [x] Delete Segements
-- [ ] Understand Palettes
+- [x] Understand Palettes
+- [x] Add Palettes
+- [ ] Control Palettes using JSON
 
 :white_circle: Add Custom Effects from WLED (in-progress)
 

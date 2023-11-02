@@ -15,6 +15,8 @@
 #include "led.h"
 #include <stdint.h>
 
+typedef uint8_t byte;
+
 void config_init();
 void config_reset_to_defaults();
 void config_write_all();
@@ -33,6 +35,7 @@ void config_set_effect_intensity(uint8_t intensity);
 void config_set_effect_speed(uint8_t speed);
 void config_set_reverse_option(int id, bool rev_flag);
 void config_delete_segment(int id);
+void config_apply_palette(uint8_t palette);
 
 // const char *config_get_wifi_sta_ssid();
 // const char *config_get_wifi_sta_password();

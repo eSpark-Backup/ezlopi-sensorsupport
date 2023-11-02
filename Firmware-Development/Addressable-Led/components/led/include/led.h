@@ -147,6 +147,7 @@ struct LED_CONFIG_CHANNEL {
   uint8_t intensity;
   uint16_t speed;
   uint8_t options;
+  uint8_t palette;
 };
 
 struct LED_CONFIG {

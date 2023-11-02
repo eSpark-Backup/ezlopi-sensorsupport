@@ -23,7 +23,8 @@ void WS2812FX_init(int line, int n,
     int mode,
     uint8_t intensity,
     uint16_t speed,
-    uint8_t options
+    uint8_t options,
+    uint8_t palette
 );
 
 void WS2812FX_deinit(int line);
