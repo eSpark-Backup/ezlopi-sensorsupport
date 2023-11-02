@@ -18,6 +18,8 @@
 #include "led.h"
 #include "config.h"
 #include <freertos/task.h>
+#include <palette.h>
+#include <cpt_palettes.h>
 
 /* A PROGMEM (flash mem) table containing 8-bit unsigned sine wave (0-255).
  Copy & paste this snippet into a Python REPL to regenerate:
@@ -243,8 +245,14 @@ static inline void setPixelColorRGBW(int line, uint16_t i, uint8_t r, uint8_t g,
  * No blinking. Just plain old static light.
  */
 uint16_t WS2812FX_mode_static(int line) {
+  int numLeds = fx_segments[line]->stop - fx_segments[line]->start;
+  const byte* curPal = gGradientPalettes[41].palette;
+
+  int palette_size = gGradientPalettes[41].size ;
+
   for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
-    setPixelColor(line, i, fx_segments[line]->colors[0]);
+    // setPixelColor(line, i, fx_segments[line]->colors[0]);
+    setPixelColor(line, i, colorFromPalette(curPal, palette_size, numLeds, i));
   }
   return 500;
 }
