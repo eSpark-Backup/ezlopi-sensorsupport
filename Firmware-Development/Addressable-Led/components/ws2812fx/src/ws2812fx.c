@@ -90,6 +90,7 @@ struct FX_SEGMENT { // 20 bytes
   uint8_t mode;
   uint8_t options;
   uint8_t intensity;
+  uint8_t palette;
 
   uint32_t colors[NUM_COLORS];
   uint32_t rgbColor;
@@ -131,7 +132,8 @@ void WS2812FX_init(
     int mode,
     uint8_t intensity,
     uint16_t speed,
-    uint8_t options
+    uint8_t options,
+    uint8_t palette
 ) {
   assert(line >= 0 && line <= 16);
   if(fx_segments[line] == NULL){
@@ -150,6 +152,7 @@ void WS2812FX_init(
   fx_segments[line]->intensity  = intensity;
   fx_segments[line]->speed = speed;
   fx_segments[line]->options = options;
+  fx_segments[line]->palette = palette;
 }
 
 void WS2812FX_deinit(int line){
@@ -246,9 +249,9 @@ static inline void setPixelColorRGBW(int line, uint16_t i, uint8_t r, uint8_t g,
  */
 uint16_t WS2812FX_mode_static(int line) {
   int numLeds = fx_segments[line]->stop - fx_segments[line]->start;
-  const byte* curPal = gGradientPalettes[41].palette;
+  const byte* curPal = gGradientPalettes[fx_segments[line]->palette].palette;
 
-  int palette_size = gGradientPalettes[41].size ;
+  int palette_size = gGradientPalettes[fx_segments[line]->palette].size ;
 
   for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
     // setPixelColor(line, i, fx_segments[line]->colors[0]);

@@ -1,6 +1,7 @@
 #ifndef CPT_PALETTE_H_
 #define CPT_PALETTE_H_
 
+
 /*
  * Color palettes for FastLED effects (65-73).
  */

@@ -23,6 +23,7 @@
 // #include "mbedtls/md.h"
 #include "nvs_flash.h"
 #include "ownled.h"
+#include "palette.h"
 
 static const char *TAG = "#config";
 
@@ -145,6 +146,10 @@ static void setDefaults() {
 		led_config.channel[i]->color[0] = 0xFF0000;
 		led_config.channel[i]->color[1] = 0x00FF00;
 		led_config.channel[i]->color[2] = 0x0000FF;
+
+		led_config.channel[i]->palette = 0;
+
+
 	}
 
 	config_coloring_defaults();
@@ -367,6 +372,18 @@ void config_delete_segment(int id){
 	//update the queue
 	led_set_config(&led_config);
 }
+
+void config_apply_palette(uint8_t palette){
+	for(int i = 0; i < led_config.channels; i++){
+		if((NULL != led_config.channel[i])&&(led_config.channel[i]->selected)){
+			led_config.channel[i]->palette = palette;
+		}
+	}
+	led_set_config(&led_config);
+}
+
+
+
 
 /*
  * test the NVS storage
@@ -845,6 +862,8 @@ void config_set_channels(uint8_t seg_id) {
 	led_config.channel[led_config.channels]->color[0] = 0xFF0000;
 	led_config.channel[led_config.channels]->color[1] = 0x00FF00;
 	led_config.channel[led_config.channels]->color[2] = 0x0000FF;
+
+	led_config.channel[led_config.channels]->palette = 0; //TODO: make default pallete enum
 
 	led_config.channels++;
 }
