@@ -11,7 +11,7 @@
 - Or use Web Application in test Directory
 
 ## Web Application
-![app_image](https://github.com/eSpark-Consultants/ezlopi-sensorsupport/assets/143803999/d8f14220-7454-4f12-9f24-acb23462a685)
+![image](https://github.com/eSpark-Consultants/ezlopi-sensorsupport/assets/143803999/19fc0d04-077c-4a91-9f37-b94e67456250)
 
 ## Example JSON Packets:
 
