@@ -24,3 +24,21 @@ uint32_t colorFromPalette(const byte* palette, int paletteSize, int numLeds, int
 
     return color;
 }
+
+// Function to set all elements in a byte array with a uint32_t color
+void createDefaultPalette(uint32_t color, byte* palette) {
+
+    int arraySize = 14*4;    
+
+    // Extract the R, G, and B components from the uint32_t color
+    uint8_t r = (color >> 16) & 0xFF;
+    uint8_t g = (color >> 8) & 0xFF;
+    uint8_t b = color & 0xFF;
+
+    // Fill the entire byte array with the color components
+    for (int i = 0; i < arraySize; i += 4) {
+        palette[i+1] = r;     // R component
+        palette[i + 2] = g; // G component
+        palette[i + 3] = b; // B component
+    }
+}

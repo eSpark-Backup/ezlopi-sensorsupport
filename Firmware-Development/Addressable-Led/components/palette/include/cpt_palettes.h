@@ -1,7 +1,6 @@
 #ifndef CPT_PALETTE_H_
 #define CPT_PALETTE_H_
 
-
 /*
  * Color palettes for FastLED effects (65-73).
  */
@@ -865,6 +864,25 @@ const byte candy2_gp[]   = {
   211,  39, 33, 34,
   255,   1,  1,  1};
 
+/*Default Color Palette*/
+byte default_palette[] = {
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0
+};
+
+
 // Single array of defined cpt-city color palettes.
 // This will let us programmatically choose one based on
 // a number, rather than having to activate each explicitly
@@ -875,69 +893,70 @@ static struct paletteContainer{
     uint8_t size;
 }; 
 
-#define func(arrayName) {(const byte*)arrayName, sizeof(arrayName)/4}
+#define paletteGroup(arrayName) {(const byte*)arrayName, sizeof(arrayName)/4}
 
 
-const struct paletteContainer gGradientPalettes[] = {
-  func(Sunset_Real_gp),         // 13-00 Sunset
-  func(es_rivendell_15_gp),     // 14-01 Rivendell
-  func(es_ocean_breeze_036_gp), // 15-02 Breeze
-  func(rgi_15_gp),              // 16-03 Red & Blue
-  func(retro2_16_gp),           // 17-04 Yellowout
-  func(Analogous_1_gp),         // 18-05 Analogous
-  func(es_pinksplash_08_gp),    // 19-06 Splash
-  func(Sunset_Yellow_gp),       // 20-07 Pastel
-  func(Another_Sunset_gp),      // 21-08 Sunset2
-  func(Beech_gp),               // 22-09 Beech
-  func(es_vintage_01_gp),       // 23-10 Vintage
-  func(departure_gp),           // 24-11 Departure
-  func(es_landscape_64_gp),     // 25-12 Landscape
-  func(es_landscape_33_gp),     // 26-13 Beach
-  func(rainbowsherbet_gp),      // 27-14 Sherbet
-  func(gr65_hult_gp),           // 28-15 Hult
-  func(gr64_hult_gp),           // 29-16 Hult64
-  func(GMT_drywet_gp),          // 30-17 Drywet
-  func(ib_jul01_gp),            // 31-18 Jul
-  func(es_vintage_57_gp),       // 32-19 Grintage
-  func(ib15_gp),                // 33-20 Rewhi
-  func(Tertiary_01_gp),         // 34-21 Tertiary
-  func(lava_gp),                // 35-22 Fire
-  func(fierce_ice_gp),          // 36-23 Icefire
-  func(Colorfull_gp),           // 37-24 Cyane
-  func(Pink_Purple_gp),         // 38-25 Light Pink
-  func(es_autumn_19_gp),        // 39-26 Autumn
-  func(BlacK_Blue_Magenta_White_gp),  // 40-27 Magenta
-  func(BlacK_Magenta_Red_gp),         // 41-28 Magred
-  func(BlacK_Red_Magenta_Yellow_gp),  // 42-29 Yelmag
-  func(Blue_Cyan_Yellow_gp),          // 43-30 Yelblu
-  func(Orange_Teal_gp),               // 44-31 Orange & Teal
-  func(Tiamat_gp),                    // 45-32 Tiamat
-  func(April_Night_gp),               // 46-33 April Night
-  func(Orangery_gp),                  // 47-34 Orangery
-  func(C9_gp),                        // 48-35 C9
-  func(Sakura_gp),                    // 49-36 Sakura
-  func(Aurora_gp),                    // 50-37 Aurora
-  func(Atlantica_gp),                 // 51-38 Atlantica
-  func(C9_2_gp),                      // 52-39 C9 2
-  func(C9_new_gp),                    // 53-40 C9 New
-  func(temperature_gp),               // 54-41 Temperature
-  func(Aurora2_gp),                   // 55-42 Aurora 2
-  func(retro_clown_gp),               // 56-43 Retro Clown
-  func(candy_gp),                     // 57-44 Candy
-  func(toxy_reaf_gp),                 // 58-45 Toxy Reaf
-  func(fairy_reaf_gp),                // 59-46 Fairy Reaf
-  func(semi_blue_gp),                 // 60-47 Semi Blue
-  func(pink_candy_gp),                // 61-48 Pink Candy
-  func(red_reaf_gp),                  // 62-49 Red Reaf
-  func(aqua_flash_gp),                // 63-50 Aqua Flash
-  func(yelblu_hot_gp),                // 64-51 Yelblu Hot
-  func(lite_light_gp),                // 65-52 Lite Light
-  func(red_flash_gp),                 // 66-53 Red Flash
-  func(blink_red_gp),                 // 67-54 Blink Red
-  func(red_shift_gp),                 // 68-55 Red Shift
-  func(red_tide_gp),                  // 69-56 Red Tide
-  func(candy2_gp),                    // 70-57 Candy2
-  func(zambezi_proximity)             // 71-58 Zambzi
+const struct paletteContainer gGradientPalettes[] = {  //TODO: Re Order the number of  all
+  paletteGroup(default_palette),        // 72-59 Default Palette color as Color 1
+  paletteGroup(Sunset_Real_gp),         // 13-00 Sunset
+  paletteGroup(es_rivendell_15_gp),     // 14-01 Rivendell
+  paletteGroup(es_ocean_breeze_036_gp), // 15-02 Breeze
+  paletteGroup(rgi_15_gp),              // 16-03 Red & Blue
+  paletteGroup(retro2_16_gp),           // 17-04 Yellowout
+  paletteGroup(Analogous_1_gp),         // 18-05 Analogous
+  paletteGroup(es_pinksplash_08_gp),    // 19-06 Splash
+  paletteGroup(Sunset_Yellow_gp),       // 20-07 Pastel
+  paletteGroup(Another_Sunset_gp),      // 21-08 Sunset2
+  paletteGroup(Beech_gp),               // 22-09 Beech
+  paletteGroup(es_vintage_01_gp),       // 23-10 Vintage
+  paletteGroup(departure_gp),           // 24-11 Departure
+  paletteGroup(es_landscape_64_gp),     // 25-12 Landscape
+  paletteGroup(es_landscape_33_gp),     // 26-13 Beach
+  paletteGroup(rainbowsherbet_gp),      // 27-14 Sherbet
+  paletteGroup(gr65_hult_gp),           // 28-15 Hult
+  paletteGroup(gr64_hult_gp),           // 29-16 Hult64
+  paletteGroup(GMT_drywet_gp),          // 30-17 Drywet
+  paletteGroup(ib_jul01_gp),            // 31-18 Jul
+  paletteGroup(es_vintage_57_gp),       // 32-19 Grintage
+  paletteGroup(ib15_gp),                // 33-20 Rewhi
+  paletteGroup(Tertiary_01_gp),         // 34-21 Tertiary
+  paletteGroup(lava_gp),                // 35-22 Fire
+  paletteGroup(fierce_ice_gp),          // 36-23 Icefire
+  paletteGroup(Colorfull_gp),           // 37-24 Cyane
+  paletteGroup(Pink_Purple_gp),         // 38-25 Light Pink
+  paletteGroup(es_autumn_19_gp),        // 39-26 Autumn
+  paletteGroup(BlacK_Blue_Magenta_White_gp),  // 40-27 Magenta
+  paletteGroup(BlacK_Magenta_Red_gp),         // 41-28 Magred
+  paletteGroup(BlacK_Red_Magenta_Yellow_gp),  // 42-29 Yelmag
+  paletteGroup(Blue_Cyan_Yellow_gp),          // 43-30 Yelblu
+  paletteGroup(Orange_Teal_gp),               // 44-31 Orange & Teal
+  paletteGroup(Tiamat_gp),                    // 45-32 Tiamat
+  paletteGroup(April_Night_gp),               // 46-33 April Night
+  paletteGroup(Orangery_gp),                  // 47-34 Orangery
+  paletteGroup(C9_gp),                        // 48-35 C9
+  paletteGroup(Sakura_gp),                    // 49-36 Sakura
+  paletteGroup(Aurora_gp),                    // 50-37 Aurora
+  paletteGroup(Atlantica_gp),                 // 51-38 Atlantica
+  paletteGroup(C9_2_gp),                      // 52-39 C9 2
+  paletteGroup(C9_new_gp),                    // 53-40 C9 New
+  paletteGroup(temperature_gp),               // 54-41 Temperature
+  paletteGroup(Aurora2_gp),                   // 55-42 Aurora 2
+  paletteGroup(retro_clown_gp),               // 56-43 Retro Clown
+  paletteGroup(candy_gp),                     // 57-44 Candy
+  paletteGroup(toxy_reaf_gp),                 // 58-45 Toxy Reaf
+  paletteGroup(fairy_reaf_gp),                // 59-46 Fairy Reaf
+  paletteGroup(semi_blue_gp),                 // 60-47 Semi Blue
+  paletteGroup(pink_candy_gp),                // 61-48 Pink Candy
+  paletteGroup(red_reaf_gp),                  // 62-49 Red Reaf
+  paletteGroup(aqua_flash_gp),                // 63-50 Aqua Flash
+  paletteGroup(yelblu_hot_gp),                // 64-51 Yelblu Hot
+  paletteGroup(lite_light_gp),                // 65-52 Lite Light
+  paletteGroup(red_flash_gp),                 // 66-53 Red Flash
+  paletteGroup(blink_red_gp),                 // 67-54 Blink Red
+  paletteGroup(red_shift_gp),                 // 68-55 Red Shift
+  paletteGroup(red_tide_gp),                  // 69-56 Red Tide
+  paletteGroup(candy2_gp),                    // 70-57 Candy2
+  paletteGroup(zambezi_proximity)             // 71-58 Zambzi
 };
 
 

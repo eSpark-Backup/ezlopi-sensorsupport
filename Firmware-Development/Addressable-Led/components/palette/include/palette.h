@@ -5,7 +5,7 @@ typedef uint8_t byte;
 
 // Define an enumeration for the palette names in all uppercase
 enum PALETTE_NAME {
-    // DEFAULT_PALETTE=-1,
+    DEFAULT_PALETTE,
     SUNSET_REAL,
     RIVENDELL,
     BREEZE,
@@ -70,6 +70,6 @@ enum PALETTE_NAME {
 // Function to spread the color palette evenly across LEDs
 // void spreadPalette(Color* palette, int paletteSize, Color* leds, int numLeds);
 uint32_t colorFromPalette(const byte* palette, int paletteSize, int numLeds, int ledIndex);
-
+void createDefaultPalette(uint32_t color, byte* palette);
 
 #endif /* PALETTE_H_ */
