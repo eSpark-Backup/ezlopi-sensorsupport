@@ -323,7 +323,7 @@ static void handleNewConfig() {
 		else if(NULL == led_config.channel[i] ){
 			ESP_LOGI(TAG," DEINIT SEGMENT %d", i);
 			WS2812FX_deinit(i);
-			// new_channel_count--;
+			new_channel_count--;
 			// break;
 		}
 	}
