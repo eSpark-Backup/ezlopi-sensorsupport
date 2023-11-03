@@ -266,7 +266,7 @@ uint16_t WS2812FX_mode_static(int line) {
 
   for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
     // setPixelColor(line, i, fx_segments[line]->colors[0]);
-    setPixelColor(line, i, colorFromPalette(curPal, palette_size, numLeds, i));
+    setPixelColor(line, i, colorFromPalette(curPal, palette_size, numLeds, i-(SEGMENT->start)));
   }
 
   return 500;
@@ -299,7 +299,7 @@ static uint16_t blink(int line, uint32_t color1, uint32_t color2, int strobe) {
   createDefaultPalette(color1, gGradientPalettes[0].palette);
     
   for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
-    color = ((fx_segments[line]->counter_mode_call & 1) == 0) ? colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGMENT->stop - SEGMENT->start, i) : color2;
+    color = ((fx_segments[line]->counter_mode_call & 1) == 0) ? colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGLEN, i-(SEGMENT->start)) : color2;
     setPixelColor(line, i, color);
   }
 
@@ -368,9 +368,9 @@ static uint16_t color_wipe(int line, uint32_t color1, uint32_t color2,
     uint32_t led_offset = fx_segments[line]->counter_mode_step;
     if (isReverse(line)) {  
       // setPixelColor(line, fx_segments[line]->stop - led_offset, color1);
-      setPixelColor(line, fx_segments[line]->stop - led_offset, colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGMENT->stop - SEGMENT->start, fx_segments[line]->stop - led_offset));
+      setPixelColor(line, fx_segments[line]->stop - led_offset, colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGLEN, (fx_segments[line]->stop - led_offset)-(SEGMENT->start))); //FIXME: Relative Pixel indexing
     } else {
-      setPixelColor(line, fx_segments[line]->start + led_offset, colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGMENT->stop - SEGMENT->start, fx_segments[line]->start + led_offset));
+      setPixelColor(line, fx_segments[line]->start + led_offset, colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGLEN, (fx_segments[line]->stop + led_offset)-(SEGMENT->start)));
     }
   } else {
     uint32_t led_offset =
