@@ -362,12 +362,15 @@ uint16_t WS2812FX_mode_strobe_rainbow(int line) {
  */
 static uint16_t color_wipe(int line, uint32_t color1, uint32_t color2,
                            int rev) {
+  createDefaultPalette(color1, gGradientPalettes[0].palette);
+
   if (fx_segments[line]->counter_mode_step < segmentLength(line)) {
     uint32_t led_offset = fx_segments[line]->counter_mode_step;
     if (isReverse(line)) {  
-      setPixelColor(line, fx_segments[line]->stop - led_offset, color1);
+      // setPixelColor(line, fx_segments[line]->stop - led_offset, color1);
+      setPixelColor(line, fx_segments[line]->stop - led_offset, colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGMENT->stop - SEGMENT->start, fx_segments[line]->stop - led_offset));
     } else {
-      setPixelColor(line, fx_segments[line]->start + led_offset, color1);
+      setPixelColor(line, fx_segments[line]->start + led_offset, colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGMENT->stop - SEGMENT->start, fx_segments[line]->start + led_offset));
     }
   } else {
     uint32_t led_offset =
@@ -393,8 +396,8 @@ static uint16_t color_wipe(int line, uint32_t color1, uint32_t color2,
  * Lights all LEDs one after another.
  */
 uint16_t WS2812FX_mode_color_wipe(int line) {
-  return color_wipe(line, fx_segments[line]->colors[1],
-                    fx_segments[line]->colors[2], false);
+  return color_wipe(line, fx_segments[line]->colors[0],
+                    fx_segments[line]->colors[1], false);
 }
 
 uint16_t WS2812FX_mode_color_wipe_inv(int line) {
@@ -981,7 +984,9 @@ uint16_t WS2812FX_mode_police_strobe(int line) {
  */
 uint16_t WS2812FX_mode_android(int line) {
 
-  for (int i = 0; i < SEGLEN; i++) {
+  createDefaultPalette(SEGCOLOR(0), gGradientPalettes[0].palette);
+
+  for (int i = 0; i < SEGLEN; i++) { //Bg Color
     int j = i+SEGMENT->start;
     setPixelColor(line, j, SEGCOLOR(1));
   }
@@ -1012,17 +1017,20 @@ uint16_t WS2812FX_mode_android(int line) {
   {
     for (int i = a; i < a+SEGENV->aux_param2; i++) {
       int j = i+SEGMENT->start;
-      setPixelColor(line, j, SEGCOLOR(0));
+      // setPixelColor(line, j, SEGCOLOR(0));
+      setPixelColor(line, j, colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGLEN ,i));
     }
   } else
   {
     for (int i = a; i < SEGLEN; i++) {
       int j = i+SEGMENT->start;
-      setPixelColor(line, j, SEGCOLOR(0));
+      // setPixelColor(line, j, SEGCOLOR(0));
+      setPixelColor(line, j, colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGLEN ,i));
     }
     for (int i = 0; i < SEGENV->aux_param2 - (SEGLEN -a); i++) {
       int j = i+SEGMENT->start;
-      setPixelColor(line, j, SEGCOLOR(0));
+      // setPixelColor(line, j, SEGCOLOR(0));
+      setPixelColor(line, j, colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGLEN ,i));
     }
 
   }
