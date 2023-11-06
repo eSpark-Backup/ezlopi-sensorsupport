@@ -107,7 +107,7 @@ static void getPassword(const char *in, char output[32]) {
 
 // set values to default
 static void setDefaults() {
-	led_config.channels = 1;
+	led_config.channels = 4;
 	led_config.prefix_leds = 0;
 	led_config.refresh_rate = 20.;
 	led_config.total_leds = 300;
@@ -131,8 +131,8 @@ static void setDefaults() {
 		led_config.channel[i]->black[0] = led_config.channel[i]->black[1] =
 				led_config.channel[i]->black[2] = -1;
 
-		led_config.channel[i]->start = i*30;
-		led_config.channel[i]->stop = led_config.channel[i]->start+30;
+		led_config.channel[i]->start = i*10;
+		led_config.channel[i]->stop = led_config.channel[i]->start+10;
 
 		led_config.channel[i]->segment_id = i;
 
@@ -847,7 +847,7 @@ void config_set_channels(uint8_t seg_id) {
 	// led_config.channels = seg_id < led_config.channels ? led_config.channels : seg_id+1;
 	led_config.channel[led_config.channels] = (struct LED_CONFIG_CHANNEL*)calloc(1,sizeof(struct LED_CONFIG_CHANNEL));
 	led_config.channel[led_config.channels]->segment_id = seg_id;
-	led_config.channel[led_config.channels]->selected = true;
+	led_config.channel[led_config.channels]->selected = false;
 	led_config.channel[led_config.channels]->mode = LED_MODE_SOLID;
 	led_config.channel[led_config.channels]->speed = 1000;
 

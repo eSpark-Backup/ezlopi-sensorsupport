@@ -830,7 +830,7 @@ static void task(void *args) {
 					WS2812FX_call(i, WS2812FX_mode_halloween);
 					break;
 				case FX_MODE_BICOLOR_CHASE:
-					WS2812FX_call(i, WS2812FX_mode_breath);
+					WS2812FX_call(i, WS2812FX_mode_bicolor_chase);
 					break;
 				case FX_MODE_TRICOLOR_CHASE:
 					WS2812FX_call(i, WS2812FX_mode_tricolor_chase);
