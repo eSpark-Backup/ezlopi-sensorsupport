@@ -158,6 +158,7 @@ void WS2812FX_init(
 void WS2812FX_deinit(int line){
   free(fx_segments[line]);
   fx_segments[line] = NULL;
+  config_reduce_segment();
 }
 
 void WS2812FX_call(int line, uint16_t (*fct)(int)) {

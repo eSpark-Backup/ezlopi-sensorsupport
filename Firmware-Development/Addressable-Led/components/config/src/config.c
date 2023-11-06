@@ -131,8 +131,8 @@ static void setDefaults() {
 		led_config.channel[i]->black[0] = led_config.channel[i]->black[1] =
 				led_config.channel[i]->black[2] = -1;
 
-		led_config.channel[i]->start = i*10;
-		led_config.channel[i]->stop = led_config.channel[i]->start+10;
+		led_config.channel[i]->start = i*5;
+		led_config.channel[i]->stop = led_config.channel[i]->start+5;
 
 		led_config.channel[i]->segment_id = i;
 
@@ -285,8 +285,8 @@ void config_set_segment_start_stop(int seg_id, int seg_start, int seg_stop){
 	if(!found){
 		ESP_LOGI(TAG, "ADDING NEW SEGMENT");
 		config_set_channels(seg_id);
-		config_set_segment_start_stop( seg_id,  seg_start,  seg_stop);
 		// led_set_config(&led_config);
+		config_set_segment_start_stop( seg_id,  seg_start,  seg_stop);
 	}
 
 	
@@ -355,22 +355,24 @@ void config_delete_segment(int id){
 	ESP_LOGI(TAG, "Deletion Index :%d", deletion_index); 
 
 	// iterates again and reconfigure the indexes
-	for(int i = 0; i < led_config.channels; i++){
+	for(int i = 0; i < led_config.channels; i++){  // 0-1-2-3
 		if(deletion_index == -1) break;
 
-		if((i >= deletion_index) && (i < led_config.channels)){
+		if((i >= deletion_index)){
 			led_config.channel[i] = (led_config.channel[i+1] != NULL) ? led_config.channel[i+1]: NULL;
 		}
 	}
 
+	if(deletion_index != -1){
+		free(led_config.channel[led_config.channels-1]); //free the last segment address
+		led_config.channel[led_config.channels-1] = NULL; //NULL last segment
 
-	free(led_config.channel[led_config.channels]);
-	led_config.channel[led_config.channels] = NULL;
+		//update the queue
+		led_set_config(&led_config);
+	}
 
 	// led_config.channels--;
 
-	//update the queue
-	led_set_config(&led_config);
 }
 
 void config_apply_palette(uint8_t palette){
@@ -847,7 +849,7 @@ void config_set_channels(uint8_t seg_id) {
 	// led_config.channels = seg_id < led_config.channels ? led_config.channels : seg_id+1;
 	led_config.channel[led_config.channels] = (struct LED_CONFIG_CHANNEL*)calloc(1,sizeof(struct LED_CONFIG_CHANNEL));
 	led_config.channel[led_config.channels]->segment_id = seg_id;
-	led_config.channel[led_config.channels]->selected = false;
+	led_config.channel[led_config.channels]->selected = true;
 	led_config.channel[led_config.channels]->mode = LED_MODE_SOLID;
 	led_config.channel[led_config.channels]->speed = 1000;
 
@@ -866,6 +868,10 @@ void config_set_channels(uint8_t seg_id) {
 	led_config.channel[led_config.channels]->palette = 0; //TODO: make default pallete enum
 
 	led_config.channels++;
+}
+
+void config_reduce_segment(){
+	led_config.channels--;
 }
 
 uint8_t config_get_prefix_leds() {
