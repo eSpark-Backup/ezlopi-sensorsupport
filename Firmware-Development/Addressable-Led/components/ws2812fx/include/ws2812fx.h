@@ -32,6 +32,13 @@ void WS2812FX_deinit(int line);
 #define SEGMENT          fx_segments[line]
 #define SEGENV           fx_segments[line]
 #define SEGLEN           segmentLength(line)
+#define SEGSPEED         SEGMENT->speed
+#define SEGPALETTE       gGradientPalettes[SEGMENT->palette].palette
+#define SEGPALETTESIZE   gGradientPalettes[SEGMENT->palette].size
+#define default_opacity  255
+
+#define COLORFROMPALETTE(x) colorFromPalette(SEGPALETTE, SEGPALETTESIZE, SEGLEN, x, default_opacity)
+#define CREATEDEFAULTPALETTE(x) createDefaultPalette(x, gGradientPalettes[0].palette);
 // #define SEGLEN           10
 
 #define SEGCOLOR(x)      fx_segments[line]->colors[x]
