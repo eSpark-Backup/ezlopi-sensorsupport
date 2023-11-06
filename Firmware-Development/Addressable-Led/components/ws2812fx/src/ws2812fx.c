@@ -148,7 +148,7 @@ void WS2812FX_init(
   fx_segments[line]->start = start;
   fx_segments[line]->stop = stop;
   fx_segments[line]->counter_mode_step = 0;
-  // fx_segments[line]->counter_mode_call = 0;
+  fx_segments[line]->counter_mode_call = 0;
   fx_segments[line]->intensity  = intensity;
   fx_segments[line]->speed = speed;
   fx_segments[line]->options = options;
@@ -266,7 +266,7 @@ uint16_t WS2812FX_mode_static(int line) {
 
   for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
     // setPixelColor(line, i, fx_segments[line]->colors[0]);
-    setPixelColor(line, i, colorFromPalette(curPal, palette_size, numLeds, i-(SEGMENT->start)));
+    setPixelColor(line, i, colorFromPalette(curPal, palette_size, numLeds, i-(SEGMENT->start), 255));
   }
 
   return 500;
@@ -299,7 +299,7 @@ static uint16_t blink(int line, uint32_t color1, uint32_t color2, int strobe) {
   createDefaultPalette(color1, gGradientPalettes[0].palette);
     
   for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
-    color = ((fx_segments[line]->counter_mode_call & 1) == 0) ? colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGLEN, i-(SEGMENT->start)) : color2;
+    color = ((fx_segments[line]->counter_mode_call & 1) == 0) ? colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGLEN, i-(SEGMENT->start), 255) : color2;
     setPixelColor(line, i, color);
   }
 
@@ -368,9 +368,9 @@ static uint16_t color_wipe(int line, uint32_t color1, uint32_t color2,
     uint32_t led_offset = fx_segments[line]->counter_mode_step;
     if (isReverse(line)) {  
       // setPixelColor(line, fx_segments[line]->stop - led_offset, color1);
-      setPixelColor(line, fx_segments[line]->stop - led_offset, colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGLEN, (fx_segments[line]->stop - led_offset)-(SEGMENT->start))); //FIXME: Relative Pixel indexing
+      setPixelColor(line, fx_segments[line]->stop - led_offset, colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGLEN, (fx_segments[line]->stop - led_offset)-(SEGMENT->start), 255)); //FIXME: Relative Pixel indexing
     } else {
-      setPixelColor(line, fx_segments[line]->start + led_offset, colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGLEN, (fx_segments[line]->stop + led_offset)-(SEGMENT->start)));
+      setPixelColor(line, fx_segments[line]->start + led_offset, colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGLEN, (fx_segments[line]->start + led_offset)-(SEGMENT->start), 255));
     }
   } else {
     uint32_t led_offset =
@@ -490,35 +490,60 @@ uint16_t WS2812FX_mode_multi_dynamic(int line) {
  * Use mode "fade" if you like to have something similar with a different speed.
  */
 uint16_t WS2812FX_mode_breath(int line) {
+  createDefaultPalette(SEGCOLOR(0), gGradientPalettes[DEFAULT_PALETTE].palette);
   int lum = fx_segments[line]->counter_mode_step;
+  uint8_t brightness =255;
   if (lum > 255)
     lum = 511 - lum; // lum = 15 -> 255 -> 15
 
   uint16_t delay;
-  if (lum == 15)
+  if (lum == 15){
     delay = 400; // 970 pause before each breath
-  else if (lum <= 25)
+    // brightness = 0;
+  }
+  else if (lum <= 25){
     delay = 38; // 19
-  else if (lum <= 50)
+    // brightness = 40;
+  }
+  else if (lum <= 50){
     delay = 36; // 18
-  else if (lum <= 75)
+    // brightness = 60;
+  }
+  else if (lum <= 75){
     delay = 28; // 14
-  else if (lum <= 100)
+    // brightness = 90; 
+  }
+  else if (lum <= 100){
     delay = 20; // 10
-  else if (lum <= 125)
+    // brightness = 130;
+  }
+  else if (lum <= 125){
     delay = 14; // 7
-  else if (lum <= 150)
+    // brightness = 170;
+  }
+  else if (lum <= 150){
     delay = 11; // 5
-  else
+    // brightness = 190;
+  }
+  else{
     delay = 10; // 4
+    // brightness = 255;
+  }
 
-  uint32_t color = fx_segments[line]->colors[0];
-  uint8_t w = (color >> 24 & 0xFF) * lum / 256;
-  uint8_t r = (color >> 16 & 0xFF) * lum / 256;
-  uint8_t g = (color >> 8 & 0xFF) * lum / 256;
-  uint8_t b = (color & 0xFF) * lum / 256;
+  uint32_t color;
+  uint8_t w,r,g,b;
   for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
-    setPixelColorRGBW(line, i, r, g, b, w);
+    color = colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGLEN, i-(SEGMENT->start), brightness);
+
+    // w = (color >> 24 & 0xFF) * lum / 256;
+    // r = (color >> 16 & 0xFF) * lum / 256;
+    // g = (color >> 8 & 0xFF) * lum / 256;
+    // b = (color & 0xFF) * lum / 256;
+
+    // setPixelColor(line, i , color);
+
+    setPixelColorRGBW(line, i, (color >> 16 & 0xFF) * lum / 256, (color >> 8 & 0xFF) * lum / 256, (color & 0xFF) * lum / 256, (color >> 24 & 0xFF) * lum / 256);
+    //  setPixelColor(line, i, (colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGLEN, i-(SEGMENT->start)))*(lum/256));
   }
 
   fx_segments[line]->counter_mode_step += (uint32_t)(12*(fx_segments[line]->speed/2000.));  //this 12 defines the speed 
@@ -581,6 +606,11 @@ uint16_t WS2812FX_mode_fade(int line) {
  * Runs a single pixel back and forth.
  */
 uint16_t WS2812FX_mode_scan(int line) {
+
+  createDefaultPalette(SEGMENT->colors[0], gGradientPalettes[0].palette);
+
+
+
   if (fx_segments[line]->counter_mode_step > (segmentLength(line) * 2) - 3) {
     fx_segments[line]->counter_mode_step = 0;
   }
@@ -594,11 +624,11 @@ uint16_t WS2812FX_mode_scan(int line) {
   led_offset = abs(led_offset);
 
   if (isReverse(line)) {
-    setPixelColor(line, fx_segments[line]->stop - led_offset,
-                  fx_segments[line]->colors[0]);
+    // setPixelColor(line, fx_segments[line]->stop - led_offset, fx_segments[line]->colors[0]);
+    setPixelColor(line, fx_segments[line]->stop - led_offset, colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGLEN, led_offset, 255));
   } else {
-    setPixelColor(line, fx_segments[line]->start + led_offset,
-                  fx_segments[line]->colors[0]);
+    // setPixelColor(line, fx_segments[line]->start + led_offset, fx_segments[line]->colors[0]);
+    setPixelColor(line, fx_segments[line]->start + led_offset, colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGLEN, led_offset, 255));
   }
 
   fx_segments[line]->counter_mode_step++;
@@ -1018,19 +1048,19 @@ uint16_t WS2812FX_mode_android(int line) {
     for (int i = a; i < a+SEGENV->aux_param2; i++) {
       int j = i+SEGMENT->start;
       // setPixelColor(line, j, SEGCOLOR(0));
-      setPixelColor(line, j, colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGLEN ,i));
+      setPixelColor(line, j, colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGLEN ,i, 255));
     }
   } else
   {
     for (int i = a; i < SEGLEN; i++) {
       int j = i+SEGMENT->start;
       // setPixelColor(line, j, SEGCOLOR(0));
-      setPixelColor(line, j, colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGLEN ,i));
+      setPixelColor(line, j, colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGLEN ,i, 255));
     }
     for (int i = 0; i < SEGENV->aux_param2 - (SEGLEN -a); i++) {
       int j = i+SEGMENT->start;
       // setPixelColor(line, j, SEGCOLOR(0));
-      setPixelColor(line, j, colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGLEN ,i));
+      setPixelColor(line, j, colorFromPalette(gGradientPalettes[SEGMENT->palette].palette, gGradientPalettes[SEGMENT->palette].size, SEGLEN ,i, 255));
     }
 
   }
