@@ -12,5 +12,8 @@
     ],
     "idf.portWin": "COM3",
     "idf.pythonBinPathWin": "C:\\Users\\Tayyab\\.espressifv4\\python_env\\idf4.4_py3.8_env\\Scripts\\python.exe",
-    "idf.toolsPathWin": "C:\\Users\\Tayyab\\.espressifv4"
+    "idf.toolsPathWin": "C:\\Users\\Tayyab\\.espressifv4",
+    "files.associations": {
+        "dht22.h": "c"
+    }
 }
