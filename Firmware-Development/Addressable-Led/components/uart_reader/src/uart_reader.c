@@ -146,7 +146,6 @@ void parse_json(char* start){
 
         cJSON* pal = cJSON_GetObjectItemCaseSensitive(seg, "pal");
         if(pal != NULL){
-            // TODO: Update Palette of all selected segments
             config_apply_palette(pal->valueint);
         }
 
