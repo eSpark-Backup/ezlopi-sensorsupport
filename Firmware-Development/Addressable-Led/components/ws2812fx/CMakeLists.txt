@@ -5,4 +5,5 @@ idf_component_register(	SRCS ${srcs}
 						REQUIRES 
 							led
 							palette
+							config
 						)
