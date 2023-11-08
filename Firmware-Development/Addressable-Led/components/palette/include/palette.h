@@ -64,7 +64,8 @@ enum PALETTE_NAME {
     RED_SHIFT,
     RED_TIDE,
     CANDY2,
-    ZAMBZI
+    ZAMBZI,
+    SPECTAL_11
 };
 
 // Function to spread the color palette evenly across LEDs
