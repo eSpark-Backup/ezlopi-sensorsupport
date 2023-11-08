@@ -71,10 +71,28 @@ static inline int max(int a, int b) {
   return b;
 }
 
+// Custom map function for ESP-IDF with uint16_t
+static inline uint16_t map(uint16_t value, uint16_t fromLow, uint16_t fromHigh, uint16_t toLow, uint16_t toHigh) {
+    // Check for invalid input
+    if (value < fromLow) {
+        value = fromLow;
+    } else if (value > fromHigh) {
+        value = fromHigh;
+    }
+
+    // Perform the mapping calculation
+    return (uint16_t)((uint32_t)(value - fromLow) * (uint32_t)(toHigh - toLow) / (uint32_t)(fromHigh - fromLow) + toLow);
+}
+
 // some common colors
-#define GREEN fx_segments[line]->colors[0]
-#define RED fx_segments[line]->colors[1]
-#define BLUE fx_segments[line]->colors[2]
+// #define GREEN fx_segments[line]->colors[0]
+// #define RED fx_segments[line]->colors[1]
+// #define BLUE fx_segments[line]->colors[2]
+
+#define GREEN 0x0000FF00
+#define RED 0x00FF0000
+#define BLUE 0x000000FF
+
 #define WHITE (uint32_t)0xFFFFFF
 #define BLACK (uint32_t)0x000000
 #define YELLOW (uint32_t)0xFFFF00
@@ -479,11 +497,11 @@ static uint16_t color_wipe_wled(int line, bool rev, bool useRandomColors) {
 
     if (i < ledIndex)
     {
-      setPixelColor(line, index, back? col1 : col0);
+      setPixelColor(line, index + SEGMENT->start, back? col1 : col0);
     } else
     {
-      setPixelColor(line, index, back? col0 : col1);
-      if (i == ledIndex) setPixelColor(line, index, color_blend((back? col0 : col1), (back? col1 : col0), rem));
+      setPixelColor(line, index + SEGMENT->start, back? col0 : col1);
+      if (i == ledIndex) setPixelColor(line, index + SEGMENT->start, color_blend((back? col0 : col1), (back? col1 : col0), rem));
     }
   }
   return 20;
@@ -533,13 +551,14 @@ uint16_t WS2812FX_mode_color_wipe_random(int line) {
  * Random color introduced alternating from start and end of strip.
  */
 uint16_t WS2812FX_mode_color_sweep_random(int line) {
-  if (fx_segments[line]->counter_mode_step % segmentLength(line) ==
-      0) { // aux_param will store our random color wheel index
-    fx_segments[line]->aux_param =
-        get_random_wheel_index(fx_segments[line]->aux_param);
-  }
-  uint32_t color = color_wheel(fx_segments[line]->aux_param);
-  return color_wipe(line, color, color, true) * 2;
+  // if (fx_segments[line]->counter_mode_step % segmentLength(line) ==
+  //     0) { // aux_param will store our random color wheel index
+  //   fx_segments[line]->aux_param =
+  //       get_random_wheel_index(fx_segments[line]->aux_param);
+  // }
+  // uint32_t color = color_wheel(fx_segments[line]->aux_param);
+  // return color_wipe(line, color, color, true) * 2;
+  return color_wipe_wled(line, true, true) * 2;
 }
 
 /*
@@ -1088,48 +1107,71 @@ uint16_t WS2812FX_mode_multi_strobe(int line) {
   return delay;
 }
 
+
+//   fx_segments[line]->counter_mode_step =
+//       (fx_segments[line]->counter_mode_step + 2) % (count + 1);   
+//   return delay;
+// }
+
+static uint16_t police_strobe(int line, uint32_t color1, uint32_t color2) {
+  if (SEGLEN == 1) return WS2812FX_mode_static(line);
+  uint16_t delay = 1 + (20<<3) / SEGLEN;  // longer segments should change faster
+  // uint16_t delay = 1 + (FRAMETIME<<3) / SEGLEN;  // longer segments should change faster
+  uint32_t it = SEGENV->next_time;
+  // uint32_t it = SEGENV->next_time / map(SEGSPEED, 0, 2000 , delay<<4, delay);
+  uint16_t offset = it % SEGLEN;
+
+  uint16_t width = ((SEGLEN*(SEGMENT->intensity+1))>>9); //max width is half the strip
+  if (!width) width = 1;
+  for (int i = 0; i < width; i++) {
+    uint16_t indexR = (offset + i) % SEGLEN;
+    uint16_t indexB = (offset + i + (SEGLEN>>1)) % SEGLEN;
+    setPixelColor(line, indexR + SEGMENT->start, color1);
+    setPixelColor(line, indexB + SEGMENT->start, color2);
+  }
+  // return 10;
+  return 265 - map(SEGSPEED, 0, 2000 , 0, 255);
+  // return FRAMETIME;
+}
+
 /*
  * Police Strobe effect with different strobe count and pause, controlled by speed.
  */
 uint16_t WS2812FX_mode_police_strobe(int line) {
-  CREATEDEFAULTPALETTE(SEGCOLOR(0));
+  // CREATEDEFAULTPALETTE(SEGCOLOR(0));
 
-  //turn all off
-  for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
-    setPixelColor(line, i, 0);
-  }
+  // //turn all off
+  // for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
+  //   setPixelColor(line, i, 0);
+  // }
 
-  uint16_t delay = 200 + ((9 - (fx_segments[line]->speed % 10)) * 100); //209
-  uint16_t count = 2 * ((fx_segments[line]->speed / 100) + 1);  //2*11 = 22
+  // uint16_t delay = 200 + ((9 - (fx_segments[line]->speed % 10)) * 100); //209
+  // uint16_t count = 2 * ((fx_segments[line]->speed / 100) + 1);  //2*11 = 22
 
-  if ((fx_segments[line]->counter_mode_step > 0) && (fx_segments[line]->counter_mode_step < count/2)) {
-    if ((fx_segments[line]->counter_mode_step & 1) == 0) {
-      for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
-        if(i <= (SEGLEN)/2)
-          setPixelColor(line, i, COLORFROMPALETTE(i-(SEGMENT->start)));
-      }
-      delay = 20;
-    } else {
-      delay = 50;
-    }
+  // if ((fx_segments[line]->counter_mode_step > 0) && (fx_segments[line]->counter_mode_step < count/2)) {
+  //   if ((fx_segments[line]->counter_mode_step & 1) == 0) {
+  //     for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
+  //       if(i <= (SEGLEN)/2)
+  //         setPixelColor(line, i, COLORFROMPALETTE(i-(SEGMENT->start)));
+  //     }
+  //     delay = 20;
+  //   } else {
+  //     delay = 50;
+  //   }
+  // }  
+
+  // if ((fx_segments[line]->counter_mode_step > count/2) && (fx_segments[line]->counter_mode_step < count)) {
+  //   if ((fx_segments[line]->counter_mode_step & 1) == 0) {
+  //     for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
+  //       if(i >= (SEGLEN)/2)
+  //         setPixelColor(line, i, fx_segments[line]->colors[1]);
+  //     }
+  //     delay = 20;
+  //   } else {
+  //     delay = 50;
+  //   }
+  return police_strobe(line, RED, BLUE);
   }  
-
-  if ((fx_segments[line]->counter_mode_step > count/2) && (fx_segments[line]->counter_mode_step < count)) {
-    if ((fx_segments[line]->counter_mode_step & 1) == 0) {
-      for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
-        if(i >= (SEGLEN)/2)
-          setPixelColor(line, i, fx_segments[line]->colors[1]);
-      }
-      delay = 20;
-    } else {
-      delay = 50;
-    }
-  }  
-
-  fx_segments[line]->counter_mode_step =
-      (fx_segments[line]->counter_mode_step + 2) % (count + 1);   
-  return delay;
-}
 
 /*
  * Android loading circle
@@ -1227,7 +1269,7 @@ static uint16_t chase(int line, uint32_t color1, uint32_t color2,
 
   fx_segments[line]->counter_mode_step =
       (fx_segments[line]->counter_mode_step + 1) % segmentLength(line);
-  return (fx_segments[line]->speed / segmentLength(line));
+  return (10 + (255 - map(SEGSPEED, 0, 2000, 0, 255))*0.5);
 }
 
 /*
@@ -1263,7 +1305,8 @@ static uint16_t fire_flicker(int line, int rev_intensity) {
     setPixelColorRGBW(line, i, max(r - flicker, 0), max(g - flicker, 0),
                       max(b - flicker, 0), max(w - flicker, 0));
   }
-  return (SEGSPEED / segmentLength(line));
+  // return (SEGSPEED / segmentLength(line));
+  return (10 + (255 - map(SEGSPEED, 0, 2000, 0, 255))*0.5);
 }
 
 /*
@@ -1382,7 +1425,8 @@ uint16_t WS2812FX_mode_chase_flash(int line) {
     fx_segments[line]->counter_mode_step =
         (fx_segments[line]->counter_mode_step + 1) % segmentLength(line);
   }
-  return delay;
+  // return delay;
+    return (5 + (255 - map(SEGSPEED, 0, 2000, 0, 255))*0.5);
 }
 
 /*
@@ -1423,7 +1467,8 @@ uint16_t WS2812FX_mode_chase_flash_random(int line) {
           get_random_wheel_index(fx_segments[line]->aux_param);
     }
   }
-  return delay;
+  // return delay;
+    return (5 + (255 - map(SEGSPEED, 0, 2000, 0, 255))*0.2);
 }
 
 /*
@@ -1448,7 +1493,8 @@ static uint16_t running(int line, uint32_t color1, uint32_t color2) {
 
   fx_segments[line]->counter_mode_step =
       (fx_segments[line]->counter_mode_step + 1) & 0x3;
-  return (fx_segments[line]->speed / segmentLength(line));
+  // return (fx_segments[line]->speed / segmentLength(line));
+  return (10 + (255 - map(SEGSPEED, 0, 2000, 0, 255))*0.5);
 }
 
 /*
@@ -1673,7 +1719,8 @@ static uint16_t tricolor_chase(int line, uint32_t color1, uint32_t color2,
   }
 
   fx_segments[line]->counter_mode_step++;
-  return (fx_segments[line]->speed / segmentLength(line));
+  // return (fx_segments[line]->speed / segmentLength(line));
+  return (10 + (255 - map(SEGSPEED, 0, 2000, 0, 255))*0.5);
 }
 
 /*
