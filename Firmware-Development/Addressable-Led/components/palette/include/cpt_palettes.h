@@ -36,19 +36,27 @@ const byte es_vintage_57_gp[]   = {
 //gradient "zambezi-proximity"
 const byte zambezi_proximity[] = {
     0,   186, 218, 139,
-    3,   186, 218, 139,
     3,   231, 234, 155,
-    8,   231, 234, 155,
     8,   254, 243, 181,
-    16,  254, 243, 181,
     16,  246, 215, 150,
-    25,  246, 215, 150,
     25,  205, 164, 119,
-    33,  205, 164, 119,
     33,  187, 144, 105,
-    50,  93,  72,  52, // Reduced by half
     50,  225, 225, 225,
-    100, 225, 225, 225
+};
+
+//http://soliton.vm.bytemark.co.uk/pub/cpt-city/cb/div/tn/Spectral_11.png.index.html
+const byte spectral_11[] = {
+    0,   158, 1, 66,
+   76,  213, 62, 79,
+  127,  244, 109, 67,
+  204,  253, 174, 97,
+  281,  254, 224, 139,
+  332,  255, 255, 191,
+  383,  230, 245, 152,
+  434,  171, 221, 164,
+  485,  102, 194, 165,
+  537,  50, 136, 189,
+  588,  94, 79, 162
 };
 
 
@@ -956,7 +964,8 @@ const struct paletteContainer gGradientPalettes[] = {  //TODO: Re Order the numb
   paletteGroup(red_shift_gp),                 // 68-55 Red Shift
   paletteGroup(red_tide_gp),                  // 69-56 Red Tide
   paletteGroup(candy2_gp),                    // 70-57 Candy2
-  paletteGroup(zambezi_proximity)             // 71-58 Zambzi
+  paletteGroup(zambezi_proximity),             // 71-58 Zambzi
+  paletteGroup(spectral_11)                   // 72-59 Zambzi
 };
 
 

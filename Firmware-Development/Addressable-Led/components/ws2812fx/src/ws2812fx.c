@@ -24,6 +24,7 @@
 /*function prototypes*/
 static uint16_t random16mm( uint16_t min, uint16_t lim);
 static uint16_t random16l( uint16_t lim);
+static uint32_t color_blend(uint32_t color1, uint32_t color2, uint8_t blend);
 
 /* A PROGMEM (flash mem) table containing 8-bit unsigned sine wave (0-255).
  Copy & paste this snippet into a Python REPL to regenerate:
@@ -356,7 +357,7 @@ static uint16_t blink(int line, uint32_t color1, uint32_t color2, int strobe) {
   if ((fx_segments[line]->counter_mode_call & 1) == 0) {
     return strobe ? 20 : (delay / 2);
   } else {
-    return strobe ? delay - 20
+    return strobe ? delay - 200
                   : (delay / 2);
   }
 }
@@ -431,11 +432,69 @@ static uint16_t color_wipe(int line, uint32_t color1, uint32_t color2,
 }
 
 /*
+ * Color wipe function from WLED
+ * LEDs are turned on (color1) in sequence, then turned off (color2) in sequence.
+ * if (bool rev == true) then LEDs are turned off in reverse order
+ */
+static uint16_t color_wipe_wled(int line, bool rev, bool useRandomColors) {
+  CREATEDEFAULTPALETTE(SEGCOLOR(0));
+  uint32_t cycleTime = 50 + (255 - (int)(255*((float)SEGSPEED/(float)2000)));   //128 is segment speed FIXME:
+  // uint32_t perc = strip.now % cycleTime;
+  uint32_t perc = SEGMENT->next_time % cycleTime;
+  uint16_t prog = (perc * 65535) / cycleTime;
+  bool back = (prog > 32767);
+  if (back) {
+    prog -= 32767;
+    if (SEGENV->counter_mode_step == 0) SEGENV->counter_mode_step = 1;
+  } else {
+    if (SEGENV->counter_mode_step == 2) SEGENV->counter_mode_step = 3; //trigger color change
+  }
+
+  if (useRandomColors) {
+    if (SEGENV->counter_mode_call == 0) {
+      SEGENV->aux_param = random8();
+      SEGENV->counter_mode_step = 3;
+    }
+    if (SEGENV->counter_mode_step == 1) { //if flag set, change to new random color
+      SEGENV->aux_param2 = get_random_wheel_index(SEGENV->aux_param);
+      SEGENV->counter_mode_step = 2;
+    }
+    if (SEGENV->counter_mode_step == 3) {
+      SEGENV->aux_param = get_random_wheel_index(SEGENV->aux_param2);
+      SEGENV->counter_mode_step = 0;
+    }
+  }
+
+  uint16_t ledIndex = (prog * SEGLEN) >> 15;
+  uint16_t rem = 0;
+  rem = (prog * SEGLEN) * 2; //mod 0xFFFF
+  rem /= (SEGMENT->intensity +1);
+  if (rem > 255) rem = 255;
+
+  uint32_t col1 = useRandomColors? color_wheel(SEGENV->aux_param2) : SEGCOLOR(1);
+  for (int i = 0; i < SEGLEN; i++)
+  {
+    uint16_t index = (rev && back)? SEGLEN -1 -i : i;
+    uint32_t col0 = useRandomColors? color_wheel(SEGENV->aux_param) : COLORFROMPALETTE(index);
+
+    if (i < ledIndex)
+    {
+      setPixelColor(line, index, back? col1 : col0);
+    } else
+    {
+      setPixelColor(line, index, back? col0 : col1);
+      if (i == ledIndex) setPixelColor(line, index, color_blend((back? col0 : col1), (back? col1 : col0), rem));
+    }
+  }
+  return 20;
+  // return FRAMETIME;
+}
+
+/*
  * Lights all LEDs one after another.
  */
 uint16_t WS2812FX_mode_color_wipe(int line) {
-  return color_wipe(line, fx_segments[line]->colors[0],
-                    fx_segments[line]->colors[1], false);
+  return color_wipe(line, fx_segments[line]->colors[0],fx_segments[line]->colors[1], false);
 }
 
 uint16_t WS2812FX_mode_color_wipe_inv(int line) {
@@ -458,13 +517,16 @@ uint16_t WS2812FX_mode_color_wipe_rev_inv(int line) {
  * Then starts over with another color.
  */
 uint16_t WS2812FX_mode_color_wipe_random(int line) {
-  if (fx_segments[line]->counter_mode_step % segmentLength(line) ==
-      0) { // aux_param will store our random color wheel index
-    fx_segments[line]->aux_param =
-        get_random_wheel_index(fx_segments[line]->aux_param);
-  }
-  uint32_t color = color_wheel(fx_segments[line]->aux_param);
-  return color_wipe(line, color, color, false) * 2;
+  // if (SEGENV->counter_mode_step % segmentLength(line) == 0) { // aux_param will store our random color wheel index
+  //   SEGENV->aux_param = get_random_wheel_index(SEGENV->aux_param);
+  // }
+  // printf("\nAUX PARAM %d", SEGMENT->aux_param);
+  // uint32_t color = color_wheel(SEGENV->aux_param);
+  // // uint32_t color = WARMWHITE;
+  // return color_wipe(line, color, color, false) * 2;
+
+  return color_wipe_wled(line, false, true);
+
 }
 
 /*
@@ -811,7 +873,8 @@ uint16_t WS2812FX_mode_running_lights(int line) {
 
   fx_segments[line]->counter_mode_step =
       (fx_segments[line]->counter_mode_step + 1) % 256;
-  return (fx_segments[line]->speed / segmentLength(line));
+  // return (fx_segments[line]->speed / segmentLength(line));
+  return 15*(2000/fx_segments[line]->speed);
 }
 
 /*
@@ -956,24 +1019,26 @@ uint16_t WS2812FX_mode_sparkle(int line) {
  * Inspired by www.tweaking4all.com/hardware/arduino/arduino-led-strip-effects/
  */
 uint16_t WS2812FX_mode_flash_sparkle(int line) {
-  if (fx_segments[line]->counter_mode_call == 0) {
+  CREATEDEFAULTPALETTE(SEGCOLOR(0));
+  if (1) {
     for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop;
          i++) {
-      setPixelColor(line, i, fx_segments[line]->colors[0]);
+      setPixelColor(line, i, COLORFROMPALETTE(i-(SEGMENT->start)));
     }
   }
 
   setPixelColor(line, fx_segments[line]->start + fx_segments[line]->aux_param3,
                 fx_segments[line]->colors[0]);
 
-  if (random8(5) == 0) {
+  if (random8l(5) == 0) {
     fx_segments[line]->aux_param3 =
         random16l(segmentLength(line)); // aux_param3 stores the random led index//FIXME: random32 is returning pixels greater than the segment length
     setPixelColor(line, fx_segments[line]->start + fx_segments[line]->aux_param3,
                   WHITE);
     return 20;
   }
-  return fx_segments[line]->speed;
+  // return fx_segments[line]->speed;
+  return 15*(2000/fx_segments[line]->speed);
 }
 
 /*
@@ -981,18 +1046,19 @@ uint16_t WS2812FX_mode_flash_sparkle(int line) {
  * Inspired by www.tweaking4all.com/hardware/arduino/arduino-led-strip-effects/
  */
 uint16_t WS2812FX_mode_hyper_sparkle(int line) {
+  CREATEDEFAULTPALETTE(SEGCOLOR(0));
   for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
-    setPixelColor(line, i, fx_segments[line]->colors[0]);
+    setPixelColor(line, i, COLORFROMPALETTE(i-(SEGMENT->start)));
   }
 
-  if (random8(5) < 2) {
+  if (random8l(5) < 2) {
     for (uint16_t i = 0; i < max(1, segmentLength(line) / 3); i++) {
       setPixelColor(line, fx_segments[line]->start + random16l(segmentLength(line)),
                     WHITE);
     }
     return 20;
   }
-  return fx_segments[line]->speed;
+  return 15*(2000/fx_segments[line]->speed);
 }
 
 /*
@@ -1061,7 +1127,7 @@ uint16_t WS2812FX_mode_police_strobe(int line) {
   }  
 
   fx_segments[line]->counter_mode_step =
-      (fx_segments[line]->counter_mode_step + 1) % (count + 1);   
+      (fx_segments[line]->counter_mode_step + 2) % (count + 1);   
   return delay;
 }
 
@@ -1122,7 +1188,8 @@ uint16_t WS2812FX_mode_android(int line) {
   }
   SEGENV->counter_mode_step = a;
 
-  return 3 + ((16 * (uint32_t)(2000 -SEGMENT->speed)) / SEGLEN);
+  // return 3 + ((16 * (uint32_t)(2000 -SEGMENT->speed)) / SEGLEN);
+  return 15*(2000/SEGSPEED);
   // return 20;
 }
 
@@ -1655,7 +1722,8 @@ uint16_t WS2812FX_mode_icu(int line) {
                     BLACK);
       return 200;
     }
-    fx_segments[line]->aux_param3 = random16l(segmentLength(line) / 2);
+    // fx_segments[line]->aux_param3 = random16l(segmentLength(line) / 2);
+    fx_segments[line]->aux_param3 = random16l(SEGLEN/2);
     return 1000 + random16l(2000);
   }
 
@@ -1677,5 +1745,6 @@ uint16_t WS2812FX_mode_icu(int line) {
   setPixelColor(line, fx_segments[line]->start + dest + virtualSegmentLength,
                 COLORFROMPALETTE(dest));
 
-  return (fx_segments[line]->speed / segmentLength(line));
+  // return (fx_segments[line]->speed / segmentLength(line));
+  return 15*(2000/fx_segments[line]->speed);
 }
