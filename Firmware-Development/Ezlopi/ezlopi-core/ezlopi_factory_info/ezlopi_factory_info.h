@@ -18,8 +18,8 @@ extern "C"
 #define EZLOPI_DEVICE_TYPE_SOUND_SENSOR 3
 #define EZLOPI_DEVICE_TYPE_AMBIENT_TRACKER_PRO 4
 
-#define EZLOPI_DEVICE_TYPE EZLOPI_DEVICE_TYPE_GENERIC
-    // #define EZLOPI_DEVICE_TYPE EZLOPI_DEVICE_TYPE_TEST_DEVICE
+// #define EZLOPI_DEVICE_TYPE EZLOPI_DEVICE_TYPE_GENERIC
+    #define EZLOPI_DEVICE_TYPE EZLOPI_DEVICE_TYPE_TEST_DEVICE
 
 #include "esp_partition.h"
 
@@ -409,10 +409,12 @@ static const char *test_device_constant_config =
     \"cmd\":3,\
     \"dev_detail\":[{\
                 \"dev_type\": 7,\
-                \"dev_name\": \"DHT 22\",\
+                \"dev_name\": \"SUCCESSFUL\",\
                 \"id_room\": \"\",\
-                \"id_item\": 16,\
-                \"gpio\": 18\
+                \"id_item\": 66,\
+                \"gpio_tx\" : 17,\
+                \"gpio_rx\" : 16,\
+                \"baud_rate\": 115200\
             },\
             {\
                 \"dev_type\" : 1,\

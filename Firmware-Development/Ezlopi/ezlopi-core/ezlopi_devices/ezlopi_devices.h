@@ -120,7 +120,7 @@ typedef struct s_ezlopi_saved_item_info
     uint32_t item_id;
     bool favorite;
 } s_ezlopi_saved_item_info_t;
-
+ 
 typedef struct l_ezlopi_item
 {
     s_ezlopi_saved_item_info_t saved_info;
