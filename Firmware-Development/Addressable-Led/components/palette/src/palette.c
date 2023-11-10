@@ -8,7 +8,7 @@ static const char* TAG = "uart_select_example";
 // Function to spread the color palette evenly across LEDs and return one uint32_t color
 uint32_t colorFromPalette(const byte* palette, int paletteSize, int numLeds, int ledIndex, uint8_t brightness) {
 
-
+    numLeds++;
     int baseIndex = (ledIndex * paletteSize) / numLeds;
     int nextIndex = ((baseIndex + 1) % paletteSize);
     int offset = ((255 * ledIndex) / numLeds);
@@ -53,10 +53,40 @@ void createDefaultPalette(uint32_t color, byte* palette) {
     uint8_t g = (color >> 8) & 0xFF;
     uint8_t b = color & 0xFF;
 
+    // // Fill the entire byte array with the color components
+    // for (int i = 0; i < arraySize; i += 4) {
+    //     palette[i+1] = r;     // R component
+    //     palette[i + 2] = g; // G component
+    //     palette[i + 3] = b; // B component
+    // }
+
     // Fill the entire byte array with the color components
-    for (int i = 0; i < arraySize; i += 4) {
-        palette[i+1] = r;     // R component
-        palette[i + 2] = g; // G component
-        palette[i + 3] = b; // B component
+    for (int i = 0; i < 14; i++ ){
+        palette[i * 4 + 1] = r;     // R component
+        palette[i * 4 + 2] = g; // G component
+        palette[i * 4 + 3] = b; // B component
+    }
+}
+
+
+void createGradientPalette(uint32_t color1, uint32_t color2, int numSteps, byte* palette) {
+    // Extract RGB components of color1
+    uint8_t r1 = (color1 >> 16) & 0xFF;
+    uint8_t g1 = (color1 >> 8) & 0xFF;
+    uint8_t b1 = color1 & 0xFF;
+
+    // Extract RGB components of color2
+    uint8_t r2 = (color2 >> 16) & 0xFF;
+    uint8_t g2 = (color2 >> 8) & 0xFF;
+    uint8_t b2 = color2 & 0xFF;
+
+    for (int step = 0; step < numSteps; step++) {
+        // Calculate the blend factor based on the step
+        float blendFactor = (float)step / (float)(numSteps - 1);
+
+        // Calculate the mixed color
+        palette[step * 4 + 1] = (uint8_t)(r1 + blendFactor * (r2-r1));
+        palette[step * 4 + 2] = (uint8_t)(g1 + blendFactor * (g2-g1));
+        palette[step * 4 + 3] = (uint8_t)(b1 + blendFactor * (b2-b1));
     }
 }

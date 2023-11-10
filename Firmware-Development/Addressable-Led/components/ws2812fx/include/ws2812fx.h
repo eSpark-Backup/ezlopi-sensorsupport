@@ -35,13 +35,14 @@ void WS2812FX_deinit(int line);
 #define SEGSPEED         SEGMENT->speed
 #define SEGPALETTE       gGradientPalettes[SEGMENT->palette].palette
 #define SEGPALETTESIZE   gGradientPalettes[SEGMENT->palette].size
+#define SEGCOLOR(x)      fx_segments[line]->colors[x]
 #define default_opacity  255
 
 #define COLORFROMPALETTE(x) colorFromPalette(SEGPALETTE, SEGPALETTESIZE, SEGLEN, x, default_opacity)
 #define CREATEDEFAULTPALETTE(x) createDefaultPalette(x, gGradientPalettes[0].palette);
+#define CREATEDUALGRADIENTPALETTE   createGradientPalette(fx_segments[line]->colors[0], fx_segments[line]->colors[1], 14, gGradientPalettes[0].palette)
 // #define SEGLEN           10
 
-#define SEGCOLOR(x)      fx_segments[line]->colors[x]
 void WS2812FX_call(int line, uint16_t (*fct)(int));
 
 uint16_t WS2812FX_mode_bicolor_chase(int line);

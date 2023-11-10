@@ -595,6 +595,7 @@ static void task(void *args) {
 		TickType_t now = xTaskGetTickCount();
 
 		for (int i = 0; i < led_get_max_lines(); i++) {
+
 		// ESP_LOGI(TAG, "MODE %d",  led_config.channel[i].mode);
 			if(led_config.channel[i] != NULL){
 				switch (led_config.channel[i]->mode) {

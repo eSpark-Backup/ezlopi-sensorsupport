@@ -874,6 +874,7 @@ const byte candy2_gp[]   = {
 
 /*Default Color Palette*/
 byte default_palette[] = {
+    0, 0, 0, 0, //0 * 4
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
@@ -886,8 +887,7 @@ byte default_palette[] = {
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0
+    0, 0, 0, 0  //13 * 4
 };
 
 
@@ -905,6 +905,7 @@ static struct paletteContainer{
 
 
 const struct paletteContainer gGradientPalettes[] = {  //TODO: Re Order the number of  all
+  paletteGroup(default_palette),        // 72-59 Default Palette color as Color 1
   paletteGroup(default_palette),        // 72-59 Default Palette color as Color 1
   paletteGroup(Sunset_Real_gp),         // 13-00 Sunset
   paletteGroup(es_rivendell_15_gp),     // 14-01 Rivendell

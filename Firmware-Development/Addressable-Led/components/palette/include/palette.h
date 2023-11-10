@@ -6,6 +6,7 @@ typedef uint8_t byte;
 // Define an enumeration for the palette names in all uppercase
 enum PALETTE_NAME {
     DEFAULT_PALETTE,
+    COLOR_1_2,
     SUNSET_REAL,
     RIVENDELL,
     BREEZE,
@@ -73,5 +74,6 @@ enum PALETTE_NAME {
 
 uint32_t colorFromPalette(const byte* palette, int paletteSize, int numLeds, int ledIndex, uint8_t brightness);
 void createDefaultPalette(uint32_t color, byte* palette);
+void createGradientPalette(uint32_t color1, uint32_t color2, int numSteps, byte* palette);
 
 #endif /* PALETTE_H_ */
