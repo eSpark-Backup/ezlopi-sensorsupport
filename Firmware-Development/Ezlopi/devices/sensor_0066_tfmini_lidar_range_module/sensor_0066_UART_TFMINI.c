@@ -67,11 +67,10 @@ static int __get_value_cjson(l_ezlopi_item_t *item, void *arg)
     if (item && arg)
     {
         cJSON *cj_result = (cJSON *)arg;
-        TFMINI_Data* tfmini_sensor_data = (TFMINI_Data*) malloc (sizeof(TFMINI_Data));
-        tfmini_value = tfmini_sensor_data->tfmini_distance;
         cJSON_AddNumberToObject(cj_result, "value", tfmini_value);
         snprintf(valueFormatted, 20, "%.2f", tfmini_value);
         cJSON_AddStringToObject(cj_result, "valueFormatted", valueFormatted);
+
         ret = 1;
     }
     return ret;
@@ -82,15 +81,12 @@ static void __uart_data_upcall(uint8_t *buffer, s_ezlopi_uart_object_handle_t ua
     if (uart_object_handle->arg)
     {
         l_ezlopi_item_t *item = (l_ezlopi_item_t *)uart_object_handle->arg;
-        // TRACE_E("Buffer is %s", buffer);
-        char *tmp_buffer = (char *)malloc(256);
-        if (tmp_buffer)
+        TFMINI_Data* tfmini_sensor = (TFMINI_Data*)item->user_arg;
+        if (tfmini_sensor)
         {
-            memcpy(tmp_buffer, buffer + 1, 4);
-
+            tfmini_parse_and_assign(buffer,tfmini_sensor);
 #warning "use ring buffer"
-            tfmini_value = atoi(tmp_buffer) / 10.0;
-            free(tmp_buffer);
+            tfmini_value = tfmini_sensor->tfmini_distance;
         }
     }
 }
@@ -122,7 +118,7 @@ static void __setup_device_cloud_properties(l_ezlopi_device_t *device, cJSON *cj
     device->cloud_properties.device_id = ezlopi_cloud_generate_device_id();
 }
 
-static void __setup_item_cloud_properties(l_ezlopi_item_t *item, cJSON *cj_device)
+static void __setup_item_cloud_properties(l_ezlopi_item_t *item, cJSON *cj_device,TFMINI_Data* tfmini_sensor)
 {
     item->cloud_properties.show = true;
     item->cloud_properties.has_getter = true;
@@ -130,8 +126,11 @@ static void __setup_item_cloud_properties(l_ezlopi_item_t *item, cJSON *cj_devic
     item->cloud_properties.item_name = ezlopi_item_name_distance;
     item->cloud_properties.value_type = value_type_length;
     item->cloud_properties.scale = scales_centi_meter;
-    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
+    tfmini_sensor->distance_item_id = ezlopi_cloud_generate_item_id();
+    item->cloud_properties.item_id = tfmini_sensor->distance_item_id;
     item->interface.uart.enable =  true;
+     //----- CUSTOM DATA STRUCTURE -----------------------------------------
+    item->user_arg = (void *)tfmini_sensor;
 }
 
 static void __setup_item_interface_properties(l_ezlopi_item_t *item, cJSON *cj_device)
@@ -161,7 +160,7 @@ static int __prepare(void *arg)
                     l_ezlopi_item_t *item_distance = ezlopi_device_add_item_to_device(device, sensor_0066_UART_TFMINI);
                     if (item_distance)
                     {
-                        __setup_item_cloud_properties(item_distance, cjson_device);
+                        __setup_item_cloud_properties(item_distance, cjson_device, tfmini_sensor_data);
                         __setup_item_interface_properties(item_distance, cjson_device);
                         ret = 1;
                     }
@@ -177,44 +176,44 @@ static int __prepare(void *arg)
     return ret;
 }
 
+static int sensor_uart_tfmini_update_values(uint8_t* buffer, l_ezlopi_item_t *item)
+{
+    int ret = 0;
+   if (NULL != item)
+   {
+    printf("NOTIFY+++++++++++++++++++++++++++++++++++++++++++++++++3\n");
+    TFMINI_Data* tfmini_sensor = (TFMINI_Data*)item->user_arg;
+    if (tfmini_sensor)
+        {
+            printf("NOTIFY+++++++++++++++++++++++++++++++++++++++++++++++++4\n");
+            tfmini_parse_and_assign(buffer,tfmini_sensor);
+#warning "use ring buffer"
+            tfmini_value = tfmini_sensor->tfmini_distance;
+            printf("NOTIFY+++++++++++++++++++++++++++++++++++++++++++++++++5\n");
+            return ezlopi_device_value_updated_from_device_v3(item);
+        }
+   }
+   return ret;
+}
+
 static int __notify(l_ezlopi_item_t *item)
 {
-    return ezlopi_device_value_updated_from_device_v3(item);
+    int ret = 0;
+    
+    printf("NOTIFY+++++++++++++++++++++++++++++++++++++++++++++++++1\n");
+    if (item) {
+        TFMINI_Data* tfmini_sensor = (TFMINI_Data*)item->user_arg;
+        if (tfmini_sensor) {
+            if ((tfmini_sensor->distance_item_id) == item->cloud_properties.item_id)
+             {
+                printf("NOTIFY+++++++++++++++++++++++++++++++++++++++++++++++++2%d\n",buffer[0]);
+                return sensor_uart_tfmini_update_values(buffer, item);
+
+                
+
+            }
+        }
+    }
+    return ret;
 }
-// static int __notify(l_ezlopi_item_t *item)
-// {
-//     int ret = 0;
-//     // if (item)
-//     // {
-//         TFMINI_Data* tfmini_sensor_data = (TFMINI_Data*)item->user_arg;
-//         // if (tfmini_sensor_data)
-//         // {
-//             // if (ezlopi_item_name_distance == item->cloud_properties.item_name)
-//             // {
-//                 printf("Mei bhair hon\n");
-//                 int dist = tfmini_sensor_data->tfmini_distance;
-//                 // TRACE_E("Temperature: %.2f", temperature);
-//                 // if (tfmini_sensor_data->tfmini_distance >-1)
-//                 // {
-//                     printf("Mei under hon\n");
-//                     tfmini_sensor_data->tfmini_distance = dist;
-//                     ezlopi_device_value_updated_from_device_v3(item);
-//                 // }
-//             // }
-//             // else if (ezlopi_item_name_humidity == item->cloud_properties.item_name)
-//             // {
-//             //     float humidity = getHumidity();
-//             //     // TRACE_E("Humidity: %.2f", humidity);
-//             //     if (fabs(dht22_data->humidity - humidity) > 0.5)
-//             //     {
-//             //         dht22_data->humidity = humidity;
-//             //         ezlopi_device_value_updated_from_device_v3(item);
-//             //     }
-//             // }
-//             // else
-//             // {
-//             // }
-//         // }
-//     // }
-//     return ret;
-// }
+

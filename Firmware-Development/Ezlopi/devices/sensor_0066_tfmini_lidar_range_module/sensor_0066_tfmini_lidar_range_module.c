@@ -23,21 +23,79 @@ static void ezlopi_tfmini_upcall(uint8_t* buffer, s_ezlopi_uart_object_handle_t 
 }
 
 esp_err_t tfmini_read_upcall(uint8_t* buffer, TFMINI_Data* data)
-{ 
-    for (int i =0 ; i<9; i++)
-        {
-            if (buffer[i] == 0x59 && buffer[i+1] == 0x59)
-            {
-                data->tfmini_distance = buffer[i+2] + buffer[i+3]*255; 
-                data->tfmini_strength = buffer[i+4] + buffer[i+5]*255 ; 
-                data->tfmini_chip_temperature = (buffer[i+6] + buffer[i+7]*255)/ 8 - 256; 
-                vTaskDelay(pdMS_TO_TICKS(100)); // 100 milliseconds = 0.1 second
-                return ESP_OK;
-            }
-        }
+{
+    if (buffer == NULL)
+    {
+        // Handle NULL pointer gracefully
+        return ESP_ERR_INVALID_ARG;
+    }
 
-    return ESP_FAIL;
-    
+    // Check if the buffer contains at least 8 elements
+    if (sizeof(buffer) < 8)
+    {
+        // Handle insufficient buffer size gracefully
+        return ESP_ERR_INVALID_SIZE;
+    }
+
+    // Ensure buffer indices are within bounds
+    if (buffer[0] == 0x59 && buffer[1] == 0x59)
+    {
+        if (buffer[2] < 255 && buffer[3] < 255 &&
+            buffer[4] < 255 && buffer[5] < 255 &&
+            buffer[6] < 255 && buffer[7] < 255)
+        {
+            data->tfmini_distance = buffer[2] + buffer[3] * 255;
+            data->tfmini_strength = buffer[4] + buffer[5] * 255;
+            data->tfmini_chip_temperature = (buffer[6] + buffer[7] * 255) / 8 - 256;
+
+            return ESP_OK;
+        }
+        else
+        {
+            // Handle invalid values in buffer gracefully
+            return ESP_ERR_INVALID_STATE;
+        }
+    }
+    else
+    {
+        // Handle unexpected header values gracefully
+        return ESP_ERR_INVALID_RESPONSE;
+    }
+}
+
+void tfmini_parse_and_assign(uint8_t* buffer, TFMINI_Data* data)
+{
+    if (buffer == NULL || data == NULL)
+    {
+        // Handle NULL pointers gracefully
+        printf("Error: NULL pointer detected in tfmini_parse_and_assign\n");
+        return;
+    }
+
+    // Ensure buffer indices are within bounds
+    if (buffer[0] == 0x59 && buffer[1] == 0x59)
+    {
+        printf("NOTIFY+++++++++++++++++++++++++++++++++++++++++++++++++6\n");
+        if (buffer[2] < 255 && buffer[3] < 255 &&
+            buffer[4] < 255 && buffer[5] < 255 &&
+            buffer[6] < 255 && buffer[7] < 255)
+        {
+            data->tfmini_distance = buffer[2] + buffer[3] * 255;
+            data->tfmini_strength = buffer[4] + buffer[5] * 255;
+            data->tfmini_chip_temperature = (buffer[6] + buffer[7] * 255) / 8 - 256;
+             printf("NOTIFY+++++++++++++++++++++++++++++++++++++++++++++++++7\n");
+            // Print the results for debugging
+            printf("tfmini_distance: %d\n", data->tfmini_distance);
+            printf("tfmini_strength: %d\n", data->tfmini_strength);
+            printf("tfmini_chip_temperature: %d\n", data->tfmini_chip_temperature);
+        }
+        else
+        {
+            // Handle invalid values in buffer gracefully
+            printf("Error: Invalid values in buffer in tfmini_parse_and_assign\n");
+        }
+    }
+
 }
 
 void tfmini_print_data(TFMINI_Data* data)
