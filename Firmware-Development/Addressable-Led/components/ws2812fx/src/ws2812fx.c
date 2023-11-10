@@ -127,7 +127,7 @@ struct FX_SEGMENT { // 20 bytes
   uint16_t aux_param3; // auxilary param (usually stores a segment index)
 };
 
-struct FX_SEGMENT *fx_segments[8];
+struct FX_SEGMENT *fx_segments[MAX_SEGMENTS];
 
 #define CYCLE (uint8_t)0x40
 
@@ -138,7 +138,7 @@ static inline void clearCycle(int line) {
 }
 
 static uint16_t segmentLength(int line) {
-  return SEGMENT->stop - SEGMENT->start + 1;
+  return (SEGMENT->stop - SEGMENT->start) + 1;
 }
 
 #define DEFAULT_BRIGHTNESS (uint8_t)50
@@ -186,6 +186,19 @@ void WS2812FX_deinit(int line){
 
 void WS2812FX_call(int line, uint16_t (*fct)(int)) {
   uint32_t now = xTaskGetTickCount();
+
+  switch (SEGMENT->palette)
+  {
+  case DEFAULT_PALETTE:
+    CREATEDEFAULTPALETTE(SEGCOLOR(0));
+    break;
+  case COLOR_1_2:
+    CREATEDUALGRADIENTPALETTE;
+    break;
+  default:
+    break;
+  }
+
 
   if (!fx_segments[line]->counter_mode_call) {
     uint32_t delay = fct(line);
@@ -321,7 +334,20 @@ uint16_t WS2812FX_mode_static(int line) {
   //   setPixelColor(line, i, ((fx_segments[line]->palette!=0) ? colorFromPalette(curPal, palette_size, numLeds, i) : fx_segments[line]->colors[0]));
   // }
 
-  CREATEDEFAULTPALETTE(SEGCOLOR(0));
+  // switch (SEGMENT->palette)
+  // {
+  // case DEFAULT_PALETTE:
+  //   /* code */
+  //   CREATEDEFAULTPALETTE(SEGCOLOR(0));
+  //   break;
+  // case COLOR_1_2:
+  //   CREATEDUALGRADIENTPALETTE;
+  //   // createGradientPalette(fx_segments[line]->colors[0], fx_segments[line]->colors[1], 14, gGradientPalettes[0].palette);
+  //   // createGradientPalette(BLUE, WARMWHITE, 14, gGradientPalettes[0].palette);
+  //   break;
+  // default:
+  //   break;
+  // }
 
   for (uint16_t i = SEGMENT->start; i <= SEGMENT->stop; i++) {
     // setPixelColor(line, i, fx_segments[line]->colors[0]);
@@ -350,7 +376,7 @@ static inline int fadeRate(int line)
  * if(strobe == true) then create a strobe effect
  */
 static uint16_t blink(int line, uint32_t color1, uint32_t color2, int strobe) {
-  CREATEDEFAULTPALETTE(color1);
+
   uint32_t color;
     
   for (uint16_t i = SEGMENT->start; i <= SEGMENT->stop; i++) {
@@ -370,12 +396,12 @@ static uint16_t blink(int line, uint32_t color1, uint32_t color2, int strobe) {
   //   }
   // }
 
-  uint16_t delay = (200000/(fx_segments[line]->speed))+200;
+  uint16_t delay = (strobe) ?  (2000/(fx_segments[line]->speed))+200: (200000/(fx_segments[line]->speed))+200;
 
   if ((fx_segments[line]->counter_mode_call & 1) == 0) {
     return strobe ? 20 : (delay / 2);
   } else {
-    return strobe ? delay - 200
+    return strobe ? delay - 20
                   : (delay / 2);
   }
 }
@@ -408,8 +434,8 @@ uint16_t WS2812FX_mode_strobe(int line) {
  * Classic Strobe effect. Cycling through the rainbow.
  */
 uint16_t WS2812FX_mode_strobe_rainbow(int line) {
-  return blink(line, color_wheel(SEGMENT->counter_mode_call & 0xFF),
-               fx_segments[line]->colors[1], true);
+  return blink(line, fx_segments[line]->colors[1],
+               color_wheel(SEGMENT->counter_mode_call & 0xFF), true);
 }
 
 /*
@@ -419,7 +445,6 @@ uint16_t WS2812FX_mode_strobe_rainbow(int line) {
  */
 static uint16_t color_wipe(int line, uint32_t color1, uint32_t color2,
                            int rev) {
-  CREATEDEFAULTPALETTE(SEGCOLOR(color1));
 
   if (fx_segments[line]->counter_mode_step < segmentLength(line)) {
     uint32_t led_offset = fx_segments[line]->counter_mode_step;
@@ -455,7 +480,7 @@ static uint16_t color_wipe(int line, uint32_t color1, uint32_t color2,
  * if (bool rev == true) then LEDs are turned off in reverse order
  */
 static uint16_t color_wipe_wled(int line, bool rev, bool useRandomColors) {
-  CREATEDEFAULTPALETTE(SEGCOLOR(0));
+  // CREATEDEFAULTPALETTE(SEGCOLOR(0));
   uint32_t cycleTime = 50 + (255 - (int)(255*((float)SEGSPEED/(float)2000)));   //128 is segment speed FIXME:
   // uint32_t perc = strip.now % cycleTime;
   uint32_t perc = SEGMENT->next_time % cycleTime;
@@ -609,7 +634,7 @@ uint16_t WS2812FX_mode_multi_dynamic(int line) {
  * Use mode "fade" if you like to have something similar with a different speed.
  */
 uint16_t WS2812FX_mode_breath(int line) {
-  CREATEDEFAULTPALETTE(SEGCOLOR(0));
+  // CREATEDEFAULTPALETTE(SEGCOLOR(0));
   int lum = fx_segments[line]->counter_mode_step;
   uint8_t brightness =255;
   if (lum > 255)
@@ -708,7 +733,7 @@ uint16_t WS2812FX_mode_fade(int line) {
 
   //fill default palette with primary color
   if(SEGMENT->palette == 0){
-    CREATEDEFAULTPALETTE(SEGCOLOR(0));
+    // CREATEDEFAULTPALETTE(SEGCOLOR(0));
   }
 
   int lum = fx_segments[line]->counter_mode_step;
@@ -731,7 +756,7 @@ uint16_t WS2812FX_mode_fade(int line) {
  */
 uint16_t WS2812FX_mode_scan(int line) {
 
-  CREATEDEFAULTPALETTE(SEGCOLOR(0));
+  // CREATEDEFAULTPALETTE(SEGCOLOR(0));
 
 
   if (fx_segments[line]->counter_mode_step > (segmentLength(line) * 2) - 3) {
@@ -864,7 +889,7 @@ uint16_t WS2812FX_mode_theater_chase_rainbow(int line) {
  */
 uint16_t WS2812FX_mode_running_lights(int line) {
 
-  CREATEDEFAULTPALETTE(SEGCOLOR(0));
+  // CREATEDEFAULTPALETTE(SEGCOLOR(0));
 
   uint32_t color;
   uint8_t r,g,b,w;
@@ -1038,7 +1063,7 @@ uint16_t WS2812FX_mode_sparkle(int line) {
  * Inspired by www.tweaking4all.com/hardware/arduino/arduino-led-strip-effects/
  */
 uint16_t WS2812FX_mode_flash_sparkle(int line) {
-  CREATEDEFAULTPALETTE(SEGCOLOR(0));
+  // CREATEDEFAULTPALETTE(SEGCOLOR(0));
   if (1) {
     for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop;
          i++) {
@@ -1065,7 +1090,7 @@ uint16_t WS2812FX_mode_flash_sparkle(int line) {
  * Inspired by www.tweaking4all.com/hardware/arduino/arduino-led-strip-effects/
  */
 uint16_t WS2812FX_mode_hyper_sparkle(int line) {
-  CREATEDEFAULTPALETTE(SEGCOLOR(0));
+  // CREATEDEFAULTPALETTE(SEGCOLOR(0));
   for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
     setPixelColor(line, i, COLORFROMPALETTE(i-(SEGMENT->start)));
   }
@@ -1084,7 +1109,7 @@ uint16_t WS2812FX_mode_hyper_sparkle(int line) {
  * Strobe effect with different strobe count and pause, controlled by speed.
  */
 uint16_t WS2812FX_mode_multi_strobe(int line) {
-  CREATEDEFAULTPALETTE(SEGCOLOR(0));
+  // CREATEDEFAULTPALETTE(SEGCOLOR(0));
   for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
     setPixelColor(line, i, COLORFROMPALETTE(i-(SEGMENT->start)));
   }
@@ -1178,7 +1203,7 @@ uint16_t WS2812FX_mode_police_strobe(int line) {
  */
 uint16_t WS2812FX_mode_android(int line) {
 
-  CREATEDEFAULTPALETTE(SEGCOLOR(0));
+  // CREATEDEFAULTPALETTE(SEGCOLOR(0));
 
   for (int i = 0; i < SEGLEN; i++) { //Bg Color
     int j = i+SEGMENT->start;
@@ -1244,7 +1269,7 @@ uint16_t WS2812FX_mode_android(int line) {
 static uint16_t chase(int line, uint32_t color1, uint32_t color2,
                       uint32_t color3) {
 
-  CREATEDEFAULTPALETTE(color1);
+  // CREATEDEFAULTPALETTE(color1);
 
   uint16_t a = fx_segments[line]->counter_mode_step;
   uint16_t b = (a + 1) % segmentLength(line);
@@ -1284,7 +1309,7 @@ uint16_t WS2812FX_mode_bicolor_chase(int line) {
  * Fire flicker function
  */
 static uint16_t fire_flicker(int line, int rev_intensity) {
-  CREATEDEFAULTPALETTE(SEGCOLOR(0));
+  // CREATEDEFAULTPALETTE(SEGCOLOR(0));
   uint32_t color;
   uint8_t r,g,b,w;
   // uint8_t w = (fx_segments[line]->colors[0] >> 24) & 0xFF;
@@ -1386,7 +1411,7 @@ uint16_t WS2812FX_mode_chase_blackout_rainbow(int line) {
  * White flashes running on _color.
  */
 uint16_t WS2812FX_mode_chase_flash(int line) {
-  CREATEDEFAULTPALETTE(SEGCOLOR(0));
+  // CREATEDEFAULTPALETTE(SEGCOLOR(0));
 
   const static uint8_t flash_count = 4;
   uint8_t flash_step =
@@ -1696,7 +1721,7 @@ uint16_t WS2812FX_mode_fire_flicker_intense(int line) {
  */
 static uint16_t tricolor_chase(int line, uint32_t color1, uint32_t color2,
                                uint32_t color3) {
-  CREATEDEFAULTPALETTE(color1);
+  // CREATEDEFAULTPALETTE(color1);
   uint16_t index = fx_segments[line]->counter_mode_step % 6;
   for (uint16_t i = 0; i < segmentLength(line); i++, index++) {
     if (index > 5)
@@ -1743,7 +1768,7 @@ uint16_t WS2812FX_mode_circus_combustus(int line) {
  * ICU mode
  */
 uint16_t WS2812FX_mode_icu(int line) {
-  CREATEDEFAULTPALETTE(SEGCOLOR(0));
+  // CREATEDEFAULTPALETTE(SEGCOLOR(0));
   int virtualSegmentLength = 5;
   if(SEGMENT->counter_mode_step + virtualSegmentLength  >= SEGLEN){
     SEGMENT->counter_mode_step = 0;

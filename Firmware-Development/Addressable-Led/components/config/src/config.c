@@ -124,9 +124,9 @@ static void setDefaults() {
 		led_config.channel[i]->selected = true;
 		// led_config.channel[0]->selected = true;
 
-		// led_config.channel[i]->mode = LED_MODE_SOLID; :FIXME: Revert back to solid by default
+		led_config.channel[i]->mode = LED_MODE_SOLID + i; //:FIXME: Revert back to solid by default
 		// led_config.channel[i]->mode = FX_MODE_COLOR_WIPE;
-		led_config.channel[i]->mode = FX_MODE_STATIC;
+		// led_config.channel[i]->mode = FX_MODE_STATIC;
 
 		led_config.channel[i]->black[0] = led_config.channel[i]->black[1] =
 				led_config.channel[i]->black[2] = -1;

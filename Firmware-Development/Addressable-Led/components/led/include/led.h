@@ -12,6 +12,8 @@
 #ifndef MAIN_LED_H_
 #define MAIN_LED_H_
 
+#define MAX_SEGMENTS 16
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -154,7 +156,7 @@ struct LED_CONFIG {
   int16_t refresh_rate;
   uint8_t channels;
   uint8_t prefix_leds;
-  struct LED_CONFIG_CHANNEL* channel[8];
+  struct LED_CONFIG_CHANNEL* channel[MAX_SEGMENTS];
   uint16_t artnet_width;
   uint16_t artnet_universe_offset;
   uint32_t config_color[3];
