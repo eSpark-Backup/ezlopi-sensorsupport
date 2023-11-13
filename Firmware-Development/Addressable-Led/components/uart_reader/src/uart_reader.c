@@ -133,8 +133,11 @@ void parse_json(char* start){
 
             cJSON* rev = cJSON_GetObjectItemCaseSensitive(seg, "rev");
             if(NULL != rev){
-                config_set_reverse_option(id->valueint, cJSON_IsTrue(rev));
+                // config_set_reverse_option(id->valueint, cJSON_IsTrue(rev));
+                config_set_option(id->valueint, cJSON_IsTrue(rev), 0x80);
             }
+
+            cJSON* mirror =  cJSON_GetObjectItemCaseSensitive(seg, "mir");
             
             cJSON* delete = cJSON_GetObjectItemCaseSensitive(seg, "stop");
             if((NULL != delete) && (NULL == n)){

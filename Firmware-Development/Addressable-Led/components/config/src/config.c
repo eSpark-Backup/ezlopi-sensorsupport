@@ -332,6 +332,22 @@ void config_set_reverse_option(int id, bool rev_flag){
 	led_set_config(&led_config);
 }
 
+// Set any option of a segment
+void config_set_option(int id, bool flag, uint8_t bit_mask){
+	for(int i = 0; i < led_config.channels; i++){
+		if((NULL != led_config.channel[i])&&(led_config.channel[i]->segment_id == id)){
+			// led_config.channel[i]->options  = (bit_mask)|(led_config.channel[i]->options & ~(bit_mask));  //set/reset 16th bit for reverse option
+			if(flag){
+				led_config.channel[i]->options |= (bit_mask); 
+			}
+			else{
+				led_config.channel[i]->options &= ~(bit_mask); 
+			}
+		}
+	}
+	led_set_config(&led_config);
+}
+
 
 /*Deletes Segment using its ID*/
 void config_delete_segment(int id){ 
