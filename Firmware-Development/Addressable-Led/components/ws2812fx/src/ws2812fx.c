@@ -196,6 +196,7 @@ void WS2812FX_call(int line, uint16_t (*fct)(int)) {
     CREATEDUALGRADIENTPALETTE;
     break;
   default:
+    CREATEDEFAULTPALETTE(SEGCOLOR(0));
     break;
   }
 
@@ -418,8 +419,7 @@ uint16_t WS2812FX_mode_blink(int line) {
  * Classic Blink effect. Cycling through the rainbow.
  */
 uint16_t WS2812FX_mode_blink_rainbow(int line) {
-  return blink(line, color_wheel(fx_segments[line]->counter_mode_call & 0xFF),
-               fx_segments[line]->colors[1], false);
+  return blink(line, fx_segments[line]->colors[1], color_wheel(fx_segments[line]->counter_mode_call & 0xFF), false);
 }
 
 /*
@@ -481,7 +481,7 @@ static uint16_t color_wipe(int line, uint32_t color1, uint32_t color2,
  */
 static uint16_t color_wipe_wled(int line, bool rev, bool useRandomColors) {
   // CREATEDEFAULTPALETTE(SEGCOLOR(0));
-  uint32_t cycleTime = 50 + (255 - (int)(255*((float)SEGSPEED/(float)2000)));   //128 is segment speed FIXME:
+  uint32_t cycleTime = 50 + (255 - (int)(255*((float)SEGSPEED/(float)2000)));  
   // uint32_t perc = strip.now % cycleTime;
   uint32_t perc = SEGMENT->next_time % cycleTime;
   uint16_t prog = (perc * 65535) / cycleTime;
@@ -861,7 +861,8 @@ static uint16_t theater_chase(int line, uint32_t color1, uint32_t color2) {
     }
   }
 
-  return (uint16_t)(fx_segments[line]->speed / (float)segmentLength(line));
+  return 25*(2000/SEGMENT->speed);
+  // return (uint16_t)(fx_segments[line]->speed / (float)segmentLength(line));
 }
 
 /*

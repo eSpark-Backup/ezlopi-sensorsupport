@@ -38,7 +38,7 @@ void WS2812FX_deinit(int line);
 #define SEGCOLOR(x)      fx_segments[line]->colors[x]
 #define default_opacity  255
 
-#define COLORFROMPALETTE(x) colorFromPalette(SEGPALETTE, SEGPALETTESIZE, SEGLEN, x, default_opacity)
+#define COLORFROMPALETTE(x) colorFromPalette(SEGPALETTE, SEGPALETTESIZE, SEGLEN, x, default_opacity, SEGMENT->options)
 #define CREATEDEFAULTPALETTE(x) createDefaultPalette(x, gGradientPalettes[0].palette);
 #define CREATEDUALGRADIENTPALETTE   createGradientPalette(fx_segments[line]->colors[0], fx_segments[line]->colors[1], 14, gGradientPalettes[0].palette)
 // #define SEGLEN           10

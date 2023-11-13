@@ -6,23 +6,24 @@ static const char* TAG = "uart_select_example";
 
 
 // Function to spread the color palette evenly across LEDs and return one uint32_t color
-uint32_t colorFromPalette(const byte* palette, int paletteSize, int numLeds, int ledIndex, uint8_t brightness) {
+uint32_t colorFromPalette(const byte* palette, int paletteSize, int numLeds, int ledIndex, uint8_t brightness, uint8_t options) {
 
     numLeds++;
-    int baseIndex = (ledIndex * paletteSize) / numLeds;
-    int nextIndex = ((baseIndex + 1) % paletteSize);
-    int offset = ((255 * ledIndex) / numLeds);
+    // int baseIndex = (ledIndex * paletteSize) / numLeds;
+    // int nextIndex = ((baseIndex + 1) % paletteSize);
+    // int offset = ((255 * ledIndex) / numLeds);
+    int baseIndex, nextIndex, offset;
 
-    //TODO: Palette Mirror Option
+    // TODO: Palette Mirror Option
     // Calculate the base and next indices based on whether to reverse the palette or not
-    // if (1) {
-    //     baseIndex = paletteSize - 1 - (ledIndex * paletteSize) / numLeds;
-    //     nextIndex = paletteSize - 1 - (((ledIndex + 1) * paletteSize) / numLeds);
-    // } else {
-    //     baseIndex = (ledIndex * paletteSize) / numLeds;
-    //     nextIndex = ((baseIndex + 1) % paletteSize);
-    // }
-    // offset = ((255 * ledIndex) / numLeds);
+    if (options & 0x80) {
+        baseIndex = paletteSize - 1 - (ledIndex * paletteSize) / numLeds;
+        nextIndex = paletteSize - 1 - (((ledIndex + 1) * paletteSize) / numLeds);
+    } else {
+        baseIndex = (ledIndex * paletteSize) / numLeds;
+        nextIndex = ((baseIndex + 1) % paletteSize);
+    }
+    offset = ((255 * ledIndex) / numLeds);
 
     //print size
     // ESP_LOGI(TAG, "Palette Size : %d", paletteSize);
@@ -32,6 +33,7 @@ uint32_t colorFromPalette(const byte* palette, int paletteSize, int numLeds, int
     uint8_t g = palette[baseIndex * 4 + 2] + ((palette[nextIndex * 4 + 2] - palette[baseIndex * 4 + 2]) * offset) / 255;
     uint8_t b = palette[baseIndex * 4 + 3] + ((palette[nextIndex * 4 + 3] - palette[baseIndex * 4 + 3]) * offset) / 255;
 
+    // apply brightness
     r = r*(brightness/255);
     g = g*(brightness/255);
     b = b*(brightness/255);
