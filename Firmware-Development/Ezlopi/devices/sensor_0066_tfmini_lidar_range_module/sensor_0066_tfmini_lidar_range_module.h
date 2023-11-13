@@ -4,8 +4,8 @@
 #include "ezlopi_actions.h"
 #include "ezlopi_devices.h"
 
-#define TFMINI_BUFFER_SIZE 8
-uint8_t buffer[TFMINI_BUFFER_SIZE];
+// #define TFMINI_BUFFER_SIZE 8
+// uint8_t buffer[TFMINI_BUFFER_SIZE];
 
 typedef struct TFMINIdata
 {
