@@ -46,12 +46,7 @@ int sensor_0066_UART_TFMINI(e_ezlopi_actions_t action, l_ezlopi_item_t *item, vo
     }
     case EZLOPI_ACTION_NOTIFY_1000_MS:
     {
-        // static int counter = 1;
-        // if (counter++ >= 5)
-        // {
-            ret = __notify(item);
-        //     counter = 1;
-        // }
+        ret = __notify(item);
         break;
     }
 
@@ -94,8 +89,7 @@ static void __uart_data_upcall(uint8_t* buffer,s_ezlopi_uart_object_handle_t uar
             tfmini_value = tfmini_sensor->tfmini_distance;
         }
     }
-    vTaskDelay(2);
-
+    vTaskDelay(200/portTICK_PERIOD_MS); // 20 ms , portTICK_PERIOD_MS = 10 ,This delay is added to update buffer perfectly;
 }
 
 static int __init(l_ezlopi_item_t *item)
