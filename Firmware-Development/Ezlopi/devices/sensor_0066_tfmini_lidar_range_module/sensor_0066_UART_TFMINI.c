@@ -45,8 +45,14 @@ int sensor_0066_UART_TFMINI(e_ezlopi_actions_t action, l_ezlopi_item_t *item, vo
         break;
     }
     case EZLOPI_ACTION_NOTIFY_1000_MS:
-    {
-        ret = __notify(item);
+    { 
+        static uint8_t counter = 0 ;
+        if (5 == counter)
+        {
+            ret = __notify(item);
+            counter = 0;
+        }
+        counter++;
         break;
     }
 
