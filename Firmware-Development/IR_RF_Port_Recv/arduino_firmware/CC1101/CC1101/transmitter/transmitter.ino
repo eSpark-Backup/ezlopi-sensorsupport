@@ -58,49 +58,49 @@ void setup() {
 }
 
 void loop() {
-  if(counter == 4){
-    counter = 0;
-  }
-// if (Serial.available() > 0) {
-//         int incomingByte = Serial.read();
+  // if(counter == 4){
+  //   counter = 0;
+  // }
+if (Serial.available() > 0) {
+        int incomingByte = Serial.read();
         
-        // if (incomingByte == '1') {
-        //     ELECHOUSE_cc1101.setSyncWord(ON_SYNC_WORD_BYTE, 145);
-        //     ELECHOUSE_cc1101.SendData("Trigger Sleep", 100);
-        // }
-        // else if (incomingByte == '2') {
-        //   ELECHOUSE_cc1101.setSyncWord(WAKE_UP_SYNC_WORD_BYTE, 145);
-        //     ELECHOUSE_cc1101.SendData("Trigger Wakeup", 100);
-        // }
-        // else if (incomingByte == '3') {
-        //   ELECHOUSE_cc1101.setSyncWord(ON_SYNC_WORD_BYTE, 145);
-        //     ELECHOUSE_cc1101.SendData("Trigger Shutdown", 100);
-        // }
-        // else if (incomingByte == '4') {
-        //   ELECHOUSE_cc1101.setSyncWord(SHUTDOWN_SYNC_WORD_BYTE, 145);
-        //     ELECHOUSE_cc1101.SendData("Trigger Powerup", 100);
-        // }
-    if (counter == 0) {
-        ELECHOUSE_cc1101.setSyncWord(ON_SYNC_WORD_BYTE, 145);
-        ELECHOUSE_cc1101.SendData("Trigger Sleep", 100);
-        Serial.print("Trigger Sleep\n");
-    }
-    if (counter == 1) {
-      ELECHOUSE_cc1101.setSyncWord(WAKE_UP_SYNC_WORD_BYTE, 145);
-        ELECHOUSE_cc1101.SendData("Trigger Wakeup", 100);
-        Serial.print("Trigger Wakeup\n");
-    }
-    if (counter == 2) {
-      ELECHOUSE_cc1101.setSyncWord(ON_SYNC_WORD_BYTE, 145);
-        ELECHOUSE_cc1101.SendData("Trigger Shutdown", 100);
-        Serial.print("Trigger Shutdown\n");
-    }
-    if (counter == 3) {
-      ELECHOUSE_cc1101.setSyncWord(SHUTDOWN_SYNC_WORD_BYTE, 145);
-        ELECHOUSE_cc1101.SendData("Trigger Powerup", 100);
-        Serial.print("Trigger Powerup\n");
-    }
-    delay(2000);
-    counter++;
+        if (incomingByte == '1') {
+            ELECHOUSE_cc1101.setSyncWord(ON_SYNC_WORD_BYTE, 145);
+            ELECHOUSE_cc1101.SendData("Trigger Sleep", 100);
+        }
+        else if (incomingByte == '2') {
+          ELECHOUSE_cc1101.setSyncWord(WAKE_UP_SYNC_WORD_BYTE, 145);
+            ELECHOUSE_cc1101.SendData("Trigger Wakeup", 100);
+        }
+        else if (incomingByte == '3') {
+          ELECHOUSE_cc1101.setSyncWord(ON_SYNC_WORD_BYTE, 145);
+            ELECHOUSE_cc1101.SendData("Trigger Shutdown", 100);
+        }
+        else if (incomingByte == '4') {
+          ELECHOUSE_cc1101.setSyncWord(SHUTDOWN_SYNC_WORD_BYTE, 145);
+            ELECHOUSE_cc1101.SendData("Trigger Powerup", 100);
+        }
+    // if (counter == 0) {
+    //     ELECHOUSE_cc1101.setSyncWord(ON_SYNC_WORD_BYTE, 145);
+    //     ELECHOUSE_cc1101.SendData("Trigger Sleep", 100);
+    //     Serial.print("Trigger Sleep\n");
     // }
+    // if (counter == 1) {
+    //   ELECHOUSE_cc1101.setSyncWord(WAKE_UP_SYNC_WORD_BYTE, 145);
+    //     ELECHOUSE_cc1101.SendData("Trigger Wakeup", 100);
+    //     Serial.print("Trigger Wakeup\n");
+    // }
+    // if (counter == 2) {
+    //   ELECHOUSE_cc1101.setSyncWord(ON_SYNC_WORD_BYTE, 145);
+    //     ELECHOUSE_cc1101.SendData("Trigger Shutdown", 100);
+    //     Serial.print("Trigger Shutdown\n");
+    // }
+    // if (counter == 3) {
+    //   ELECHOUSE_cc1101.setSyncWord(SHUTDOWN_SYNC_WORD_BYTE, 145);
+    //     ELECHOUSE_cc1101.SendData("Trigger Powerup", 100);
+    //     Serial.print("Trigger Powerup\n");
+    // }
+    // delay(2000);
+    // counter++;
+    }
 }

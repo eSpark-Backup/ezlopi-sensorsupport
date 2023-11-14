@@ -1,36 +1,36 @@
-#include <stdio.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "driver/gpio.h"
-#include "esp_log.h"
-#include <ELECHOUSE_CC1101_SRC_DRV.h>
+#include "trans_recv.h"
 
-#define ON_SYNC_WORD_BYTE 211
-#define WAKE_UP_SYNC_WORD_BYTE 212
-#define SHUTDOWN_SYNC_WORD_BYTE 213
-#define NUM_TRIGGERS 3
+static const char *TAG = "TRANSMITTER_RECIEVER";
+byte buffer[61] = {0};
+int gdo0 = 10, currentTrigger, incommingByte;
 
+TaskHandle_t pin_hold_duration_read_task_h;
+TaskHandle_t recv_task_h;
+TaskHandle_t trans_task_h;
+
+void pin_hold_duration_read_task(void *parameter);
+void recv_task(void *parameter);
+void trans_task(void *parameter);
+void print_wakeup_reason();
 void uart_recieve_upcall(uint8_t *buffer, s_ezlopi_uart_object_handle_t uart_object_handle, void *user_args);
 
-int incommingByte;
-static const char *TAG = "TRANSMITTER";
-
-enum TRIGGER
+Triggers_t triggers[NUM_TRIGGERS] =
 {
-    SHUTDOWN,
-    POWERUP,
-    SLEEP
+    {"Trigger Shutdown", SHUTDOWN},
+    {"Trigger Powerup", POWERUP},
+    {"Trigger Sleep", POWERUP}
+    
 };
 
-int gdo0 = 10;
-
-void print_wakeup_reason();
-
-void app_main(void)
-{
-
+void trans_recv_init(enum TRANSCEIVER_MODE mode){
+    if(mode == RECIEVER){
+        print_wakeup_reason();
+    }
     Init();
-    ezlopi_uart_init(115200, 43, 44, uart_recieve_upcall, NULL);
+    if(mode == TRANSMITTER){
+        ezlopi_uart_init(115200, 43, 44, uart_recieve_upcall, NULL);
+    }
+    
     if (getCC1101())
     {
         ESP_LOGI(TAG, "Connection OK");
@@ -67,15 +67,113 @@ void app_main(void)
     setPQT(0);                           // Preamble quality estimator threshold. The preamble quality estimator increases an internal counter by one each time a bit is received that is different from the previous bit, and decreases the counter by 8 each time a bit is received that is the same as the last bit. A threshold of 4∙PQT for this counter is used to gate sync word detection. When PQT=0 a sync word is always accepted.
     setAppendStatus(0);                  // When enabled, two status bytes will be appended to the payload of the packet. The status bytes contain RSSI and LQI values, as well as CRC OK.
 
-    ESP_LOGI(TAG, "Tx Mode");
-    ESP_LOGI(TAG, "Available options:");
-    ESP_LOGI(TAG, "1: Trigger Sleep");
-    ESP_LOGI(TAG, "2: Trigger Wakeup");
-    ESP_LOGI(TAG, "3: Trigger Shutdown");
-    ESP_LOGI(TAG, "4: Trigger Powerup");
+    switch(mode){
+        case TRANSMITTER:
+            ESP_LOGI(TAG, "Tx Mode");
+            ESP_LOGI(TAG, "Available options:");
+            ESP_LOGI(TAG, "1: Trigger Sleep");
+            ESP_LOGI(TAG, "2: Trigger Wakeup");
+            ESP_LOGI(TAG, "3: Trigger Shutdown");
+            ESP_LOGI(TAG, "4: Trigger Powerup");
 
-    while (1)
-    {
+            xTaskCreate(
+                trans_task, // Function to be called
+                "transmitter task",      // Name of the task
+                10000,        // Stack size
+                NULL,         // Parameter
+                5,            // Priority (1 is the lowest priority on ESP32)
+                &trans_task_h        // Task handle
+            );
+        break;
+        case RECIEVER:
+            ESP_LOGI(TAG, "Rx Mode");
+            xTaskCreate(
+                pin_hold_duration_read_task, // Function to be called
+                "pin_hold_duration_read_task",      // Name of the task
+                10000,        // Stack size
+                NULL,         // Parameter
+                1,            // Priority (1 is the lowest priority on ESP32)
+                &pin_hold_duration_read_task_h        // Task handle
+            );
+
+            xTaskCreate(
+                recv_task, // Function to be called
+                "receiver task",      // Name of the task
+                10000,        // Stack size
+                NULL,         // Parameter
+                5,            // Priority (1 is the lowest priority on ESP32)
+                &recv_task_h        // Task handle
+            );
+        break;
+    }
+}
+
+
+void recv_task(void *parameter){
+    while(1){
+        if (CheckReceiveFlag())
+        {
+
+            // CRC Check. If "setCrc(false)" crc returns always OK!
+            if (CheckCRC())
+            {
+
+                // Rssi Level in dBm
+                ESP_LOGI(TAG, "Rssi: %d", getRssi());
+
+                // Link Quality Indicator
+                ESP_LOGI(TAG, "LQI: %d", getLqi());
+
+                // Get received Data and calculate length
+                int len = ReceiveData(buffer);
+                buffer[len] = '\0';
+
+                // Print received in bytes format.
+                for (int i = 0; i < len; i++)
+                {
+                    printf("%c", buffer[i]);
+                }
+
+                char *packet = (char *)buffer;
+
+                // Iterates through every trigger member and check which is currently applied
+                for (int i = 0; i <= NUM_TRIGGERS; i++)
+                {
+                    if (!strcmp(packet, triggers[i].methodstr))
+                    {
+                        currentTrigger = i;
+                        break;
+                    }
+                    currentTrigger = -1;
+                }
+
+                switch (currentTrigger)
+                {
+                case SHUTDOWN:
+                    setSyncWord(SHUTDOWN_SYNC_WORD_BYTE, 145);
+                    ESP_LOGI(TAG, "ESP SHUTTING DOWN");
+                    break;
+                case POWERUP:
+                    setSyncWord(ON_SYNC_WORD_BYTE, 145);
+                    ESP_LOGI(TAG, "ESP Powered Up");
+                    break;
+                case SLEEP:
+                    setSyncWord(WAKE_UP_SYNC_WORD_BYTE, 145);
+                    esp_sleep_enable_ext0_wakeup(GPIO_NUM_10, 1);
+                    ESP_LOGI(TAG, "Going to sleep now");
+                    delay(1000);
+                    esp_deep_sleep_start();
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void trans_task(void *parameter){
+    while(1){
         if (incommingByte == 49)
         {
             setSyncWord(ON_SYNC_WORD_BYTE, 145);
@@ -102,6 +200,55 @@ void app_main(void)
         }
         incommingByte = 0;
         vTaskDelay(10 / portTICK_PERIOD_MS);
+    }
+}
+
+void pin_hold_duration_read_task(void *parameter)
+{
+    (void)parameter;
+
+    while (1)
+    {
+        int pinState = digitalRead(10); // Read the state of pin 10
+        if (pinState)
+        {
+            uint64_t start = micros();
+            while (digitalRead(10))
+                ;
+            uint64_t duration = micros() - start;
+            ESP_LOGI(TAG, "GDO0 held high for us :  %llu", duration);
+        }
+        vTaskDelay(1 / portTICK_PERIOD_MS);
+    }
+    vTaskDelete(NULL);
+}
+
+void print_wakeup_reason()
+{
+    esp_sleep_wakeup_cause_t wakeup_reason;
+
+    wakeup_reason = esp_sleep_get_wakeup_cause();
+
+    switch (wakeup_reason)
+    {
+    case ESP_SLEEP_WAKEUP_EXT0:
+        ESP_LOGI(TAG, "Wakeup caused by external signal using RTC_IO");
+        break;
+    case ESP_SLEEP_WAKEUP_EXT1:
+        ESP_LOGI(TAG, "Wakeup caused by external signal using RTC_CNTL");
+        break;
+    case ESP_SLEEP_WAKEUP_TIMER:
+        ESP_LOGI(TAG, "Wakeup caused by timer");
+        break;
+    case ESP_SLEEP_WAKEUP_TOUCHPAD:
+        ESP_LOGI(TAG, "Wakeup caused by touchpad");
+        break;
+    case ESP_SLEEP_WAKEUP_ULP:
+        ESP_LOGI(TAG, "Wakeup caused by ULP program");
+        break;
+    default:
+        ESP_LOGI(TAG, "Wakeup was not caused by deep sleep: %d\n", wakeup_reason);
+        break;
     }
 }
 
