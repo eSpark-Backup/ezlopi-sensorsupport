@@ -119,35 +119,12 @@ void app_main(void)
                 int len = ReceiveData(buffer);
                 buffer[len] = '\0';
 
-            //Print received in char format.
-                ESP_LOGI(TAG," %s", (char *)buffer);
-
             //Print received in bytes format.
                 for (int i = 0; i<len; i++){
-                    ESP_LOGI(TAG," %d", buffer[i]);
+                    printf("%c", buffer[i]);
                 }
 
                 char* packet = (char*) buffer;
-                // if (!strcmp(packet, "Trigger Sleep"))
-                // {
-                //     setSyncWord(WAKE_UP_SYNC_WORD_BYTE, 145);
-                //     esp_sleep_enable_ext0_wakeup(GPIO_NUM_10, 1);
-                //     ESP_LOGI(TAG,"Going to sleep now");
-                //     delay(1000);
-                //     esp_deep_sleep_start();
-                // }
-
-                // if (!strcmp(packet, "Trigger Shutdown"))
-                // {
-                //     setSyncWord(SHUTDOWN_SYNC_WORD_BYTE, 145);
-                //     ESP_LOGI(TAG,"ESP SHUTTING DOWN");
-                // }
-                
-                // if (!strcmp(packet, "Trigger Powerup"))
-                // {
-                //     setSyncWord(ON_SYNC_WORD_BYTE, 145);
-                //     ESP_LOGI(TAG,"ESP Powered Up");
-                // }
 
                 // Iterates through every trigger member and check which is currently applied
                 for(int i = 0; i <= NUM_TRIGGERS; i++){

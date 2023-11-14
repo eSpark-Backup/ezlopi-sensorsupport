@@ -228,7 +228,7 @@ esp_err_t Init(void)
   Reset();                    //CC1101 reset
   RegConfigSettings();            //CC1101 register config
   enableReceive(9,&var);  // Receiver on interrupt 0
-  ezlopi_uart_init(115200, 43, 44, ezlopi_cc1101_upcall, NULL);
+  // ezlopi_uart_init(115200, 43, 44, ezlopi_cc1101_upcall, NULL);
   return retu;
 }
 // /****************************************************************

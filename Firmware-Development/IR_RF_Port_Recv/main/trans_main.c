@@ -20,13 +20,12 @@
 #define SHUTDOWN_SYNC_WORD_BYTE 213
 #define NUM_TRIGGERS 3
 
-int counter = 0; 
+void uart_data_upcall(uint8_t* buffer, s_ezlopi_uart_object_handle_t uart_object_handle, void* user_args);
 
-static const char *TAG = "RECIEVER";
-
+int incommingByte;
+static const char *TAG = "TRANSMITTER";
 byte transmitt_byte[11] = {72,101,108,108,111,32,87,111,114,108,100};
 char *transmitt_char = "Hello World";
-
 
 enum TRIGGER {
     SHUTDOWN,
@@ -51,7 +50,6 @@ members obj[NUM_TRIGGERS] =
 int gdo0 = 10;
 int currentTrigger = -1;
 TaskHandle_t Task1;
-void taskFunction(void * parameter);
 
 void print_wakeup_reason();
 
@@ -60,7 +58,7 @@ void app_main(void)
 {
 
     Init();
-    
+    ezlopi_uart_init(115200, 43, 44, uart_data_upcall, NULL);
     if(getCC1101()){
         ESP_LOGI(TAG, "Connection OK");
     }else{
@@ -95,39 +93,41 @@ void app_main(void)
     setAppendStatus(0);    // When enabled, two status bytes will be appended to the payload of the packet. The status bytes contain RSSI and LQI values, as well as CRC OK.
 
     ESP_LOGI(TAG, "Tx Mode");
-    ESP_LOGI(TAG, "/nAvailable options:");
+    ESP_LOGI(TAG, "Available options:");
     ESP_LOGI(TAG, "1: Trigger Sleep");
     ESP_LOGI(TAG, "2: Trigger Wakeup");
     ESP_LOGI(TAG, "3: Trigger Shutdown");
     ESP_LOGI(TAG, "4: Trigger Powerup");
 
     while(1){
-
-        if(counter == 4){
-            counter = 0;
-        }
-
-        if (counter == 0) {
+        // ESP_LOGW(TAG, "Rcieved from UART %d", incommingByte);
+        if (incommingByte == 49) {
             setSyncWord(ON_SYNC_WORD_BYTE, 145);
             SendData3("Trigger Sleep", 100);
             ESP_LOGI(TAG,"Trigger Sleep\n");
         }
-        if (counter == 1) {
+        if (incommingByte == 50) {
             setSyncWord(WAKE_UP_SYNC_WORD_BYTE, 145);
             SendData3("Trigger Wakeup", 100);
             ESP_LOGI(TAG,"Trigger Wakeup\n");
         }
-        if (counter == 2) {
+        if (incommingByte == 51) {
             setSyncWord(ON_SYNC_WORD_BYTE, 145);
             SendData3("Trigger Shutdown", 100);
             ESP_LOGI(TAG,"Trigger Shutdown\n");
         }
-        if (counter == 3) {
+        if (incommingByte == 52) {
             setSyncWord(SHUTDOWN_SYNC_WORD_BYTE, 145);
             SendData3("Trigger Powerup", 100);
             ESP_LOGI(TAG,"Trigger Powerup\n");
         }
-        delay(2000);
-        counter++;
+        incommingByte = 0;
+        vTaskDelay(10/portTICK_PERIOD_MS);
     }
+}
+
+void uart_data_upcall(uint8_t* buffer, s_ezlopi_uart_object_handle_t uart_object_handle, void* user_args)
+{
+    incommingByte = (int)*buffer;
+    ESP_LOGI(TAG, "Rcieved from UART %d", incommingByte);
 }
