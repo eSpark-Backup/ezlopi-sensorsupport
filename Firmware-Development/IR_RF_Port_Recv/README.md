@@ -1,35 +1,54 @@
-# IR+RF Port from Arduino to ESP-IDF
+# RF-Shutdown-Wakeup-Sequence Port from Arduino to ESP-IDF
 
 ## Overview
 
-Purpose of this repo this to port Arduino based IR_RF Firmware to ESP_IDF
+Purpose of this branch is to port Arduino based IR_RF Firmware to ESP_IDF.
 
 ## Table of Contents
 
 - [Getting Started](#getting-started)
+- [Triggers](#Triggers)
+- [Transceiver Modes](#Transceiver-Modes)
 - [Prerequisites](#prerequisites)
 
 
 ## Getting Started
 
 1. Download or Clone the project.
-2. For Reciever Side Comment out the trans_main.c from main/CMakeLists.txt
+2. In main file initialize TRANSMITTER or RECEIVER
 ```
-idf_component_register(SRCS 
-                        "recv_main.c"
-                        # "trans_main.c"
-                INCLUDE_DIRS ".")
-```
-3. For Transmitter Side Comment out the recv_main.c from main/CMakeLists.txt
-```
-idf_component_register(SRCS 
-                        # "recv_main.c"
-                        "trans_main.c"
-                INCLUDE_DIRS ".")
+void app_main(void)
+{
+    trans_recv_init(TRANSMITTER);    
+    // trans_recv_init(RECEIVER);        
+}
 ```
 3. Select the correct Port.
-3. Upload firmware using ```idf.py -p COM12 monitor```
-3. Power both Rx and Tx Devices.
+4. Upload firmware using ```idf.py -p COM12 flash ```
+5. Power both TRANSMITTER and RECEIVER Devices.
+6. Monitor both devices using any serial terminal
+7. Send 1,2,3,4 to trigger sleep, wakeup, shutdown and powerup respectively
+
+
+## Triggers
+
+|   Character   |      Trigger       |   Enum   |
+|:-------------:|:------------------:|:--------:|
+|       1       |   Trigger Sleep    |  SLEEP   |
+|       2       |  Trigger Wakeup    |    -     |
+|       3       | Trigger Shutdown   | SHUTDOWN |
+|       4       | Trigger Powerup    | POWERUP  |
+
+## Transceiver Modes
+
+```
+enum TRANSCEIVER_MODE
+{
+    TRANSMITTER,
+    RECIEVER
+};
+```
+
 
 ### Prerequisites
 
