@@ -4,15 +4,18 @@ static const char *TAG = "TRANSMITTER_RECIEVER";
 byte buffer[61] = {0};
 int gdo0 = 10, currentTrigger, incommingByte;
 
+/*task handles*/
 TaskHandle_t pin_hold_duration_read_task_h;
 TaskHandle_t recv_task_h;
 TaskHandle_t trans_task_h;
 
+/*function Prototypes*/
 void pin_hold_duration_read_task(void *parameter);
 void recv_task(void *parameter);
 void trans_task(void *parameter);
 void print_wakeup_reason();
 void uart_recieve_upcall(uint8_t *buffer, s_ezlopi_uart_object_handle_t uart_object_handle, void *user_args);
+void start_transceiver_task(enum TRANSCEIVER_MODE current_mode);
 
 Triggers_t triggers[NUM_TRIGGERS] =
 {
@@ -22,15 +25,17 @@ Triggers_t triggers[NUM_TRIGGERS] =
     
 };
 
+/**
+ * @brief Initialize the transceiver and start the appropriate transceiver task.
+ *
+ * This function initializes the transceiver, checks the connection, and sets various configuration parameters.
+ * It then starts the transceiver task based on the specified mode.
+ *
+ * @param mode The mode of the transceiver, either TRANSMITTER or RECEIVER.
+ */
 void trans_recv_init(enum TRANSCEIVER_MODE mode){
-    if(mode == RECIEVER){
-        print_wakeup_reason();
-    }
     Init();
-    if(mode == TRANSMITTER){
-        ezlopi_uart_init(115200, 43, 44, uart_recieve_upcall, NULL);
-    }
-    
+   
     if (getCC1101())
     {
         ESP_LOGI(TAG, "Connection OK");
@@ -67,49 +72,19 @@ void trans_recv_init(enum TRANSCEIVER_MODE mode){
     setPQT(0);                           // Preamble quality estimator threshold. The preamble quality estimator increases an internal counter by one each time a bit is received that is different from the previous bit, and decreases the counter by 8 each time a bit is received that is the same as the last bit. A threshold of 4∙PQT for this counter is used to gate sync word detection. When PQT=0 a sync word is always accepted.
     setAppendStatus(0);                  // When enabled, two status bytes will be appended to the payload of the packet. The status bytes contain RSSI and LQI values, as well as CRC OK.
 
-    switch(mode){
-        case TRANSMITTER:
-            ESP_LOGI(TAG, "Tx Mode");
-            ESP_LOGI(TAG, "Available options:");
-            ESP_LOGI(TAG, "1: Trigger Sleep");
-            ESP_LOGI(TAG, "2: Trigger Wakeup");
-            ESP_LOGI(TAG, "3: Trigger Shutdown");
-            ESP_LOGI(TAG, "4: Trigger Powerup");
-
-            xTaskCreate(
-                trans_task, // Function to be called
-                "transmitter task",      // Name of the task
-                10000,        // Stack size
-                NULL,         // Parameter
-                5,            // Priority (1 is the lowest priority on ESP32)
-                &trans_task_h        // Task handle
-            );
-        break;
-        case RECIEVER:
-            ESP_LOGI(TAG, "Rx Mode");
-            xTaskCreate(
-                pin_hold_duration_read_task, // Function to be called
-                "pin_hold_duration_read_task",      // Name of the task
-                10000,        // Stack size
-                NULL,         // Parameter
-                1,            // Priority (1 is the lowest priority on ESP32)
-                &pin_hold_duration_read_task_h        // Task handle
-            );
-
-            xTaskCreate(
-                recv_task, // Function to be called
-                "receiver task",      // Name of the task
-                10000,        // Stack size
-                NULL,         // Parameter
-                5,            // Priority (1 is the lowest priority on ESP32)
-                &recv_task_h        // Task handle
-            );
-        break;
-    }
+    start_transceiver_task(mode);
 }
 
-
+/**
+ * @brief Task to handle receiving and processing data.
+ *
+ * This task continuously monitors for incoming data, performs CRC checks, prints
+ * RSSI and LQI information, and processes the received data to trigger specific actions.
+ *
+ * @param parameter Task parameter (unused in this task).
+ */
 void recv_task(void *parameter){
+    print_wakeup_reason();
     while(1){
         if (CheckReceiveFlag())
         {
@@ -172,6 +147,15 @@ void recv_task(void *parameter){
     }
 }
 
+/**
+ * @brief Task to handle actions based on the incoming byte.
+ *
+ * This task continuously monitors the global variable `incommingByte` and performs
+ * different actions based on its value. It sets sync words and sends corresponding data
+ * based on the incoming byte.
+ *
+ * @param parameter Task parameter (unused in this task).
+ */
 void trans_task(void *parameter){
     while(1){
         if (incommingByte == 49)
@@ -203,6 +187,14 @@ void trans_task(void *parameter){
     }
 }
 
+/**
+ * @brief Task to read the duration for which a pin is held high.
+ *
+ * This task continuously monitors the state of pin 10. When the pin transitions from
+ * low to high, it measures the duration for which the pin is held high and logs it.
+ *
+ * @param parameter Task parameter (unused in this task).
+ */
 void pin_hold_duration_read_task(void *parameter)
 {
     (void)parameter;
@@ -223,6 +215,12 @@ void pin_hold_duration_read_task(void *parameter)
     vTaskDelete(NULL);
 }
 
+/**
+ * @brief Prints the reason for the last wakeup from deep sleep.
+ *
+ * This function retrieves and prints the reason for the last wakeup from deep sleep,
+ * indicating whether it was caused by an external signal, a timer, a touchpad, or a ULP program.
+ */
 void print_wakeup_reason()
 {
     esp_sleep_wakeup_cause_t wakeup_reason;
@@ -252,8 +250,70 @@ void print_wakeup_reason()
     }
 }
 
+/**
+ * @brief Callback function called when data is received via UART.
+ *
+ * This function is invoked when data is received from UART. It logs the received byte
+ * and stores it in the global variable `incommingByte`.
+ *
+ * @param buffer Pointer to the buffer containing the received data.
+ * @param uart_object_handle Handle to the UART object associated with the received data.
+ * @param user_args User-defined arguments (can be NULL).
+ */
 void uart_recieve_upcall(uint8_t *buffer, s_ezlopi_uart_object_handle_t uart_object_handle, void *user_args)
 {
     incommingByte = (int)*buffer;
     ESP_LOGI(TAG, "Rcieved from UART %d", incommingByte);
+}
+
+/**
+ * @brief Start the transceiver task based on the specified mode.
+ *
+ * This function initializes and starts tasks according to the provided transceiver mode.
+ * For TRANSMITTER mode, it initializes the UART and creates a transmitter task.
+ * For RECEIVER mode, it creates tasks for reading pin hold duration and the receiver task.
+ *
+ * @param current_mode The mode of the transceiver, either TRANSMITTER or RECEIVER.
+ */
+void start_transceiver_task(enum TRANSCEIVER_MODE current_mode){
+    switch(current_mode){
+        case TRANSMITTER:
+            ezlopi_uart_init(115200, 43, 44, uart_recieve_upcall, NULL);
+            ESP_LOGI(TAG, "Tx Mode");
+            ESP_LOGI(TAG, "Available options:");
+            ESP_LOGI(TAG, "1: Trigger Sleep");
+            ESP_LOGI(TAG, "2: Trigger Wakeup");
+            ESP_LOGI(TAG, "3: Trigger Shutdown");
+            ESP_LOGI(TAG, "4: Trigger Powerup");
+
+            xTaskCreate(
+                trans_task, // Function to be called
+                "transmitter task",      // Name of the task
+                10000,        // Stack size
+                NULL,         // Parameter
+                5,            // Priority (1 is the lowest priority on ESP32)
+                &trans_task_h        // Task handle
+            );
+        break;
+        case RECIEVER:
+            ESP_LOGI(TAG, "Rx Mode");
+            xTaskCreate(
+                pin_hold_duration_read_task, // Function to be called
+                "pin_hold_duration_read_task",      // Name of the task
+                10000,        // Stack size
+                NULL,         // Parameter
+                1,            // Priority (1 is the lowest priority on ESP32)
+                &pin_hold_duration_read_task_h        // Task handle
+            );
+
+            xTaskCreate(
+                recv_task, // Function to be called
+                "receiver task",      // Name of the task
+                10000,        // Stack size
+                NULL,         // Parameter
+                5,            // Priority (1 is the lowest priority on ESP32)
+                &recv_task_h        // Task handle
+            );
+        break;
+    }
 }

@@ -8,6 +8,6 @@
 
 void app_main(void)
 {
-    trans_recv_init(TRANSMITTER);    //com12
-    // trans_recv_init(RECIEVER);          //com13
+    trans_recv_init(TRANSMITTER);    //com13/
+    // trans_recv_init(RECIEVER);          //com12 or com4
 }
