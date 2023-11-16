@@ -12,8 +12,7 @@
 #include "ezlopi_devices_list.h"
 #include "ezlopi_device_value_updated.h"
 #include "ezlopi_cloud_constants.h"
-
-#include"sensor_0066_tfmini_lidar_range_module.h"
+#include"driver/tfmini_lidar_range_module.h"
 #include "sensor_0066_UART_TFMINI.h"
 
 static float tfmini_value = 0;
@@ -81,34 +80,17 @@ static int __get_value_cjson(l_ezlopi_item_t *item, void *arg)
     return ret;
 }
 
-static void __uart_data_upcall(uint8_t* buffer,s_ezlopi_uart_object_handle_t uart_object_handle)
-{
-    if (uart_object_handle->arg)
-    {
-        l_ezlopi_item_t *item = (l_ezlopi_item_t *)uart_object_handle->arg;
-        TFMINI_Data* tfmini_sensor = (TFMINI_Data*)item->user_arg;
-        if (tfmini_sensor)
-        {
-            tfmini_parse_and_assign(buffer,tfmini_sensor);
-        
-#warning "use ring buffer"
-            tfmini_value = tfmini_sensor->tfmini_distance;
-        }
-    }
-    vTaskDelay(200/portTICK_PERIOD_MS); // 20 ms , portTICK_PERIOD_MS = 10 ,This delay is added to update buffer perfectly;
-}
-
 static int __init(l_ezlopi_item_t *item)
 {
     int ret = 0;
     if (item)
     {
         if (GPIO_IS_VALID_GPIO(item->interface.uart.tx) && GPIO_IS_VALID_GPIO(item->interface.uart.rx))
-        {
-            s_ezlopi_uart_object_handle_t ezlopi_uart_object_handle = ezlopi_uart_init(item->interface.uart.baudrate, item->interface.uart.tx, item->interface.uart.rx, __uart_data_upcall, item);
-            item->interface.uart.channel = ezlopi_uart_get_channel(ezlopi_uart_object_handle);
-            ret = 1;
+        { 
+            TFMINI_Data* tfmini_sensor = (TFMINI_Data*)item->user_arg;
+             item->interface.uart.channel = tfmini_init(item->interface.uart.baudrate, item->interface.uart.tx, item->interface.uart.rx, tfmini_sensor);
         }
+       
     }
     return ret;
 }
@@ -179,21 +161,23 @@ static int __prepare(void *arg)
             }
         }
     }
-
     return ret;
 }
 
 static int __notify(l_ezlopi_item_t *item)
 {
-    if (item) {
-        TFMINI_Data* tfmini_sensor = (TFMINI_Data*)item->user_arg;
-        if (tfmini_sensor) {
-            if ((tfmini_sensor->distance_item_id) == item->cloud_properties.item_id)
-             {
-                ezlopi_device_value_updated_from_device_v3(item);     
-            }
+    if (item) 
+    {
+    TFMINI_Data* tfmini_sensor = (TFMINI_Data*)item->user_arg;
+    if (tfmini_sensor) 
+    {
+        if ((tfmini_sensor->distance_item_id) == item->cloud_properties.item_id)
+        {
+            tfmini_value = tfmini_sensor->tfmini_distance;
+            ezlopi_device_value_updated_from_device_v3(item);     
         }
     }
-    return 1;
+    }
+     return 1;
 }
 

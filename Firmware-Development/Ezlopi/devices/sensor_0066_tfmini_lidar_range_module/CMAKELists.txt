@@ -1,4 +1,4 @@
-idf_component_register(SRCS "sensor_0066_UART_TFMINI.c" "sensor_0066_tfmini_lidar_range_module.c"
+idf_component_register(SRCS "sensor_0066_UART_TFMINI.c" "driver/tfmini_lidar_range_module.c"
                         INCLUDE_DIRS "."
                         REQUIRES trace 
                                 library
