@@ -23,6 +23,7 @@ extern void ownled_free();
 extern void ownled_setByte(uint8_t c, uint16_t pos, uint8_t sw);
 extern void ownled_setPixel(uint8_t c, uint16_t pos, uint8_t r, uint8_t g,
                             uint8_t b);
+extern uint32_t ownled_getPixelColor(uint8_t c, uint16_t pos);
 extern uint8_t ownled_getChannels();
 extern void ownled_setSize(uint8_t channel, uint16_t numPixel);
 

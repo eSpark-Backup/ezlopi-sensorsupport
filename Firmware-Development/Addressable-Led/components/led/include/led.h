@@ -116,7 +116,8 @@ enum LED_MODE {
   FX_MODE_TRICOLOR_CHASE,
   FX_MODE_ICU,
   FX_MODE_PLAYLIST,
-  LED_MODE_MAXVALUE
+  LED_MODE_MAXVALUE,
+  FX_MODE_DNA2D
 };
 
 struct LED_COLORING {
@@ -175,7 +176,10 @@ void led_cube(float x, float y, float z);
 void led_cube2(int d, float x, float y, float z);
 void led_block(int x, int y, uint8_t *r, uint8_t *g, uint8_t *b);
 void led_set_color(uint8_t c, uint16_t p, uint8_t r, uint8_t g, uint8_t b);
+uint32_t led_get_color(uint8_t c, uint16_t pos);
 void led_rgb_rtp(int x, int y, uint8_t r, uint8_t g, uint8_t b);
 void led_trigger();
+void led_channel_rgb(int c, int x, int y, uint8_t r, uint8_t g, uint8_t b);
+void fillFadeXY(int line);
 
 #endif /* MAIN_LED_H_ */

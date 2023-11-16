@@ -181,6 +181,10 @@ void led_set_color(uint8_t c, uint16_t p, uint8_t r, uint8_t g, uint8_t b) {
 	ownled_setPixel(c, p + led_config.prefix_leds, g, b, r);
 }
 
+uint32_t led_get_color(uint8_t c, uint16_t pos){
+	return ownled_getPixelColor(c, pos);
+}
+
 static inline void swap(int *a, int *b) {
 	int d = *a;
 	*a = *b;
@@ -191,8 +195,7 @@ static inline void invert(int *a, int sa) {
 	*a = sa - *a - 1;
 }
 
-static void led_channel_rgb(int c, int x, int y, uint8_t r, uint8_t g,
-		uint8_t b) {
+void led_channel_rgb(int c, int x, int y, uint8_t r, uint8_t g, uint8_t b) {
 	struct LED_CONFIG_CHANNEL *lc = led_config.channel[c];
 
 	x -= lc->ox;
@@ -368,7 +371,7 @@ static void fillFadeY(int line) {
 	}
 }
 
-static void fillFadeXY(int line) {
+void fillFadeXY(int line) {
 	float scale = 255.f
 			/ diagonale(led_config.channel[line]->sx,
 					led_config.channel[line]->sy);
@@ -377,6 +380,7 @@ static void fillFadeXY(int line) {
 		for (int x = led_config.channel[line]->sx - 1; x >= 0; x--) {
 
 			uint8_t c = diagonale(x, y) * scale;
+			c=0;
 			led_channel_rgb(line, x, y, c, c, c);
 		}
 	}
@@ -838,6 +842,10 @@ static void task(void *args) {
 					break;
 				case FX_MODE_PLAYLIST:
 					// playlist_next(now, i);
+					break;
+				case FX_MODE_DNA2D:
+					// WS2812FX_call(i, WS2812FX_mode_2Ddna);
+					WS2812FX_mode_2Ddna(i);
 					break;
 				default:
 					break;

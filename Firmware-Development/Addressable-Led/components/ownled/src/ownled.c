@@ -27,6 +27,7 @@
 #define RGB_BITS_8 (RGB_BYTES_8 * 8)
 #define RGB_BITS_24 (RGB_BYTES_24 * 8)
 #define RGB_BITS_48 (RGB_BYTES_48 * 8)
+#define RGB(r, g, b) (((uint32_t)(r) << 16) | ((uint32_t)(g) << 8) | (uint32_t)(b))
 
 static const char *TAG = "#ownled";
 
@@ -485,6 +486,83 @@ extern void ownled_setPixel(uint8_t c, uint16_t pos, uint8_t g, uint8_t b,
 		s[2] = r;
 		break;
 	}
+}
+
+extern uint32_t ownled_getPixelColor(uint8_t c, uint16_t pos) {
+    uint32_t color = 0;
+
+    if (c >= MAXIMAL_LINES)
+        return color;
+
+    uint8_t *s = lines[c].frameBuffer;
+    if (s == NULL) {
+        s = lines[c].rmtBuffer;
+    }
+
+    if (color_order == OWNLED_BW || color_order == OWNLED_BW_FB) {
+        if (pos >= lines[c].numBytes)
+            return color;
+
+        s += pos;
+
+        switch (pos % 12) {
+        case 6:
+        case 9:
+            s += 2;
+            break;
+        case 8:
+        case 11:
+            s -= 2;
+            break;
+        }
+    } else if (color_order == OWNLED_48 || color_order == OWNLED_48_FB) {
+        if (pos * RGB_BYTES_48 >= lines[c].numBytes)
+            return color;
+
+        s += pos * RGB_BYTES_48;
+    } else {
+        if (pos * RGB_BYTES_24 >= lines[c].numBytes)
+            return color;
+
+        s += pos * RGB_BYTES_24;
+    }
+
+    switch (color_order) {
+    case OWNLED_BW:
+    case OWNLED_BW_FB:
+        color = RGB(s[0], s[0], s[0]);
+        break;
+    case OWNLED_48:
+    case OWNLED_48_FB:
+        color = RGB(s[0], s[2], s[4]);
+        break;
+    case OWNLED_RGB:
+    case OWNLED_RGB_FB:
+        color = RGB(s[0], s[1], s[2]);
+        break;
+    case OWNLED_RBG:
+    case OWNLED_RBG_FB:
+        color = RGB(s[0], s[2], s[1]);
+        break;
+    case OWNLED_GRB:
+    case OWNLED_GRB_FB:
+        color = RGB(s[1], s[0], s[2]);
+        break;
+    case OWNLED_GBR:
+    case OWNLED_GBR_FB:
+        color = RGB(s[2], s[0], s[1]);
+        break;
+    case OWNLED_BRG:
+    case OWNLED_BRG_FB:
+        color = RGB(s[1], s[2], s[0]);
+        break;
+    case OWNLED_BGR:
+    case OWNLED_BGR_FB:
+        color = RGB(s[2], s[1], s[0]);
+        break;
+    }
+
+    return color;
 }
 
 void ownled_send()
