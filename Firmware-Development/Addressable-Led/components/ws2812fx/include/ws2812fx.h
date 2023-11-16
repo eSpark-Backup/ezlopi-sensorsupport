@@ -103,5 +103,6 @@ uint16_t WS2812FX_mode_twinkle(int line);
 // uint16_t   WS2812FX_mode_twinkle_fade_random(int line);
 uint16_t WS2812FX_mode_twinkle_random(int line);
 uint16_t WS2812FX_mode_android(int line);
+uint16_t WS2812FX_mode_2Ddna(int line);
 
 #endif /* WS2812FX */

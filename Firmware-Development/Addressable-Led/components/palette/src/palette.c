@@ -34,9 +34,9 @@ uint32_t colorFromPalette(const byte* palette, int paletteSize, int numLeds, int
     uint8_t b = palette[baseIndex * 4 + 3] + ((palette[nextIndex * 4 + 3] - palette[baseIndex * 4 + 3]) * offset) / 255;
 
     // apply brightness
-    r = r*(brightness/255);
-    g = g*(brightness/255);
-    b = b*(brightness/255);
+    r = (uint8_t)((float)r*((float)brightness/255.));
+    g = (uint8_t)((float)g*((float)brightness/255.));
+    b = (uint8_t)((float)b*((float)brightness/255.));
     
 
     // Pack the RGB values into a uint32_t

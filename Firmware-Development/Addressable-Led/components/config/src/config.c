@@ -124,15 +124,15 @@ static void setDefaults() {
 		led_config.channel[i]->selected = true;
 		// led_config.channel[0]->selected = true;
 
-		led_config.channel[i]->mode = LED_MODE_SOLID + i; //:FIXME: Revert back to solid by default
+		// led_config.channel[i]->mode = LED_MODE_SOLID + i; //:FIXME: Revert back to solid by default
 		// led_config.channel[i]->mode = FX_MODE_COLOR_WIPE;
-		// led_config.channel[i]->mode = FX_MODE_STATIC;
+		led_config.channel[i]->mode = FX_MODE_DNA2D;
 
 		led_config.channel[i]->black[0] = led_config.channel[i]->black[1] =
 				led_config.channel[i]->black[2] = -1;
 
-		led_config.channel[i]->start = i*10;
-		led_config.channel[i]->stop = led_config.channel[i]->start+10;
+		led_config.channel[i]->start = i*100;
+		led_config.channel[i]->stop = led_config.channel[i]->start+100;
 
 		led_config.channel[i]->segment_id = i;
 
@@ -148,6 +148,10 @@ static void setDefaults() {
 		led_config.channel[i]->color[2] = 0x0000FF;
 
 		led_config.channel[i]->palette = DEFAULT_PALETTE;
+
+		led_config.channel[i]->sx = 10;
+		led_config.channel[i]->sy = 10;
+		led_config.channel[i]->orientation = LED_ORI0_MEANDER;
 
 
 	}
@@ -203,7 +207,7 @@ void config_setMode(uint8_t mode) {
 			led_config.channel[i]->mode = mode;
 			led_config.channel[i]->sx = led_config.channel[i]->sy = 10;
 			led_config.channel[i]->ox = led_config.channel[i]->oy = 0;
-			led_config.channel[i]->orientation = LED_ORI0_ZIGZAG;
+			led_config.channel[i]->orientation = LED_ORI0_MEANDER;
 			led_config.channel[i]->black[0] = led_config.channel[i]->black[1] =
 				led_config.channel[i]->black[2] = -1;
 		}		

@@ -20,11 +20,20 @@
 #include <freertos/task.h>
 #include <palette.h>
 #include <cpt_palettes.h>
+#include "lib8tion.h"
 
 /*function prototypes*/
 static uint16_t random16mm( uint16_t min, uint16_t lim);
 static uint16_t random16l( uint16_t lim);
 static uint32_t color_blend(uint32_t color1, uint32_t color2, uint8_t blend);
+
+//color mangling macros
+#define RGBW32(r, g, b, w) ((uint32_t)(((uint8_t)(w) << 24) | ((uint8_t)(r) << 16) | ((uint8_t)(g) << 8) | ((uint8_t)(b))))
+
+#define R(c) (uint8_t((c) >> 16))
+#define G(c) (uint8_t((c) >> 8))
+#define B(c) (uint8_t(c))
+#define W(c) (uint8_t((c) >> 24))
 
 /* A PROGMEM (flash mem) table containing 8-bit unsigned sine wave (0-255).
  Copy & paste this snippet into a Python REPL to regenerate:
@@ -230,17 +239,47 @@ static uint32_t color_wheel(uint8_t pos) {
   }
 }
 
-// fast 8-bit random number generator shamelessly borrowed from FastLED
-static uint8_t random8() {
-  _rand16seed = (_rand16seed * 2053) + 13849;
-  return (uint8_t)(((uint8_t)(_rand16seed & 0xFF)) +
-                  ((uint8_t)(_rand16seed >> 8)));
+/*
+ * fades color toward black
+ * if using "video" method the resulting color will never become black unless it is already black
+ */
+uint32_t color_fade(uint32_t c1, uint8_t amount)
+{
+  uint8_t r = ((uint8_t)((c1) >> 16));
+  uint8_t g = ((uint8_t)((c1) >> 8));
+  uint8_t b = ((uint8_t)(c1));
+  uint8_t w = ((uint8_t)((c1) >> 24));
+  // if (video) {
+  //   r = scale8_video(r, amount);
+  //   g = scale8_video(g, amount);
+  //   b = scale8_video(b, amount);
+  //   w = scale8_video(w, amount);
+  // } else {
+  //   r = scale8(r, amount);
+  //   g = scale8(g, amount);
+  //   b = scale8(b, amount);
+  //   w = scale8(w, amount);
+  // }
+  r = scale8(r, amount);
+  g = scale8(g, amount);
+  b = scale8(b, amount);
+  w = scale8(w, amount);
+
+  // return 1;
+  return (uint32_t)RGBW32(r, g, b, w);
 }
 
-static uint16_t random16(){
-  _rand16seed = (_rand16seed * 2053) + 13849;
-  return _rand16seed;
-}
+// // fast 8-bit random number generator shamelessly borrowed from FastLED
+// static uint8_t random8() {
+//   _rand16seed = (_rand16seed * 2053) + 13849;
+//   return (uint8_t)(((uint8_t)(_rand16seed & 0xFF)) +
+//                   ((uint8_t)(_rand16seed >> 8)));
+// }
+
+// static uint16_t random16(){
+//   _rand16seed = (_rand16seed * 2053) + 13849;
+//   return _rand16seed;
+// }
 
 // static int32_t random32(int16_t delta) {
 //   int32_t res = random8();
@@ -322,7 +361,33 @@ static inline void setPixelColorRGBW(int line, uint16_t i, uint8_t r, uint8_t g,
   led_set_color(line, i, r, g, b);
 }
 
+static inline void setPixelColorXY(int line, int x, int y, uint32_t color){
+  uint8_t r = (color >> 16) & 0xFF;
+  uint8_t g = (color >> 8) & 0xFF;
+  uint8_t b = color & 0xFF;
+  led_channel_rgb(line, x, y, r,g,b);
+}
 
+static inline uint32_t getPixelColor(int line, uint16_t pos){
+  return led_get_color(line, pos);
+}
+static inline uint32_t getPixelColorXY(int line, int x, int y){
+  return led_get_color(line, x +(y * 10)); //TODO: FIX this 10
+}
+
+// fades all pixels to black using nscale8() from WLED and FASTLED
+void fadeToBlackBy(int line, uint8_t fadeBy) {
+  // if (!isActive() || fadeBy == 0) return;   // optimization - no scaling to apply
+  // const uint16_t cols = is2D() ? virtualWidth() : virtualLength();
+  // const uint16_t rows = virtualHeight(); // will be 1 for 1D
+
+  const uint16_t cols = 10;
+  const uint16_t rows = 10;
+
+  for (int y = 0; y < rows; y++) for (int x = 0; x < cols; x++) {
+    setPixelColorXY(line, x, y, color_fade(getPixelColorXY(line, x,y), 255-fadeBy));
+  }
+}
 
 /*
  * No blinking. Just plain old static light.
@@ -1820,4 +1885,34 @@ uint16_t WS2812FX_mode_icu(int line) {
 
   // return (fx_segments[line]->speed / segmentLength(line));
   return 15*(2000/fx_segments[line]->speed);
+}
+
+/////////////////////
+//      2D DNA     //
+/////////////////////
+uint16_t WS2812FX_mode_2Ddna(int line) {         // dna originally by by ldirko at https://pastebin.com/pCkkkzcs. Updated by Preyy. WLED conversion by Andrew Tuline.
+  // if (!strip.isMatrix || !SEGMENT.is2D()) return mode_static(); // not a 2D set-up
+  CREATEDEFAULTPALETTE(SEGCOLOR(0));
+  const uint16_t cols = 10;
+  const uint16_t rows = 10;
+
+  // fillFadeXY(line);
+  fadeToBlackBy(line, 64);
+  for (int i = 0; i < cols; i++) {
+    // setPixelColorXY(line, i, beatsin8(map(SEGSPEED,0,2000,0,255)/8, 0, rows-1, 0, i*2   ), RED);
+    setPixelColorXY(line, i, beatsin8(map(SEGSPEED,0,2000,0,255)/4, 0, rows-1, 0, i*4   ), colorFromPalette(SEGPALETTE, SEGPALETTESIZE, SEGLEN, i*5+(esp_timer_get_time()/1000)/17, beatsin8(5, 50, 255, 0, i*10), SEGMENT->options));
+    setPixelColorXY(line, i, beatsin8(map(SEGSPEED,0,2000,0,255)/4, 0, rows-1, 0, i*4+128), colorFromPalette(SEGPALETTE, SEGPALETTESIZE, SEGLEN, i*5+128+(esp_timer_get_time()/1000)/17, beatsin8(5, 50, 255, 0, i*10+128), SEGMENT->options));
+    
+    // setPixelColorXY(i, beatsin8(SEGMENT.speed/8, 0, rows-1, 0, i*4+128), ColorFromPalette(SEGPALETTE, i*5+128+millis()/17, beatsin8(5, 55, 255, 0, i*10+128), LINEARBLEND));
+    
+    // setPixelColorXY(line, i, beatsin8(map(SEGSPEED,0,2000,0,255)/4, 0, rows-1, 0, i*4    ), COLORFROMPALETTE(i*5+xTaskGetTickCount()/17));
+    // setPixelColorXY(line, i, beatsin8(map(SEGSPEED,0,2000,0,255)/4, 0, rows-1, 0, i*4+128), COLORFROMPALETTE(i*5+128+xTaskGetTickCount()/17));
+
+    // setPixelColorXY(line, i, beatsin8(SEGSPEED/8, 0, rows-1, 0, i*4    ), RED);
+    // setPixelColorXY(line, i, beatsin8(SEGSPEED/8, 0, rows-1, 0, i*4+128), WARMWHITE);
+  }
+  // SEGMENT.blur(SEGMENT.intensity>>3);
+
+  // return 15*(2000/fx_segments[line]->speed);
+  return 0;
 }
