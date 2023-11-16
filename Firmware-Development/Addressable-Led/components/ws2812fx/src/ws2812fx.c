@@ -26,14 +26,16 @@
 static uint16_t random16mm( uint16_t min, uint16_t lim);
 static uint16_t random16l( uint16_t lim);
 static uint32_t color_blend(uint32_t color1, uint32_t color2, uint8_t blend);
+static inline void setPixelColorXY(int line, int x, int y, uint32_t color);
+static inline uint32_t getPixelColorXY(int line, int x, int y);
 
 //color mangling macros
 #define RGBW32(r, g, b, w) ((uint32_t)(((uint8_t)(w) << 24) | ((uint8_t)(r) << 16) | ((uint8_t)(g) << 8) | ((uint8_t)(b))))
 
-#define R(c) (uint8_t((c) >> 16))
-#define G(c) (uint8_t((c) >> 8))
-#define B(c) (uint8_t(c))
-#define W(c) (uint8_t((c) >> 24))
+#define R(c) ((uint8_t)((c) >> 16))
+#define G(c) ((uint8_t)((c) >> 8))
+#define B(c) ((uint8_t)(c))
+#define W(c) ((uint8_t)((c) >> 24))
 
 /* A PROGMEM (flash mem) table containing 8-bit unsigned sine wave (0-255).
  Copy & paste this snippet into a Python REPL to regenerate:
@@ -267,6 +269,124 @@ uint32_t color_fade(uint32_t c1, uint8_t amount)
 
   // return 1;
   return (uint32_t)RGBW32(r, g, b, w);
+}
+
+
+// blurRow: perform a blur on a row of a rectangular matrix
+void blurRow(int line, uint16_t row, fract8 blur_amount) {
+  // if (!isActive() || blur_amount == 0) return; // not active
+  const uint16_t cols = 10;
+  const uint16_t rows = 10;
+
+  if (row >= rows) return;
+  // blur one row
+  uint8_t keep = 255 - blur_amount;
+  uint8_t seep = blur_amount >> 1;
+  uint32_t carryover = 0x000000;
+  for (unsigned x = 0; x < cols; x++) {
+    uint32_t cur = getPixelColorXY(line, x, row);
+    uint32_t before = cur;     // remember color before blur
+    uint32_t part = cur;
+    // part.nscale8(seep);
+    // cur.nscale8(keep);
+    uint8_t pr,pg,pb;
+    pr = R(part);
+    pg = G(part);
+    pb = B(part);
+
+    uint8_t cr,cg,cb;
+    cr = R(cur);
+    cg = G(cur);
+    cb = B(cur);
+
+    nscale8x3( &pr, &pg, &pb, seep);
+    part = RGBW32(pr, pg, pb, 255);
+    nscale8x3( &cr, &cg, &cb, keep);
+    cur = RGBW32(cr, cg, cb, 255);
+
+    cur += carryover;
+    if (x>0) {
+      uint32_t prev = getPixelColorXY(line, x-1, row) + part;
+      setPixelColorXY(line, x-1, row, prev);
+    }
+    if (before != cur)         // optimization: only set pixel if color has changed
+      setPixelColorXY(line, x, row, cur);
+    carryover = part;
+  }
+}
+
+// blurCol: perform a blur on a column of a rectangular matrix
+void blurCol(int line, uint16_t col, fract8 blur_amount) {
+  // if (!isActive() || blur_amount == 0) return; // not active
+  const uint16_t cols = 10; //TODO: make these cols and rows controllable currently hardcoded for testing
+  const uint16_t rows = 10;
+
+  if (col >= cols) return;
+  // blur one column
+  uint8_t keep = 255 - blur_amount;
+  uint8_t seep = blur_amount >> 1;
+  uint32_t carryover = 0x000000;
+  for (unsigned y = 0; y < rows; y++) {
+    uint32_t cur = getPixelColorXY(line, col, y);
+    uint32_t part = cur;
+    uint32_t before = cur;     // remember color before blur
+    // part.nscale8(seep);
+    // cur.nscale8(keep);
+    uint8_t pr,pg,pb;
+    pr = R(part);
+    pg = G(part);
+    pb = B(part);
+
+    uint8_t cr,cg,cb;
+    cr = R(cur);
+    cg = G(cur);
+    cb = B(cur);
+
+    nscale8x3( &pr, &pg, &pb, seep);
+    part = RGBW32(pr, pg, pb, 255);
+    nscale8x3( &cr, &cg, &cb, keep);
+    cur = RGBW32(cr, cg, cb, 255);
+
+    cur += carryover;
+    if (y>0) {
+      uint32_t prev = getPixelColorXY(line, col, y-1) + part;
+      setPixelColorXY(line, col, y-1, prev);
+    }
+    if (before != cur)         // optimization: only set pixel if color has changed
+      setPixelColorXY(line, col, y, cur);
+    carryover = part;
+  }
+}
+
+/*
+ * blurs segment content, source: FastLED colorutils.cpp
+ */
+void blur(int line, uint8_t blur_amount) {
+  // if (!isActive() || blur_amount == 0) return; // optimization: 0 means "don't blur"
+// #ifndef WLED_DISABLE_2D
+//   if (is2D()) {
+    // compatibility with 2D
+    const unsigned cols = 10; //TODO: hardcoded to 10 for testing
+    const unsigned rows = 10;
+    for (unsigned i = 0; i < rows; i++) blurRow(line, i, blur_amount); // blur all rows
+    for (unsigned k = 0; k < cols; k++) blurCol(line, k, blur_amount); // blur all columns
+    // return;
+  // }
+  // uint8_t keep = 255 - blur_amount;
+  // uint8_t seep = blur_amount >> 1;
+  // uint32_t carryover = BLACK;
+  // unsigned vlength = virtualLength();
+  // for (unsigned i = 0; i < vlength; i++) {
+  //   uint32_t cur = getPixelColor(i);
+  //   uint32_t part = color_fade(cur, seep);
+  //   cur = color_add(color_fade(cur, keep), carryover, true);
+  //   if (i > 0) {
+  //     uint32_t c = getPixelColor(i-1);
+  //     setPixelColor(i-1, color_add(c, part, true));
+  //   }
+  //   setPixelColor(i, cur);
+  //   carryover = part;
+  // }
 }
 
 // // fast 8-bit random number generator shamelessly borrowed from FastLED
@@ -1911,8 +2031,7 @@ uint16_t WS2812FX_mode_2Ddna(int line) {         // dna originally by by ldirko 
     // setPixelColorXY(line, i, beatsin8(SEGSPEED/8, 0, rows-1, 0, i*4    ), RED);
     // setPixelColorXY(line, i, beatsin8(SEGSPEED/8, 0, rows-1, 0, i*4+128), WARMWHITE);
   }
-  // SEGMENT.blur(SEGMENT.intensity>>3);
+  blur(line, SEGMENT->intensity>>3);
 
-  // return 15*(2000/fx_segments[line]->speed);
-  return 0;
+  return 5*(2000/fx_segments[line]->speed);
 }
