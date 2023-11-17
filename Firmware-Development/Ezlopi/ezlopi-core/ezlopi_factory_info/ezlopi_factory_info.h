@@ -409,7 +409,7 @@ static const char *test_device_constant_config =
     \"cmd\":3,\
     \"dev_detail\":[{\
                 \"dev_type\": 7,\
-                \"dev_name\": \"SUCCESSFUL\",\
+                \"dev_name\": \"TFMINI-S Lidar\",\
                 \"id_room\": \"\",\
                 \"id_item\": 66,\
                 \"gpio_tx\" : 17,\

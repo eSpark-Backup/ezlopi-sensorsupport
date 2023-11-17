@@ -15,7 +15,6 @@
 #include"driver/tfmini_lidar_range_module.h"
 #include "sensor_0066_UART_TFMINI.h"
 
-static float tfmini_value = 0;
 static int __prepare(void *arg);
 static int __init(l_ezlopi_item_t *item);
 static int __notify(l_ezlopi_item_t *item);
@@ -68,11 +67,12 @@ static int __get_value_cjson(l_ezlopi_item_t *item, void *arg)
 {
     int ret = 0;
     char valueFormatted[20];
+    tfmini_data_t* tfmini_sensor = (tfmini_data_t*)item->user_arg;
     if (item && arg)
     {
         cJSON *cj_result = (cJSON *)arg;
-        cJSON_AddNumberToObject(cj_result, "value", tfmini_value);
-        snprintf(valueFormatted, 20, "%.2f", tfmini_value);
+        cJSON_AddNumberToObject(cj_result, "value", tfmini_sensor->tfmini_distance);
+        snprintf(valueFormatted, 20, "%.2f", (double)tfmini_sensor->tfmini_distance);
         cJSON_AddStringToObject(cj_result, "valueFormatted", valueFormatted);
 
         ret = 1;
@@ -87,7 +87,7 @@ static int __init(l_ezlopi_item_t *item)
     {
         if (GPIO_IS_VALID_GPIO(item->interface.uart.tx) && GPIO_IS_VALID_GPIO(item->interface.uart.rx))
         { 
-            TFMINI_Data* tfmini_sensor = (TFMINI_Data*)item->user_arg;
+            tfmini_data_t* tfmini_sensor = (tfmini_data_t*)item->user_arg;
              item->interface.uart.channel = tfmini_init(item->interface.uart.baudrate, item->interface.uart.tx, item->interface.uart.rx, tfmini_sensor);
         }
        
@@ -107,16 +107,15 @@ static void __setup_device_cloud_properties(l_ezlopi_device_t *device, cJSON *cj
     device->cloud_properties.device_id = ezlopi_cloud_generate_device_id();
 }
 
-static void __setup_item_cloud_properties(l_ezlopi_item_t *item, cJSON *cj_device,TFMINI_Data* tfmini_sensor)
+static void __setup_item_cloud_properties(l_ezlopi_item_t *item, cJSON *cj_device,tfmini_data_t* tfmini_sensor)
 {
     item->cloud_properties.show = true;
     item->cloud_properties.has_getter = true;
-    item->cloud_properties.has_setter = true;
+    item->cloud_properties.has_setter = false;
     item->cloud_properties.item_name = ezlopi_item_name_distance;
     item->cloud_properties.value_type = value_type_length;
     item->cloud_properties.scale = scales_centi_meter;
-    tfmini_sensor->distance_item_id = ezlopi_cloud_generate_item_id();
-    item->cloud_properties.item_id = tfmini_sensor->distance_item_id;
+    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
     item->interface.uart.enable =  true;
      //----- CUSTOM DATA STRUCTURE -----------------------------------------
     item->user_arg = (void *)tfmini_sensor;
@@ -142,7 +141,7 @@ static int __prepare(void *arg)
             l_ezlopi_device_t *device = ezlopi_device_add_device();
             if (device)
             {
-                TFMINI_Data* tfmini_sensor_data = (TFMINI_Data*) malloc (sizeof(TFMINI_Data));
+                tfmini_data_t* tfmini_sensor_data = (tfmini_data_t*) malloc (sizeof(tfmini_data_t));
                 if(tfmini_sensor_data)
                 {
                     __setup_device_cloud_properties(device, cjson_device);
@@ -166,18 +165,7 @@ static int __prepare(void *arg)
 
 static int __notify(l_ezlopi_item_t *item)
 {
-    if (item) 
-    {
-    TFMINI_Data* tfmini_sensor = (TFMINI_Data*)item->user_arg;
-    if (tfmini_sensor) 
-    {
-        if ((tfmini_sensor->distance_item_id) == item->cloud_properties.item_id)
-        {
-            tfmini_value = tfmini_sensor->tfmini_distance;
-            ezlopi_device_value_updated_from_device_v3(item);     
-        }
-    }
-    }
-     return 1;
+    ezlopi_device_value_updated_from_device_v3(item);     
+    return 1;
 }
 
