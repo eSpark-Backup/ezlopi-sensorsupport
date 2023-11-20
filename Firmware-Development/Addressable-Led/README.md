@@ -15,7 +15,7 @@
 
 ## Example JSON Packets:
 
-### 1. To Change Effects
+### 1. To Change Effects (1D and 2D)
 
 ```
 {
@@ -30,7 +30,7 @@
 Change is "fx" value to change animations on the led strip (0-66)\
 :red_circle: NOTE: From UI it will be a drop down list of all Effects.
 
-### 2. To Change RGB Color Values
+### 2. To Change RGB Color Values (1D and 2D)
 
 ```
 {
@@ -66,7 +66,7 @@ Change the "col":[[r,g,b,w], [r,g,b,w], [r,g,b,w]] values to change RGB Colors o
 "col" : [[Primary], [Secondary], [Tertiary]] 
 ```
 
-### 3. To Change Brightness of the Strip
+### 3. To Change Brightness of the Strip (1D and 2D)
 
 ```
 {
@@ -77,7 +77,7 @@ Change the "col":[[r,g,b,w], [r,g,b,w], [r,g,b,w]] values to change RGB Colors o
 ```
 Change the "bri": X value to control strip brightness (0-255)
 
-### 4. To Select/Deselect Segment
+### 4. To Select/Deselect Segment (1D and 2D)
 
 > Select
 
@@ -110,7 +110,7 @@ Change the "bri": X value to control strip brightness (0-255)
 Change the "sel": X bool value either true or false to control segment selection (true/flase)
 any segment that is deselected will not be modifiable by any command
 
-### 5. To Change Segment Start and End Pixels (same is used to create a segment)
+### 5. To Change Segment Start and End Pixels (same is used to create a segment) (1D)
 
 ```
 {
@@ -139,7 +139,7 @@ any segment that is deselected will not be modifiable by any command
 
 Change the "start": x and "stop":x to modify segment length.
 
-### 6. To Change Selected Effects Speed
+### 6. To Change Selected Effects Speed (1D and 2D)
 
 ```
 {
@@ -153,7 +153,7 @@ Change the "start": x and "stop":x to modify segment length.
 Change "sx" : x value to change the speed of all selected effects (0-255)
 
 
-### 7. To Change Selected Effects Intensity
+### 7. To Change Selected Effects Intensity (1D and 2D)
 
 ```
 {
@@ -166,7 +166,7 @@ Change "sx" : x value to change the speed of all selected effects (0-255)
 ```
 Change "ix" : x value to change the intensity of all selected effects (0-255)
 
-### 8. To Change the Direction of the Effect
+### 8. To Change the Direction of the Effect (1D)
 
 ```
 {
@@ -180,7 +180,7 @@ Change "ix" : x value to change the intensity of all selected effects (0-255)
 ```
 Change "rev" : x value to change the direction of effect of segment of id "id" : y. (true/false)
 
-### 9. To Delete Segment using segment ID
+### 9. To Delete Segment using segment ID (1D and 2D)
 
 ```
 {
@@ -195,7 +195,7 @@ Change "rev" : x value to change the direction of effect of segment of id "id" :
 Give Segment ID "id":x (int) to delete not the segment index.\
 :red_circle: NOTE: Disable the delete button if there is only 1 segment left.
 
-### 10. To apply a Palette on Selected Segments if supported
+### 10. To apply a Palette on Selected Segments if supported (1D and 2D)
 
 ```
 {
@@ -208,6 +208,27 @@ Give Segment ID "id":x (int) to delete not the segment index.\
 ```
 Change "pal":x (int) to apply palette on segments which are selected.\
 :red_circle: NOTE: From UI it will be a drop down list of all palettes.
+
+### 11. To Change Start Stop of a 2D Strip (2D)
+
+```
+{
+  "seg": {
+    "id": 0,
+    "n": "",
+    "start": 0,
+    "stop": 10,
+    "startY": 0,
+    "stopY": 10,
+    "grp": 1,
+    "spc": 0,
+    "of": 0,
+    "tp": false
+  },
+  "v": true,
+  "time": 1700472731
+}
+```
 
 
 
@@ -231,9 +252,12 @@ Select the instructions depending on Espressif chip installed on your developmen
 - [x] Delete Segements
 - [x] Understand Palettes
 - [x] Add Palettes
-- [ ] Control Palettes using JSON
+- [x] Control Palettes using JSON
+- [x] Understanding 2D Animation
+- [ ] Configuration for 2D Led Strip
+- [ ] Add 2d Animations Support for Led Matrix
 
-:white_circle: Add Custom Effects from WLED (in-progress)
+:white_circle: Add Effects from WLED (in-progress)
 
 
 ## Project folder contents

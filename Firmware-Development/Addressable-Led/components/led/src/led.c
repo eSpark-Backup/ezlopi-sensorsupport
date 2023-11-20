@@ -297,10 +297,6 @@ static void handleNewConfig() {
 			WS2812FX_init(i, 
 				led_config.channel[i]->stop - led_config.channel[i]->start,  //length of a single segment
 
-				// led_config.config_color[0], 
-				// led_config.config_color[1], 
-				// led_config.config_color[2],
-
 				led_config.channel[i]->color[0],	//primary
 				led_config.channel[i]->color[1],	//secondary
 				led_config.channel[i]->color[2],	//tertiary
