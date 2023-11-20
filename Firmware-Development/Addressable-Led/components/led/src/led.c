@@ -331,7 +331,7 @@ static void handleNewConfig() {
 	framerate = led_config.refresh_rate;
 }
 
-static void fill(int line, uint8_t r, uint8_t g, uint8_t b) {
+void fill(int line, uint8_t r, uint8_t g, uint8_t b) {
 	int size = led_config.channel[line]->stop - led_config.channel[line]->start;
 	int seg_length_total = led_config.channel[line]->number_of_leds;
 	int total_strip_leds = led_config.total_leds;
@@ -846,6 +846,9 @@ static void task(void *args) {
 				case FX_MODE_DNA2D:
 					// WS2812FX_call(i, WS2812FX_mode_2Ddna);
 					WS2812FX_mode_2Ddna(i);
+					break;
+				case FX_MODE_2DDNA_SPIRAL:
+					WS2812FX_mode_2DDNASpiral(i);
 					break;
 				default:
 					break;
