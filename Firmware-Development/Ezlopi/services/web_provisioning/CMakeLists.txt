@@ -1,3 +1,4 @@
+# file( GLOB_RECURSE provisioning_src "*.c*" "actions/*.c*" )
 file(GLOB_RECURSE provisioning_src "*.c*")
 idf_component_register(SRCS "web_provisioning.c" "${provisioning_src}"
     INCLUDE_DIRS "."
@@ -13,7 +14,6 @@ idf_component_register(SRCS "web_provisioning.c" "${provisioning_src}"
                 registration
                 room
                 scenes
-                settings
                 trace  
                 items             
                 esp_common

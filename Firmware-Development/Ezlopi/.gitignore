@@ -1,4 +1,6 @@
-firmware/**
+firmware/v*/**
+firmware/releaseNote.txt
+firmware/ezlopi/firmware/**
 **/esptool
 **/espsecure
 firmware/ezlopi-old

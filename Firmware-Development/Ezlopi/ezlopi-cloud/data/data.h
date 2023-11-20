@@ -2,6 +2,7 @@
 #define __HUB_DATA_LIST_H__
 
 #include <string.h>
+
 #include "cJSON.h"
 
 #ifdef __cplusplus

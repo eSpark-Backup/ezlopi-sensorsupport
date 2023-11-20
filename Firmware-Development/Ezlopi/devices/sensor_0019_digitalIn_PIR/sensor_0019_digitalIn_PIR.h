@@ -1,7 +1,7 @@
 
 
-#ifndef __SENSOR_PIR_H__
-#define __SENSOR_PIR_H__
+#ifndef SENSOR_0019_DIGITALIN_PIR_H
+#define SENSOR_0019_DIGITALIN_PIR_H
 
 #include "esp_err.h"
 #include "driver/gpio.h"
@@ -20,6 +20,6 @@
 #include "ezlopi_cloud_device_types_str.h"
 #include "ezlopi_cloud_value_type_str.h"
 
-int sensor_0019_digitalIn_PIR(e_ezlopi_actions_t action, s_ezlopi_device_properties_t *properties, void *args, void *user_arg);
+int sensor_0019_digitalIn_PIR(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *args, void *user_arg);
 
-#endif //__SENSOR_PIR_H__
+#endif // SENSOR_0019_DIGITALIN_PIR_H

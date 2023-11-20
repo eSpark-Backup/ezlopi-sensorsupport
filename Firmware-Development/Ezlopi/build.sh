@@ -15,7 +15,7 @@ elif [[ "compile_binary" == $1 ]];then
 release=4
 fi
 
-V_MAJOR=2 # Major changes such as protocols, in-compatible APIs, Probably not compatible with prior version
+V_MAJOR=3 # Major changes such as protocols, in-compatible APIs, Probably not compatible with prior version
 V_MINOR=0 # Minor changes, Are always compatible with prior versions, eg. feature additions, 
 V_BATCH=0 # Patch changes are like bug-fixes, security addition, and are strickly backward compatible
 V_BUILD=0 # Build count, Incremental, Increases by 1 on each build call
@@ -46,6 +46,8 @@ get_version_variables() {
 BUIDER_EMAIL=`git config --get user.email`
 BUILD_TIME=`date +"%c"`
 COMMIT_HASH=`git rev-parse HEAD`
+branch_info=$(git branch)
+BRANCH=$(echo "$branch_info" | grep -E '^\* ' | sed 's/^\* //')
 
 version_create () {
     echo -e "#ifndef __VERSION_H__" > $versionFile
@@ -72,7 +74,7 @@ version_create () {
     
     echo -e "#define DEVELOPER \"${BUIDER_EMAIL}\"" >> $versionFile
     echo -e "#define COMPILE_TIME \"${BUILD_TIME}\"" >> $versionFile
-    echo -e "#define CURRENT_BRANCH \"development\"" >> $versionFile
+    echo -e "#define CURRENT_BRANCH \"${BRANCH}\"" >> $versionFile
     echo -e "#define COMMIT_HASH \"${COMMIT_HASH}\"" >> $versionFile
 
     echo -e "#ifdef __cplusplus" >> $versionFile

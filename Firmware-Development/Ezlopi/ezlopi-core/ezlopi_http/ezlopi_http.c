@@ -4,6 +4,7 @@
 #include "esp_http_client.h"
 #include "trace.h"
 #include "ezlopi_http.h"
+#include "cJSON.h"
 
 static void ezlopi_http_free_rx_data(s_rx_data_t *rx_data);
 static esp_err_t ezlopi_http_event_handler(esp_http_client_event_t *evt);

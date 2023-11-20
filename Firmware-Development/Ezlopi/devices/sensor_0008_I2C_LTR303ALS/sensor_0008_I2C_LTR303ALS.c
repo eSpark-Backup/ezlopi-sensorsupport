@@ -14,174 +14,162 @@
 #include "ezlopi_cloud_constants.h"
 #include "ezlopi_i2c_master.h"
 #include "ezlopi_spi_master.h"
+#include "ezlopi_valueformatter.h"
 
 #include "sensor_0008_I2C_LTR303ALS.h"
 #include "ALS_LTR303.h"
+#include "stdlib.h"
 
-static int count = 5;
+static int __prepare(void *arg);
+static int __init(l_ezlopi_item_t *item);
+static int __notify(l_ezlopi_item_t *item);
+static int __get_value_cjson(l_ezlopi_item_t *item, void *arg);
 
-static int ltr303_prepare_sensor(void* arg);
-static s_ezlopi_device_properties_t* ltr303_ambient_sensor_prepare_properties(cJSON* cjson_device);
-static int ltr303_ambient_sensor_init(s_ezlopi_device_properties_t* properties);
-static int ltr303_ambient_sensor_update_values(s_ezlopi_device_properties_t* properties);
-static int ltr303_ambient_sensor_get_value_cjson(s_ezlopi_device_properties_t *properties, void *arg);
-
-
-int sensor_0008_I2C_LTR303ALS(e_ezlopi_actions_t action, s_ezlopi_device_properties_t *properties, void *arg, void *user_arg)
+int sensor_0008_I2C_LTR303ALS(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg)
 {
     int ret = 0;
-    switch(action)
+    switch (action)
     {
-        case EZLOPI_ACTION_PREPARE:
+    case EZLOPI_ACTION_PREPARE:
+    {
+        __prepare(arg);
+        break;
+    }
+    case EZLOPI_ACTION_INITIALIZE:
+    {
+        __init(item);
+        break;
+    }
+    case EZLOPI_ACTION_HUB_GET_ITEM:
+    case EZLOPI_ACTION_GET_EZLOPI_VALUE:
+    {
+        __get_value_cjson(item, arg);
+        break;
+    }
+    case EZLOPI_ACTION_NOTIFY_1000_MS:
+    {
+        __notify(item);
+        break;
+    }
+    default:
+    {
+        break;
+    }
+    }
+
+    return ret;
+}
+
+static int __get_value_cjson(l_ezlopi_item_t *item, void *arg)
+{
+    int ret = 0;
+
+    cJSON *cj_param = (cJSON *)arg;
+    ltr303_data_t *als_ltr303_data = (ltr303_data_t *)item->user_arg;
+    if (cj_param && als_ltr303_data)
+    {
+        cJSON_AddNumberToObject(cj_param, "value", als_ltr303_data->lux);
+        char *valueFormatted = ezlopi_valueformatter_double(als_ltr303_data->lux);
+        cJSON_AddStringToObject(cj_param, "valueFormatted", valueFormatted);
+        free(valueFormatted);
+    }
+
+    return ret;
+}
+
+static int __notify(l_ezlopi_item_t *item)
+{
+    int ret = 0;
+
+    static int count = 0;
+    if (3 == ++count)
+    {
+        ltr303_data_t *als_ltr303_data = (ltr303_data_t *)item->user_arg;
+        if (als_ltr303_data)
         {
-            ltr303_prepare_sensor(arg);
-            break;
-        }
-        case EZLOPI_ACTION_INITIALIZE:
-        {
-            ltr303_ambient_sensor_init(properties);
-            break;
-        }
-        case EZLOPI_ACTION_GET_EZLOPI_VALUE:
-        {
-            ltr303_ambient_sensor_get_value_cjson(properties, arg);
-            break;
-        }
-        case EZLOPI_ACTION_NOTIFY_1000_MS:
-        {
-            if(5 == count)
+            if (ESP_OK == ltr303_get_val(als_ltr303_data))
             {
-                ltr303_ambient_sensor_update_values(properties);
-                ezlopi_device_value_updated_from_device(properties);
-                count = 0;
+                ezlopi_device_value_updated_from_device_v3(item);
             }
-            count++;
-            break;
-        }
-        default:
-        {
-            break;
+            count = 0;
         }
     }
 
     return ret;
 }
 
-
-
-static int ltr303_prepare_sensor(void* arg)
+static int __init(l_ezlopi_item_t *item)
 {
     int ret = 0;
-    s_ezlopi_prep_arg_t *device_prep_arg = (s_ezlopi_prep_arg_t *)arg;
 
-    if ((NULL != device_prep_arg) && (NULL != device_prep_arg->cjson_device))
+    ltr303_setup(item->interface.i2c_master.sda, item->interface.i2c_master.scl, true);
+
+    return ret;
+}
+
+static void __prepare_device_cloud_properties(l_ezlopi_device_t *device, cJSON *cj_params)
+{
+    char *device_name = NULL;
+    CJSON_GET_VALUE_STRING(cj_params, "dev_name", device_name);
+    ASSIGN_DEVICE_NAME_V2(device, device_name);
+
+    device->cloud_properties.category = category_light_sensor;
+    device->cloud_properties.subcategory = subcategory_not_defined;
+    device->cloud_properties.device_type = dev_type_sensor;
+    device->cloud_properties.device_id = ezlopi_cloud_generate_device_id();
+}
+
+static void __prepare_item_cloud_properties(l_ezlopi_item_t *item, cJSON *cj_param)
+{
+    CJSON_GET_VALUE_INT(cj_param, "dev_type", item->interface_type);
+    item->cloud_properties.has_getter = true;
+    item->cloud_properties.has_setter = false;
+    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
+    item->cloud_properties.item_name = ezlopi_item_name_lux;
+    item->cloud_properties.value_type = value_type_illuminance;
+    item->cloud_properties.show = true;
+    item->cloud_properties.scale = scales_lux;
+
+    CJSON_GET_VALUE_INT(cj_param, "gpio_sda", item->interface.i2c_master.sda);
+    CJSON_GET_VALUE_INT(cj_param, "gpio_scl", item->interface.i2c_master.scl);
+
+    item->interface.i2c_master.enable = true;
+    item->interface.i2c_master.clock_speed = 100000;
+    item->interface.i2c_master.address = LTR303_ADDR;
+    ltr303_data_t *als_ltr303_data = (ltr303_data_t *)malloc(sizeof(ltr303_data_t));
+    if (als_ltr303_data)
     {
-        s_ezlopi_device_properties_t *ltr303_ambient_sensor_properties = ltr303_ambient_sensor_prepare_properties(device_prep_arg->cjson_device);
-        if (ltr303_ambient_sensor_properties)
+        memset(als_ltr303_data, 0, sizeof(ltr303_data_t));
+        item->user_arg = (void *)als_ltr303_data;
+    }
+}
+
+static int __prepare(void *arg)
+{
+    int ret = 0;
+
+    s_ezlopi_prep_arg_t *prep_arg = (s_ezlopi_prep_arg_t *)arg;
+    if (prep_arg && prep_arg->cjson_device)
+    {
+        l_ezlopi_device_t *als_ltr303_device = ezlopi_device_add_device();
+        if (als_ltr303_device)
         {
-            if (0 == ezlopi_devices_list_add(device_prep_arg->device, ltr303_ambient_sensor_properties, NULL))
+            __prepare_device_cloud_properties(als_ltr303_device, prep_arg->cjson_device);
+            l_ezlopi_item_t *als_ltr303_item = ezlopi_device_add_item_to_device(als_ltr303_device, sensor_0008_I2C_LTR303ALS);
+            if (als_ltr303_item)
             {
-                free(ltr303_ambient_sensor_properties);
+                __prepare_item_cloud_properties(als_ltr303_item, prep_arg->cjson_device);
             }
             else
             {
-                ret = 1;
+                ezlopi_device_free_device(als_ltr303_device);
             }
         }
-    }
-
-    return ret;
-}
-
-
-static s_ezlopi_device_properties_t* ltr303_ambient_sensor_prepare_properties(cJSON* cjson_device)
-{
-    s_ezlopi_device_properties_t *ltr303_ambient_sensor_properties = malloc(sizeof(s_ezlopi_device_properties_t));
-
-    ltr303_data_t* ltr303_lux_val = (ltr303_data_t*)malloc(sizeof(ltr303_data_t));
-
-    if (ltr303_ambient_sensor_properties && ltr303_lux_val)
-    {
-        memset(ltr303_ambient_sensor_properties, 0, sizeof(s_ezlopi_device_properties_t));
-        memset(ltr303_lux_val, 0, sizeof(ltr303_data_t));
-
-        ltr303_ambient_sensor_properties->interface_type = EZLOPI_DEVICE_INTERFACE_I2C_MASTER;
-
-        char *device_name = NULL;
-        CJSON_GET_VALUE_STRING(cjson_device, "dev_name", device_name);
-        ASSIGN_DEVICE_NAME(ltr303_ambient_sensor_properties, device_name);
-        ltr303_ambient_sensor_properties->ezlopi_cloud.category = category_light_sensor;
-        ltr303_ambient_sensor_properties->ezlopi_cloud.subcategory = subcategory_not_defined;
-        ltr303_ambient_sensor_properties->ezlopi_cloud.item_name = ezlopi_item_name_lux;
-        ltr303_ambient_sensor_properties->ezlopi_cloud.device_type = dev_type_sensor;
-        ltr303_ambient_sensor_properties->ezlopi_cloud.value_type = value_type_illuminance;
-        ltr303_ambient_sensor_properties->ezlopi_cloud.has_getter = true;
-        ltr303_ambient_sensor_properties->ezlopi_cloud.has_setter = false;
-        ltr303_ambient_sensor_properties->ezlopi_cloud.reachable = true;
-        ltr303_ambient_sensor_properties->ezlopi_cloud.battery_powered = false;
-        ltr303_ambient_sensor_properties->ezlopi_cloud.show = true;
-        ltr303_ambient_sensor_properties->ezlopi_cloud.room_name[0] = '\0';
-        ltr303_ambient_sensor_properties->ezlopi_cloud.device_id = ezlopi_cloud_generate_device_id();
-        ltr303_ambient_sensor_properties->ezlopi_cloud.room_id = ezlopi_cloud_generate_room_id();
-        ltr303_ambient_sensor_properties->ezlopi_cloud.item_id = ezlopi_cloud_generate_item_id();
-
-        CJSON_GET_VALUE_INT(cjson_device, "gpio_scl", ltr303_ambient_sensor_properties->interface.i2c_master.scl);
-        CJSON_GET_VALUE_INT(cjson_device, "gpio_sda", ltr303_ambient_sensor_properties->interface.i2c_master.sda);
-        ltr303_ambient_sensor_properties->interface.i2c_master.clock_speed = I2C_MASTER_FREQ_HZ;
-        ltr303_ambient_sensor_properties->interface.i2c_master.address = LTR303_ADDR;
-        ltr303_ambient_sensor_properties->interface.i2c_master.enable = true;
-        ltr303_ambient_sensor_properties->interface.i2c_master.channel = LTR303_I2C_CHANNEL;
-        ltr303_ambient_sensor_properties->user_arg = ltr303_lux_val;
-    }
-
-    return ltr303_ambient_sensor_properties;
-}
-
-
-static int ltr303_ambient_sensor_init(s_ezlopi_device_properties_t* properties)
-{
-    int ret = 0;
-
-    ltr303_setup(properties->interface.i2c_master.sda, properties->interface.i2c_master.scl, true);
-
-    return ret;
-}
-
-
-static int ltr303_ambient_sensor_update_values(s_ezlopi_device_properties_t* properties)
-{
-    int ret = 0;
-    ltr303_data_t* ltr303_lux_val = (ltr303_data_t*)properties->user_arg;
-
-    if(ltr303_lux_val)
-    {
-        if(ltr303_get_val(ltr303_lux_val) == ESP_OK)
-        { 
-            TRACE_D(" lux: %f\n",ltr303_lux_val->lux);
+        else
+        {
+            ezlopi_device_free_device(als_ltr303_device);
         }
     }
-    return ret;
-}
-
-
-
-static int ltr303_ambient_sensor_get_value_cjson(s_ezlopi_device_properties_t *properties, void *arg)
-{
-    int ret = 0;
-
-    cJSON *cjson_properties = (cJSON *)arg;
-    ltr303_data_t* ltr303_lux_val = (ltr303_data_t*)properties->user_arg;
-
-    if(cjson_properties && ltr303_lux_val)
-    {
-        char formatted_value[10];
-        snprintf(formatted_value, 10, "%.2f", ltr303_lux_val->lux);
-        cJSON_AddStringToObject(cjson_properties, "valueFormatted", formatted_value);
-        cJSON_AddNumberToObject(cjson_properties, "value", ltr303_lux_val->lux);
-        cJSON_AddStringToObject(cjson_properties, "scale", "lux");
-    }
 
     return ret;
 }
-
-

@@ -1,6 +1,6 @@
-#ifndef __0029_GXHTC3_RH_T_SENSOR_H__
-#define __0029_GXHTC3_RH_T_SENSOR_H__
+#ifndef SENSOR_0029_I2C_GXHTC3_H
+#define SENSOR_0029_I2C_GXHTC3_H
 
-int sensor_0029_I2C_GXHTC3(e_ezlopi_actions_t action, s_ezlopi_device_properties_t *properties, void *arg, void *user_arg);
+int sensor_0029_I2C_GXHTC3(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg);
 
-#endif // __0029_GXHTC3_RH_T_SENSOR_H__
+#endif // SENSOR_0029_I2C_GXHTC3_H

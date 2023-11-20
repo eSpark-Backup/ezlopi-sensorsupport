@@ -1,5 +1,5 @@
-#ifndef _0057_OTHER_KY026_FLAMEDETECTOR_H_
-#define _0057_OTHER_KY026_FLAMEDETECTOR_H_
+#ifndef _SENSOR_0057_OTHER_KY026_FLAMEDETECTOR_H_
+#define _SENSOR_0057_OTHER_KY026_FLAMEDETECTOR_H_
 
 #include "ezlopi_actions.h"
 #include "ezlopi_devices.h"
@@ -46,7 +46,11 @@ typedef enum
     KY206_HEAT_ALARM_MAX
 } e_ky206_heat_alarm_states_t;
 
+typedef struct flame_t
+{
+    float _absorbed_percent;
+} flame_t;
 //----------------------------------------------------
-int sensor_0057_other_KY026(e_ezlopi_actions_t action, s_ezlopi_device_properties_t *ezlopi_device, void *arg, void *user_args);
+int sensor_0057_other_KY026_FlameDetector(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg);
 
-#endif // _0057_OTHER_KY026_FLAMEDETECTOR_H_
+#endif

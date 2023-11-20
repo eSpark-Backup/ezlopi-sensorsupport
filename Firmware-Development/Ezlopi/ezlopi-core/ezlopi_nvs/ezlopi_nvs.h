@@ -2,7 +2,6 @@
 #define __NVS_STORAGE_H__
 
 #include "nvs_flash.h"
-#include "ezlopi_settings.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -16,8 +15,13 @@ extern "C"
 
     int ezlopi_nvs_factory_reset(void);
 
+    char *ezlopi_nvs_read_str(char *nvs_name);
+    int ezlopi_nvs_write_str(char *data, uint32_t len, char *nvs_name);
+
+    // void ezlopi_nvs_delete_stored_data(char *nvs_name);
+
     int ezlopi_nvs_write_config_data_str(char *data);
-    char * ezlopi_nvs_read_config_data_str(void);
+    char *ezlopi_nvs_read_config_data_str(void);
 
     int ezlopi_nvs_read_wifi(char *wifi_info, uint32_t len);
     int ezlopi_nvs_write_wifi(const char *wifi_info, uint32_t len);
@@ -34,20 +38,15 @@ extern "C"
     uint32_t ezlopi_nvs_get_provisioning_status(void);
     void ezlopi_nvs_set_provisioning_status(void);
 
-    uint8_t ezlopi_nvs_get_settings_init_status(void);    
-    uint8_t ezlopi_nvs_set_settings_init_status(void);
+    char *ezlopi_nvs_scene_get_v2(void);
+    int ezlopi_nvs_scene_set_v2(char *scene);
 
-    int ezlopi_settings_save_settings(const s_ezlopi_hub_settings_t * settings_list, uint16_t num_settings);
-    int ezlopi_settings_retrive_settings(s_ezlopi_hub_settings_t * ezlopi_settings_list, uint16_t num_settings);
+    char *ezlopi_nvs_scene_get(void);
+    int ezlopi_nvs_scene_set(char *scene);
 
-    uint8_t ezlopi_nvs_write_int32(int32_t i, const char * key_name);
-    uint8_t ezlopi_nvs_read_int32(int32_t *i, const char * key_name);
-    uint8_t ezlopi_nvs_write_bool(bool b, const char * key_name);
-    uint8_t ezlopi_nvs_read_bool(bool * b, const char * key_name);  
-    uint8_t ezlopi_nvs_write_float32(float f, const char* key_name);
-    uint8_t ezlopi_nvs_read_float32(float* f, const char* key_name);
-    int ezlopi_nvs_write_str(char *data, uint32_t len, char *nvs_name);
-    char *ezlopi_nvs_read_str(char *nvs_name);
+    char *ezlopi_nvs_read_scenes_scripts(void);
+    int ezlopi_nvs_write_scenes_scripts(char *data);
+    void ezlopi_nvs_delete_stored_script(uint32_t script_id);
 
 #ifdef __cplusplus
 }

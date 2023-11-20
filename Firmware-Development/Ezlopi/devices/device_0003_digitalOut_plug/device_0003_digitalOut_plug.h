@@ -1,9 +1,9 @@
-#ifndef DEVICE_0003_DIGITALOUT_PLUG_H
-#define DEVICE_0003_DIGITALOUT_PLUG_H
+#ifndef __DEVICE_0003_DIGITALOUT_PLUG_H__
+#define __DEVICE_0003_DIGITALOUT_PLUG_H__
 
 #include "ezlopi_actions.h"
 #include "driver/gpio.h"
 
-int device_0003_digitalOut_plug(e_ezlopi_actions_t action, s_ezlopi_device_properties_t *properties, void *arg, void *user_arg);
+int device_0003_digitalOut_plug(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg);
 
-#endif // DEVICE_0003_DIGITALOUT_PLUG_H
+#endif // __DEVICE_0001_DIGITALOUT_PLUG_H__

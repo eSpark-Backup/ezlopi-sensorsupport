@@ -402,32 +402,40 @@ static const char *switch_box_constant_config =
         ],\
     \"dev_total\": 1}";
 #elif (EZLOPI_DEVICE_TYPE_TEST_DEVICE == EZLOPI_DEVICE_TYPE)
+#define EZLOPI_DEVICE_TYPE_NAME "generic"
 static const char *test_device_constant_config =
+
     "{\
-        \"cmd\": 3,\
-        \"dev_detail\":\
-        [\{\
-                \"dev_type\": 2,\
-                \"dev_name\": \"TestSensor\",\
+    \"cmd\":3,\
+    \"dev_detail\":[{\
+                \"dev_type\": 7,\
+                \"dev_name\": \"TFMINI-S Lidar\",\
                 \"id_room\": \"\",\
-                \"id_item\": 64,\
-                \"gpio_en\":21,\
-                \"gpio_dir\":19,\
-                \"gpio_step\":18,\
-                \"gpio_counter\":4,\
-                \"steps_per_rev\":200,\
-                \"microsteps\":16,\
-                \"micro_step_gpio_control\":true,\
-                \"gpio_ms1\":5,\
-                \"gpio_ms2\":22,\
-                \"gpio_ms3\":23,\
-                \"logic_inv\": false\
+                \"id_item\": 66,\
+                \"gpio_tx\" : 17,\
+                \"gpio_rx\" : 16,\
+                \"baud_rate\": 115200\
+            },\
+            {\
+                \"dev_type\" : 1,\
+                \"dev_name\" : \"Dining Room Main Lamp\",\
+                \"id_room\" : \"\",\
+                \"id_item\" : 3,\
+                \"val_ip\" : true,\
+                \"val_op\" : false,\
+                \"gpio_in\" : 21,\
+                \"gpio_out\" : 2,\
+                \"is_ip\" : false,\
+                \"ip_inv\" : true,\
+                \"pullup_ip\" : true,\
+                \"pullup_op\" : true,\
+                \"op_inv\" : false\
             }\
-        ],\
-    \"dev_total\": 1}";
+    ],\
+    \"dev_total\":1\
+    }";
 
 #endif
-
 #ifdef __cplusplus
 }
 #endif

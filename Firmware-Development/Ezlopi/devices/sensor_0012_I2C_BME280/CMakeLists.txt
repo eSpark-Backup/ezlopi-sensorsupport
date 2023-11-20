@@ -5,8 +5,4 @@ file(GLOB_RECURSE config_src "*.c")
 
 idf_component_register(SRCS "sensor_0012_I2C_BME280.c" "${config_src}"
     INCLUDE_DIRS "."
-    REQUIRES trace 
-             bme280 
-             items  
-             ezlopi_actions 
-             ezlopi_timer )
+    REQUIRES trace ezlopi_actions ezlopi_timer library items)

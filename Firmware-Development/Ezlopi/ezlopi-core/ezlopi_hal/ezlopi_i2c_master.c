@@ -21,7 +21,6 @@ static int ezlopi_i2c_check_channel(s_ezlopi_i2c_master_t *i2c_master_conf)
 int ezlopi_i2c_master_init(s_ezlopi_i2c_master_t *i2c_master_conf)
 {
     int ret = 0;
-
     if (NULL != i2c_master_conf)
     {
         if (true == i2c_master_conf->enable)
@@ -37,22 +36,21 @@ int ezlopi_i2c_master_init(s_ezlopi_i2c_master_t *i2c_master_conf)
                     .master.clk_speed = i2c_master_conf->clock_speed,
                 };
 
-                i2c_param_config(I2C_NUM_0, &i2c_config);
-                i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
+                ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &i2c_config));
+                ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0));
                 i2c_master_conf_ptr[i2c_master_conf->channel] = i2c_master_conf;
             }
         }
     }
-
     return ret;
 }
 
-int ezlopi_i2c_master_read_from_device(s_ezlopi_i2c_master_t *i2c_master_conf, uint8_t *read_buffer, uint32_t read_len)
+esp_err_t ezlopi_i2c_master_read_from_device(s_ezlopi_i2c_master_t *i2c_master_conf, uint8_t *read_buffer, uint32_t read_len)
 {
     return i2c_master_read_from_device(i2c_master_conf->channel, i2c_master_conf->address, read_buffer, read_len, 200);
 }
 
-int ezlopi_i2c_master_write_to_device(s_ezlopi_i2c_master_t *i2c_master_conf, uint8_t *write_buffer, uint32_t write_len)
+esp_err_t ezlopi_i2c_master_write_to_device(s_ezlopi_i2c_master_t *i2c_master_conf, uint8_t *write_buffer, uint32_t write_len)
 {
     return i2c_master_write_to_device(i2c_master_conf->channel, i2c_master_conf->address, write_buffer, write_len, 200);
 }

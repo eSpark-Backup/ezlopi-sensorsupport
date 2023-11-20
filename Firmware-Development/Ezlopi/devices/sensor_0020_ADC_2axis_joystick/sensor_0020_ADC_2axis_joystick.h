@@ -1,12 +1,15 @@
 
 
-#ifndef _JOYSTICK_2_AXIX_H_
-#define _JOYSTICK_2_AXIX_H_
+#ifndef SENSOR_0020_ADC_2AXIS_JOYSTICK_H
+#define SENSOR_0020_ADC_2AXIS_JOYSTICK_H
+
+#if 0
 
 #include "ezlopi_actions.h"
 #include "ezlopi_devices.h"
 
-int sensor_0020_ADC_2axis_joystick(e_ezlopi_actions_t action, s_ezlopi_device_properties_t *ezlo_device, void *arg, void* user_args);
+int sensor_0020_ADC_2axis_joystick(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg)
 
+#endif
 
-#endif //_JOYSTICK_2_AXIX_H_
+#endif // SENSOR_0020_ADC_2AXIS_JOYSTICK_H

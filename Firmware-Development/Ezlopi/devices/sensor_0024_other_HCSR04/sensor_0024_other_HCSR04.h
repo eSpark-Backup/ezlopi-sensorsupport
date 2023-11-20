@@ -37,13 +37,13 @@
  */
 typedef struct
 {
-    gpio_num_t trigger_pin; //!< GPIO output pin for trigger
-    gpio_num_t echo_pin; //!< GPIO input pin for echo
+    uint32_t trigger_pin; //!< GPIO output pin for trigger
+    uint32_t echo_pin; //!< GPIO input pin for echo
     uint32_t distance;  // distance in cm
 } ultrasonic_sensor_t;
 
 
-int sensor_0024_other_HCSR04(e_ezlopi_actions_t action, s_ezlopi_device_properties_t *ezlo_device, void *arg, void *user_arg);
+int sensor_0024_other_HCSR04_v3(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg);
 
 
 #endif //_ULTRASONIC_HC_SR04_H_
