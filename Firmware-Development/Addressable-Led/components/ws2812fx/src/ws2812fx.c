@@ -114,6 +114,7 @@ static inline uint16_t map(uint16_t value, uint16_t fromLow, uint16_t fromHigh, 
 #define PINK (uint32_t)0xFF1493
 #define ULTRAWHITE (uint32_t)0xFFFFFFFF
 #define WARMWHITE (uint32_t)0xffffdf
+#define DARKSLATEGRAY (uint32_t)0x2F4F4F
 
 #define NUM_COLORS 3 /* number of colors per segment */
 
@@ -132,8 +133,7 @@ struct FX_SEGMENT { // 20 bytes
   uint32_t next_time;
   uint32_t counter_mode_step;
   uint32_t counter_mode_call;
-  uint16_t
-      aux_param; // auxilary param (usually stores a WS2812FX_color_wheel index)
+  uint16_t aux_param; // auxilary param (usually stores a WS2812FX_color_wheel index)
   uint16_t aux_param2;  // auxilary param (usually stores bitwise options)
   uint16_t aux_param3; // auxilary param (usually stores a segment index)
 };
@@ -508,6 +508,9 @@ void fadeToBlackBy(int line, uint8_t fadeBy) {
     setPixelColorXY(line, x, y, color_fade(getPixelColorXY(line, x,y), 255-fadeBy));
   }
 }
+
+inline void fadePixelColor(int line, uint16_t n, uint8_t fade)                 { setPixelColor(line, n, color_fade(getPixelColor(line, n), fade)); }
+inline void fadePixelColorXY(int line, uint16_t x, uint16_t y, uint8_t fade)            { fadePixelColor(line, x, fade); }
 
 /*
  * No blinking. Just plain old static light.
@@ -2035,3 +2038,54 @@ uint16_t WS2812FX_mode_2Ddna(int line) {         // dna originally by by ldirko 
 
   return 5*(2000/fx_segments[line]->speed);
 }
+
+/////////////////////////
+//     2D DNA Spiral   //
+/////////////////////////
+uint16_t WS2812FX_mode_2DDNASpiral(int line) {               // By: ldirko  https://editor.soulmatelights.com/gallery/810 , modified by: Andrew Tuline
+  // if (!strip.isMatrix || !SEGMENT.is2D()) return mode_static(); // not a 2D set-up
+
+  const uint16_t cols = 10;
+  const uint16_t rows = 10;
+
+  if (SEGENV->counter_mode_call == 0) {
+    fill(line, BLACK, BLACK, BLACK);
+  }
+
+  uint8_t speeds = (map(SEGSPEED,0,2000,0,255)/2) + 1;
+  uint8_t freq = SEGMENT->intensity/8;
+
+  uint32_t ms = (esp_timer_get_time()/1000) / 20;
+  fadeToBlackBy(line, 135);
+
+  for (int i = 0; i < rows; i++) {
+    uint16_t x  = beatsin8(speeds, 0, cols - 1, 0, i * freq) + beatsin8(speeds - 7, 0, cols - 1, 0, i * freq + 128);
+    uint16_t x1 = beatsin8(speeds, 0, cols - 1, 0, 128 + i * freq) + beatsin8(speeds - 7, 0, cols - 1, 0, 128 + 64 + i * freq);
+    uint8_t hue = (i * 128 / rows) + ms;
+    // skip every 4th row every now and then (fade it more)
+    if ((i + ms / 8) & 3) {
+      // draw a gradient line between x and x1
+      x = x / 2; x1 = x1 / 2;
+      uint8_t steps = abs8(x - x1) + 1;
+      for (size_t k = 1; k <= steps; k++) {
+        uint8_t rate = k * 255 / steps;
+        uint8_t dx = lerp8by8(x, x1, rate);
+        
+        uint32_t paletteColor = colorFromPalette(SEGPALETTE, SEGPALETTESIZE, SEGLEN, hue, 255, SEGMENT->options);
+        uint8_t r,g,b;
+        r = R(paletteColor);
+        g = G(paletteColor);
+        b = B(paletteColor);
+        nscale8x3_video( &r, &g, &b, rate);
+
+        setPixelColorXY(line, dx, i, RGBW32(r,g,b,255));
+        // SEGMENT.addPixelColorXY(dx, i, ColorFromPalette(SEGPALETTE, hue, 255, LINEARBLEND)); // use setPixelColorXY for different look
+        fadePixelColorXY(line, dx, i, rate);
+      }
+      setPixelColorXY(line, x, i, DARKSLATEGRAY);
+      setPixelColorXY(line, x1, i, WHITE);
+    }
+  }
+
+  return 5*(2000/fx_segments[line]->speed);
+} // mode_2DDNASpiral()

@@ -117,7 +117,8 @@ enum LED_MODE {
   FX_MODE_ICU,
   FX_MODE_PLAYLIST,
   LED_MODE_MAXVALUE,
-  FX_MODE_DNA2D
+  FX_MODE_DNA2D,
+  FX_MODE_2DDNA_SPIRAL
 };
 
 struct LED_COLORING {
@@ -181,5 +182,6 @@ void led_rgb_rtp(int x, int y, uint8_t r, uint8_t g, uint8_t b);
 void led_trigger();
 void led_channel_rgb(int c, int x, int y, uint8_t r, uint8_t g, uint8_t b);
 void fillFadeXY(int line);
+void fill(int line, uint8_t r, uint8_t g, uint8_t b);
 
 #endif /* MAIN_LED_H_ */
