@@ -2,7 +2,6 @@
 #define __NETWORK_H__
 
 #include <string.h>
-
 #include "cJSON.h"
 
 #ifdef __cplusplus

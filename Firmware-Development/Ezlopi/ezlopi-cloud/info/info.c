@@ -8,7 +8,6 @@
 #include "ezlopi_factory_info.h"
 #include "info.h"
 #include "trace.h"
-
 #include "version.h"
 
 #include "cJSON.h"
@@ -20,7 +19,7 @@ void info_get(cJSON *cj_request, cJSON *cj_response)
 {
     cJSON_AddItemReferenceToObject(cj_response, ezlopi_id_str, cJSON_GetObjectItem(cj_request, ezlopi_id_str));
     cJSON_AddItemReferenceToObject(cj_response, ezlopi_key_method_str, cJSON_GetObjectItem(cj_request, ezlopi_key_method_str));
-    cJSON *cjson_result = cJSON_AddObjectToObject(cj_response, ezlopi_result_str);
+    cJSON *cjson_result = cJSON_AddObjectToObject(cj_response, ezlopi_result);
     if (cjson_result)
     {
         char *tmp_model = ezlopi_factory_info_v2_get_model();
@@ -64,23 +63,26 @@ void info_get(cJSON *cj_request, cJSON *cj_response)
             cJSON_AddNumberToObject(cjson_battery, "health", 0);
             cJSON_AddStringToObject(cjson_battery, "status", "");
         }
+#if 0
+        time_t now;
+        char strftime_buf[64];
+        struct tm timeinfo;
 
-        // time_t now;
-        // char strftime_buf[64];
-        // struct tm timeinfo;
+        time(&now);
+        setenv("TZ", "UTC-5:45", 1);
+        tzset();
+        localtime_r(&now, &timeinfo);
+        strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
 
-        // time(&now);
-        // setenv("TZ", "UTC-5:45", 1);
-        // tzset();
-        // localtime_r(&now, &timeinfo);
-        // strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+        cJSON_AddStringToObject(cjson_result, "localtime", strftime_buf);
 
+        now = sntp_core_get_up_time();
+        localtime_r(&now, &timeinfo);
+        strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+
+        cJSON_AddStringToObject(cjson_result, "uptime", "");
+#endif
         cJSON_AddStringToObject(cjson_result, "localtime", "");
-
-        // now = sntp_core_get_up_time();
-        // localtime_r(&now, &timeinfo);
-        // strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
-
         cJSON_AddStringToObject(cjson_result, "uptime", "");
     }
 }

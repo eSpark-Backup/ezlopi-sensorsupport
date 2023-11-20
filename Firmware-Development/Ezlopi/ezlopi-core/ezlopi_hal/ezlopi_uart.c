@@ -7,15 +7,22 @@
 #include "string.h"
 #include "esp_check.h"
 
+struct s_ezlopi_uart_object
+{
+    s_ezlopi_uart_t ezlopi_uart;
+    __uart_upcall upcall;
+    QueueHandle_t ezlopi_uart_queue_handle;
+    void *user_args;
+};
+
 static void ezlopi_uart_channel_task(void *args);
 static ezlo_uart_channel_t get_available_channel();
 
-s_ezlopi_uart_object_handle_t ezlopi_uart_init(uint32_t baudrate, uint32_t tx, uint32_t rx, __uart_upcall upcall, void *arg)
+s_ezlopi_uart_object_handle_t ezlopi_uart_init(uint32_t baudrate, uint32_t tx, uint32_t rx, __uart_upcall upcall, void *args)
 {
     static QueueHandle_t ezlo_uart_channel_queue;
     s_ezlopi_uart_object_handle_t uart_object_handle = (struct s_ezlopi_uart_object *)malloc(sizeof(struct s_ezlopi_uart_object));
     memset(uart_object_handle, 0, sizeof(struct s_ezlopi_uart_object));
-    uart_object_handle->arg = arg;
     ezlo_uart_channel_t channel = get_available_channel();
     if (NULL == upcall)
     {
@@ -54,6 +61,7 @@ s_ezlopi_uart_object_handle_t ezlopi_uart_init(uint32_t baudrate, uint32_t tx, u
         uart_object_handle->ezlopi_uart.rx = rx;
         uart_object_handle->ezlopi_uart.enable = true;
         uart_object_handle->upcall = upcall;
+        uart_object_handle->user_args = args;
 
         xTaskCreate(ezlopi_uart_channel_task, "ezlopi_uart_channel_task", 2048 * 2, (void *)uart_object_handle, 10, NULL);
     }
@@ -93,6 +101,7 @@ static void ezlopi_uart_channel_task(void *args)
         if (xQueueReceive(ezlopi_uart_object->ezlopi_uart_queue_handle, (void *)&event, portMAX_DELAY))
         {
             memset(buffer, 0, 256);
+            // TRACE_E("Uart_size: %d", event.size);
             switch (event.type)
             {
             case UART_DATA:
@@ -101,10 +110,20 @@ static void ezlopi_uart_channel_task(void *args)
                 break;
             }
             case UART_BREAK:
+            {
+                TRACE_E("UART_BREAK. event -> %d", event.type);
+                uart_flush_input(ezlopi_uart_object->ezlopi_uart.channel);
+                break;
+            }
             case UART_BUFFER_FULL:
+            {
+                TRACE_E("UART_BUFFER_FULL. event -> %d", event.type);
+                uart_flush_input(ezlopi_uart_object->ezlopi_uart.channel);
+                break;
+            }
             case UART_FIFO_OVF:
             {
-                TRACE_E("UART_FIFO_. event -> %d", event.type);
+                TRACE_E("UART_FIFO_OVF. event -> %d", event.type);
                 uart_flush_input(ezlopi_uart_object->ezlopi_uart.channel);
                 break;
             }
@@ -115,7 +134,7 @@ static void ezlopi_uart_channel_task(void *args)
             }
             }
         }
-        ezlopi_uart_object->upcall(buffer, ezlopi_uart_object);
+        ezlopi_uart_object->upcall(buffer, ezlopi_uart_object, ezlopi_uart_object->user_args);
     }
 }
 

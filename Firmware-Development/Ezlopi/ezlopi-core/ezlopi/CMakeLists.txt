@@ -12,6 +12,7 @@ idf_component_register(SRCS "ezlopi.c" "${config_src}"
                 ezlopi_ethernet 
                 ezlopi_event_queue 
                 ezlopi_ping 
+                ezlopi_settings 
                 ezlopi_actions
                 ezlopi_timer 
                 )

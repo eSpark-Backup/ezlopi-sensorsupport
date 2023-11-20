@@ -43,4 +43,12 @@ typedef struct s_ezlopi_gpios
 
 // int ezlopi_gpio_init(s_ezlopi_device_properties_t *properties);
 
+/**
+ * @brief Returns ESP_OK if the gpio_num is valid; else ESP_FAIL is returned.
+ *
+ * @param gpio_num
+ * @return esp_err_t
+ */
+esp_err_t ezlopi_is_gpio_valid(e_ezlopi_gpio_num_t gpio_num);
+
 #endif // __EZLOPI_GPIO_H__

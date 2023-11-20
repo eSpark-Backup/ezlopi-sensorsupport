@@ -2,7 +2,6 @@
 #define __EZLOPI_ETHERNET_H__
 
 #include "esp_netif.h"
-
 #include "ezlopi_boards.h"
 #include "ezlopi_spi_master.h"
 

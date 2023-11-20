@@ -3,13 +3,13 @@
 
 #include "esp_netif.h"
 #include "esp_eth.h"
+#include "esp_eth_mac.h"
+#include "ezlopi_ethernet.h"
 #include "esp_event.h"
 #include "driver/gpio.h"
-#include "esp_eth_mac.h"
 
 #include "trace.h"
 
-#include "ezlopi_ethernet.h"
 #include "ezlopi_spi_master.h"
 
 static const char *eth_key_desc_str = "ezlopi_eth";
@@ -40,6 +40,7 @@ static s_ezlopi_spi_master_t spi_config = {
 static void ezlopi_ethernet_reset(void);
 static void ezlopi_ethernet_gpio_setup(void);
 static void ezlopi_ethernet_setup_basic(void);
+static s_ezlopi_spi_master_t *ezlopi_ethernet_spi_setup(void);
 static void eth_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data);
 static void __ip_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data);
 
@@ -97,6 +98,7 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base, int32_t ev
     uint8_t mac_addr[6] = {0};
     /* we can get the ethernet driver handle from event data */
     esp_eth_handle_t eth_handle = *(esp_eth_handle_t *)event_data;
+    eth_speed_t speed;
 
     switch (event_id)
     {
@@ -138,26 +140,25 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base, int32_t ev
 static void __ip_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
     ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
+    const esp_netif_ip_info_t *eth_ip_info = &event->ip_info;
 
     switch (event_id)
     {
     case IP_EVENT_ETH_GOT_IP:
     {
-        memcpy(&eth_ip_info, &event->ip_info, sizeof(esp_netif_ip_info_t));
         TRACE_B("Ethernet Got IP Address");
         TRACE_B("~~~~~~~~~~~");
-        TRACE_B("ETHIP:" IPSTR, IP2STR(&eth_ip_info.ip));
-        TRACE_B("ETHMASK:" IPSTR, IP2STR(&eth_ip_info.netmask));
-        TRACE_B("ETHGW:" IPSTR, IP2STR(&eth_ip_info.gw));
+        TRACE_B("ETHIP:" IPSTR, IP2STR(&eth_ip_info->ip));
+        TRACE_B("ETHMASK:" IPSTR, IP2STR(&eth_ip_info->netmask));
+        TRACE_B("ETHGW:" IPSTR, IP2STR(&eth_ip_info->gw));
         TRACE_B("~~~~~~~~~~~");
         eth_last_status = ETHERNET_STATUS_GOT_IP;
         break;
     }
     case IP_EVENT_ETH_LOST_IP:
     {
-        memset(&eth_ip_info, 0, sizeof(esp_netif_ip_info_t));
         eth_last_status = ETHERNET_STATUS_LOST_IP;
-        TRACE_W("Ethernet Lost IP Address");
+        TRACE_W("Ethernet Got IP Address");
         break;
     }
     }
@@ -177,7 +178,7 @@ static void ezlopi_ethernet_setup_basic(void)
     };
 
     eth_netif_spi = esp_netif_new(&cfg_spi);
-    eth_mac_config_t mac_config_spi = ETH_MAC_DEFAULT_CONFIG();
+    eth_mac_config_t mac_config_spi = ETH_MAC_DEFAULT_CONFIG(); // Stack size for ethernet
     eth_phy_config_t phy_config_spi = ETH_PHY_DEFAULT_CONFIG();
 
     ezlopi_spi_master_init(&spi_config);
@@ -190,14 +191,40 @@ static void ezlopi_ethernet_setup_basic(void)
 
     eth_mac_spi = esp_eth_mac_new_w5500(&w5500_config, &mac_config_spi);
     eth_phy_spi = esp_eth_phy_new_w5500(&phy_config_spi);
-
+    // TRACE_B("eth_mac_spi is %s and eth_phy_spi is %s", ((NULL == eth_mac_spi) ? "NULL" : "NOT NULL"), ((NULL == eth_phy_spi) ? "NULL" : "NOT NULL"));
     esp_eth_config_t eth_config_spi = ETH_DEFAULT_CONFIG(eth_mac_spi, eth_phy_spi);
-    ESP_ERROR_CHECK(esp_eth_driver_install(&eth_config_spi, &eth_handle_spi));
+    // ESP_ERROR_CHECK(esp_eth_driver_install(&eth_config_spi, &eth_handle_spi));
+    esp_err_t error = esp_eth_driver_install(&eth_config_spi, &eth_handle_spi);
+    TRACE_B("Ethernet error is %s", esp_err_to_name(error));
+    if(ESP_OK != error)
+    {
+        // The installation process of ethernet driver didn't happen so uninstalling would cause an error.
+        // Therefore, directly deiniting and deleting eth_mac_spi and eth_phy_spi is the best possible solution.
+        error = eth_mac_spi->deinit(eth_mac_spi);
+        TRACE_B("Ethernet mac deinit error is %s", esp_err_to_name(error));
+        error = eth_mac_spi->del(eth_mac_spi);
+        TRACE_B("Ethernet mac del error is %s", esp_err_to_name(error));
 
-    uint8_t base_mac[6];
-    esp_read_mac(base_mac, ESP_MAC_ETH);
+        error = eth_phy_spi->deinit(eth_phy_spi);
+        TRACE_B("Ethernet phy deinit error is %s", esp_err_to_name(error));
+        error = eth_phy_spi->del(eth_phy_spi);
+        TRACE_B("Ethernet phy del error is %s", esp_err_to_name(error));
+    }
+    else 
+    {
+        uint8_t base_mac[6];
+        esp_read_mac(base_mac, ESP_MAC_ETH);
+        dump("ethernet mac", base_mac, 0, sizeof(base_mac));
+        ESP_ERROR_CHECK(esp_eth_ioctl(eth_handle_spi, ETH_CMD_S_MAC_ADDR, base_mac));
+        eth_glue = esp_eth_new_netif_glue(eth_handle_spi);
+        ESP_ERROR_CHECK(esp_netif_attach(eth_netif_spi, eth_glue));
 
-    esp_eth_start(eth_handle_spi);
+        ESP_ERROR_CHECK(esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL));
+        ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_ETH_GOT_IP, &__ip_event_handler, NULL));
+        ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_ETH_LOST_IP, &__ip_event_handler, NULL));
+
+        esp_eth_start(eth_handle_spi);
+    }
 }
 
 static void ezlopi_ethernet_gpio_setup(void)

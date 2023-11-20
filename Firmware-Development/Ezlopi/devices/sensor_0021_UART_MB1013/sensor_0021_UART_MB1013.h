@@ -1,12 +1,12 @@
 
 
-#ifndef SENSOR_0021_UART_MB1013_H
-#define SENSOR_0021_UART_MB1013_H
+#ifndef _ULTRASONIC_MB1013_H_
+#define _ULTRASONIC_MB1013_H_
 
 #include "ezlopi_actions.h"
 #include "ezlopi_devices.h"
 #include "ezlopi_uart.h"
 
-int sensor_0021_UART_MB1013(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg);
+int sensor_0021_UART_MB1013(e_ezlopi_actions_t action, s_ezlopi_device_properties_t *ezlo_device, void *arg, void *user_arg);
 
-#endif // SENSOR_0021_UART_MB1013_H
+#endif //_ULTRASONIC_MB1013_H_

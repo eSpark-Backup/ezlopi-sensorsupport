@@ -1,11 +1,12 @@
 
 
-#ifndef SENSOR_0032_ADC_SOILMOISTURE_H
-#define SENSOR_0032_ADC_SOILMOISTURE_H
+#ifndef _032_SENSOR_SOIL_MOISTURE
+#define _032_SENSOR_SOIL_MOISTURE
 
 #include "ezlopi_actions.h"
 #include "ezlopi_devices.h"
 
-int sensor_0032_ADC_soilMoisture(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg);
+int sensor_0032_ADC_soilMoisture(e_ezlopi_actions_t action, s_ezlopi_device_properties_t *ezlo_device, void *arg, void* user_args);
 
-#endif // SENSOR_0032_ADC_SOILMOISTURE_H
+
+#endif //_032_SENSOR_SOIL_MOISTURE

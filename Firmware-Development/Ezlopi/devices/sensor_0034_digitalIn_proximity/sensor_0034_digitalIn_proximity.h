@@ -1,5 +1,5 @@
-#ifndef SENSOR_0034_DIGITALIN_PROXIMITY_H
-#define SENSOR_0034_DIGITALIN_PROXIMITY_H
+#ifndef _PROXIMITY_H_
+#define _PROXIMITY_H_
 
 #include "esp_err.h"
 #include "driver/gpio.h"
@@ -17,6 +17,13 @@
 #include "ezlopi_item_name_str.h"
 #include "ezlopi_cloud_device_types_str.h"
 
-int sensor_0034_digitalIn_proximity(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *args, void *user_arg);
+int sensor_0034_digitalIn_proximity(e_ezlopi_actions_t action, s_ezlopi_device_properties_t *properties, void *args, void *user_arg);
+static int proximity_sensor_prepare_and_add(void *args);
+static int proximity_sensor_init(s_ezlopi_device_properties_t *properties);
+static s_ezlopi_device_properties_t *proximity_sensor_prepare(cJSON *cjson_device);
+static void proximity_sensor_value_updated_from_device(s_ezlopi_device_properties_t *properties);
+static int proximity_sensor_get_value_cjson(s_ezlopi_device_properties_t *properties, void *args);
 
-#endif // SENSOR_0034_DIGITALIN_PROXIMITY_H
+
+
+#endif //_PROXIMITY_H_

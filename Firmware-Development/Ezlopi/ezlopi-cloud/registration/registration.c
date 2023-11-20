@@ -4,7 +4,6 @@
 #include "freertos/task.h"
 
 #include "trace.h"
-#include "version.h"
 #include "registration.h"
 #include "web_provisioning.h"
 #include "ezlopi_cloud_constants.h"
@@ -17,12 +16,6 @@ void registration_init(void)
 {
     is_registered = 0;
     xTaskCreate(registration_process, "registration_process", 2 * 2048, NULL, 2, NULL);
-}
-
-void register_repeat(cJSON *cj_request, cJSON *cj_response)
-{
-    is_registered = 0;
-    registration_init();
 }
 
 void registered(cJSON *cj_request, cJSON *cj_response)

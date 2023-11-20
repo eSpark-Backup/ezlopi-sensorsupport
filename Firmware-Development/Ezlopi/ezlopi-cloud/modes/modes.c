@@ -2,7 +2,6 @@
 
 #include "modes.h"
 #include "trace.h"
-
 #include "cJSON.h"
 #include "ezlopi_cloud_constants.h"
 
@@ -21,7 +20,7 @@ void modes_get(cJSON *cj_request, cJSON *cj_response)
 {
     cJSON_AddItemReferenceToObject(cj_response, ezlopi_id_str, cJSON_GetObjectItem(cj_request, ezlopi_id_str));
     cJSON_AddItemReferenceToObject(cj_response, ezlopi_key_method_str, cJSON_GetObjectItem(cj_request, ezlopi_key_method_str));
-    cJSON *cj_result = cJSON_AddObjectToObject(cj_response, ezlopi_result_str);
+    cJSON *cj_result = cJSON_AddObjectToObject(cj_response, ezlopi_result);
     if (cj_result)
     {
         cJSON_AddStringToObject(cj_result, "current", "");

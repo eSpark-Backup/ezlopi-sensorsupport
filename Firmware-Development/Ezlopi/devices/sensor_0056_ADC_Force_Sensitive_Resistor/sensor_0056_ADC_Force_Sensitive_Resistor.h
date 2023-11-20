@@ -1,5 +1,5 @@
-#ifndef _SENSOR_0056_ADC_FORCE_SENSITIVE_RESISTOR_H_
-#define _SENSOR_0056_ADC_FORCE_SENSITIVE_RESISTOR_H_
+#ifndef _0056_ADC_FORCE_SENSITIVE_RESISTOR_H_
+#define _0056_ADC_FORCE_SENSITIVE_RESISTOR_H_
 
 #include "ezlopi_actions.h"
 #include "ezlopi_devices.h"
@@ -90,12 +90,7 @@
 #define b_coeff_FSR 2.308f
 
 #define FSR_correction_factor 2.5f
-
-typedef struct fsr_t
-{
-    float FSR_value;
-} fsr_t;
 //-----------------------------------------------------------------------------------------------------------------------------
-int sensor_0056_ADC_Force_Sensitive_Resistor(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg);
+int sensor_0056_force_sensitive_resistor(e_ezlopi_actions_t action, s_ezlopi_device_properties_t *properties, void *arg, void *user_args);
 
 #endif

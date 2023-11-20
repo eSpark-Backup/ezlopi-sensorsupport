@@ -1,6 +1,6 @@
 
-#ifndef _SENSOR_0053_UART_GYGPS6MV2_H_
-#define _SENSOR_0053_UART_GYGPS6MV2_H_
+#ifndef _0053_UART_GYGPS6MV2_H_
+#define _0053_UART_GYGPS6MV2_H_
 
 #include "ezlopi_actions.h"
 #include "ezlopi_devices.h"
@@ -225,27 +225,9 @@ typedef struct GPS6MV2_t
 #ifdef GLL_MESSAGE_ENABLE
     GPGLL_t GPGLL_data_structure;
 #endif
-
-    /*The global variables for operations of GPSmodule*/
-    uint32_t Latitude_item_id;
-    uint32_t Longitude_item_id;
-    uint32_t Fix_item_id;
-    uint32_t Sea_level_item_id;
-    uint32_t Geoid_item_id;
-
-    char gps_sentence[MAX_GPGGA_SENTENCE_SIZE + 30];
-    char gps_cir_buf[CIR_BUFSIZE];
-
-    bool gps_message_guard;
-    bool prev_GPS_FIX;
-    float prev_lat_angle_val;
-    float prev_long_angle_val;
-    float prev_antenna_alti;
-    float prev_geoid;
-
 } GPS6MV2_t;
 
-//--------------------------------------------------------------------------------------------------------------------
-int sensor_0053_UART_GYGPS6MV2(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg);
+//--------------------------------------------------------------------
+int sensor_0053_UART_GPS6MV2(e_ezlopi_actions_t action, s_ezlopi_device_properties_t *properties, void *arg, void *user_arg);
 
 #endif //_0053_UART_GYGPS6MV2_H_

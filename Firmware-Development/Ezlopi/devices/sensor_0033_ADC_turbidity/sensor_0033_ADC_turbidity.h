@@ -1,5 +1,5 @@
-#ifndef SENSOR_0033_ADC_TURBIDITY_H
-#define SENSOR_0033_ADC_TURBIDITY_H
+#ifndef _TURBIDITY_H_
+#define _TURBIDITY_H_
 
 #include <stdio.h>
 #include "driver/gpio.h"
@@ -16,15 +16,13 @@
 #include "sdkconfig.h"
 #include "cJSON.h"
 
-typedef enum
-{
-    TURBIDITY_WATER_FILTER_OK,
-    TURBIDITY_REPLACE_WATER_FILTER,
-    TURBIDITY__UNKNOWN,
-    TURBIDITY__MAX
-} e_water_filter_replacement_alarm_states_t;
+static const char *TURBIDITY_TAG = "Ezlopi_turbidity sensor";
+static int ezlopi_turbidity_sensor_prepare_and_add(void *args);
+static s_ezlopi_device_properties_t *ezlopi_turbidity_sensor_prepare(cJSON *cjson_device);
+static int ezlopi_turbidity_sensor_init(s_ezlopi_device_properties_t *properties);
+static int ezlopi_turbidity_sensor_update_value(s_ezlopi_device_properties_t *properties, void *arg);
+static int ezlopi_turbidity_sensor_get_value_cjson(s_ezlopi_device_properties_t *properties, void *args);
 
+int sensor_0033_ADC_turbidity(e_ezlopi_actions_t action, s_ezlopi_device_properties_t *properties, void *arg, void *user_arg);
 
-int sensor_0033_ADC_turbidity(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg);
-
-#endif // SENSOR_0033_ADC_TURBIDITY_H
+#endif // _TURBIDITY_H_

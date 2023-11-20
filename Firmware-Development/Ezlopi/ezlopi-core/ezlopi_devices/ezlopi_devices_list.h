@@ -6,96 +6,97 @@
 #include <cJSON.h>
 #include "ezlopi_actions.h"
 #include "ezlopi_devices.h"
-#include "sdkconfig.h"
 
 #define EZLOPI_SENSOR_NONE 0
-#define EZLOPI_DEVICE_0001_DIGITALOUT_GENERIC 1
-#define EZLOPI_DEVICE_0002_DIGITALOUT_RELAY 2
-#define EZLOPI_DEVICE_0003_DIGTALOUT_PLUG 3
-#define EZLOPI_DEVICE_0004_DIGITALIN_GENERIC 4
-#define EZLOPI_SENSOR_0008_I2C_LTR303ALS 8
+
+#define EZLOPI_SENSOR_NONE 0
+
+#define EZLOPI_DEVICE_0001_DIGITAL_OUT_LED 1
+#define EZLOPI_DEVICE_0002_DIGITAL_OUT_RELAY 2
+#define EZLOPI_DEVICE_0003_DIGITAL_OUT_PLUG 3
+#define EZLOPI_SENSOR_0004_DIGITAL_IN_SWITCH 4
+
+#define EZLOPI_SENSOR_0005_I2C_MPU6050 5
+#define EZLOPI_SENSOR_0006_I2C_ADXL345 6
+#define EZLOPI_SENSOR_0007_I2C_GY271 7
+#define EZLOPI_SENSOR_0008_I2C_LTR303AL 8
 #define EZLOPI_DEVICE_0009_OTHER_RMT_SK6812 9
 
-// #define EZLOPI_SENSOR_0010_BME680_I2C 10
+#if (CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32)
+#define EZLOPI_SENSOR_0010_I2C_BME680 10
+#endif
 
+#define EZLOPI_SENSOR_0011_I2C_MAX30100 11
 #define EZLOPI_SENSOR_0012_I2C_BME280 12
-#define EZLOPI_SENSOR_0016_ONEWIRE_DHT22 16
-// #define EZLOPI_SENSOR_0017_POTENTIOMETER 17
+#define EZLOPI_SENSOR_0013_SPI_BME280 13
+#define EZLOPI_SENSOR_0014_UART_PMS5003 14
+#define EZLOPI_SENSOR_0015_ONE_WIRE_DHT11 15
+#define EZLOPI_SENSOR_0016_ONE_WIRE_DHT22 16
+#define EZLOPI_SENSOR_0017_ADC_POTENTIOMETER 17
 
-// #if CONFIG_IDF_TARGET_ESP32
-// #define EZLOPI_SENSOR_0018_DOOR 18
-// #endif
+#if CONFIG_IDF_TARGET_ESP32
+#define EZLOPI_SENSOR_0018_OTHER_INTERNAL_HALL_EFFECT 18
+#endif
 
-#define EZLOPI_SENSOR_0019_DIGITALIN_PIR 19
-// #define EZLOPI_SENSOR_0020_JOYSTICK_2_AXIS 20
+#define EZLOPI_SENSOR_0019_DIGITAL_INPUT_PIR 19
+#define EZLOPI_SENSOR_0020_ADC_JOYSTICK_2_AXIS 20
 #define EZLOPI_SENSOR_0021_UART_MB1013 21
 #define EZLOPI_DEVICE_0022_PWM_DIMMABLE_BULB 22
-#define EZLOPI_SENSOR_0023_DIGITALIN_TOUCH_SWITCH_TTP223B 23
-
-// #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S3
+#define EZLOPI_SENSOR_0023_DIGITAL_IN_TTP223B_TOUCH_SWITCH 23
 #define EZLOPI_SENSOR_0024_OTHER_HCSR04 24
-// #endif
-
-#define EZLOPI_SENSOR_0025_DIGITALIN_LDR 25
+#define EZLOPI_SENSOR_0025_DIGITAL_IN_LDR_DIGITAL 25
 #define EZLOPI_SENSOR_0026_ADC_LDR 26
 #define EZLOPI_SENSOR_0027_ADC_WATER_LEAK 27
-// #define EZLOPI_SENSOR_0028_SOUND_SENSOR_SPI 28
-
+#define EZLOPI_SENSOR_0028_OTHER_GY61 28
 #define EZLOPI_SENSOR_0029_I2C_GXHTC3 29
-#define EZLOPI_SENSOR_0030_ONEWIRE_DS18B20 30
+#define EZLOPI_SENSOR_0030_ONE_WIRE_DS18B20 30
 #define EZLOPI_SENSOR_0031_OTHER_JSNSR04T 31
-#define EZLOPI_SENSOR_0032_ADC_SOILMOISTURE 32
-
+#define EZLOPI_SENSOR_0032_ADC_SOIL_MOISTURE 32
 #define EZLOPI_SENSOR_0033_ADC_TURBIDITY 33
-#define EZLOPI_SENSOR_0034_DIGITALIN_PROXIMITY 34
-#define EZLOPI_SENSOR_0035_DIGITALIN_TOUCH_SENSOR_TPP223B 35
-#define EZLOPI_DEVICE_0038_OTHER_RGB 38
+#define EZLOPI_SENSOR_0034_DIGITAL_IN_PROXIMITY 34
+#define EZLOPI_SENSOR_0035_DIGITAL_IN_TPP223B_TOUCH_SENSOR 35
 
-// #define EZLOPI_SENSOR_0029_GXHTC3_RH_T_I2C 35
+#if (CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32)
+#define EZLOPI_DEVICE_0036_PWM_SERVO_MG996R 36
+#endif
 
+#define EZLOPI_SENSOR_0037_DIGITAL_OUTPUT_PMS5003_GPIO 37
+#define EZLOPI_DEVICE_0038_DIGITAL_OUTPUT_RGB_LED 38
+#define EZLOPI_SENSOR_0040_OTHER_TCS230 40
+#define EZLOPI_SENSOR_0041_ADC_FC28_soilMoisture 41
+#define EZLOPI_SENSOR_0042_ADC_shunt_voltmeter 42
+#define EZLOPI_SENSOR_0043_ADC_UV_INTENSITY 43
 #define EZLOPI_SENSOR_0044_I2C_TSL2561_LUMINOSITY 44
-#define EZLOPI_SENSOR_0048_OTHER_MQ4_CH4_DETECTOR 48
-#define EZLOPI_SENSOR_0049_OTHER_MQ2_LPG_DETECTOR 49
-#define EZLOPI_SENSOR_0050_OTHER_MQ3_ALCOHOL_DETECTOR 50
-#define EZLOPI_SENSOR_0051_OTHER_MQ8_H2_DETECTOR 51
-#define EZLOPI_SENSOR_0052_OTHER_MQ135_NH3_DETECTOR 52
+#define EZLOPI_SENSOR_0046_ADC_ACS712TELC_05B_CURRENTMETER 46
+#define EZLOPI_SENSOR_0047_OTHER_HX711_LOADCELL 47
+#define EZLOPI_SENSOR_0048_OTHER_MQ4_METHANE_GAS_DETECTOR 48
+#define EZLOPI_SENSOR_0049_OTHER_MQ2_LPG_GAS_DETECTOR 49
+#define EZLOPI_SENSOR_0050_OTHER_MQ3_ALCOHOL_GAS_DETECTOR 50
+#define EZLOPI_SENSOR_0051_OTHER_MQ8_HYDROGEN_GAS_DETECTOR 51
+#define EZLOPI_SENSOR_0052_OTHER_MQ135_AMONIA_GAS_DETECTOR 52
 #define EZLOPI_SENSOR_0053_UART_GYGPS6MV2 53
 #define EZLOPI_SENSOR_0054_PWM_YFS201_FLOWMETER 54
-#define EZLOPI_SENSOR_0055_ADC_FLEXRESISTOR 55
-#define EZLOPI_SENSOR_0056_ADC_FSR 56
-#define EZLOPI_SENSOR_0057_OTHER_FLAME_DETECTOR 57
-#define EZLOPI_SENSOR_0059_OTHER_MQ6_LPG_DETECTOR 59
+#define EZLOPI_SENSOR_0055_ADC_FLEX_RESISTOR 55
+#define EZLOPI_SENSOR_0056_ADC_FORCE_SENSITIVE_RESISTOR 56
+#define EZLOPI_SENSOR_0057_OTHER_KY026_FLAMEDETECTOR 57
+#define EZLOPI_SENSOR_0059_OTHER_MQ6_LPG_GAS_DETECTOR 59
 #define EZLOPI_SENSOR_0060_DIGITALIN_VIBRATION_DETECTOR 60
-#define EZLOPI_SENSOR_0061_DIGITALIN_REED_SWITCH 61
-#define EZLOPI_SENSOR_0062_OTHER_MQ7_CO_DETECTOR 62
-#define EZLOPI_SENSOR_0063_OTHER_MQ9_LPG_FLAMEABLE_DETECTOR 63
-#define EZLOPI_SENSOR_0065_DIGITALIN_FLOAT_SWITCH 65
-#define EZLOPI_SENSOR_0066_UART_TFMINI 66
+#define EZLOPI_SENSOR_0061_DIGITAL_IN_REED_SWITCH 61
+#define EZLOPI_SENSOR_0062_OTHER_MQ7_CARBONMONOXIDE_GAS_DETECTOR 62
+#define EZLOPI_SENSOR_0063_OTHER_MQ9_LPG_FLAMEABLE_GAS_DETECTOR 63
+#define EZLOPI_SENSOR_0064_MOTOR_DRIVER_A4988 64
 /**
  * @brief defining the type of sensor call function
  *
  */
 // int sensor_bme280(e_ezlopi_actions_t action, void *arg);
-#if 0 // v2.x
 typedef int (*f_sensor_call_t)(e_ezlopi_actions_t action, s_ezlopi_device_properties_t *properties, void *arg, void *user_arg);
-#endif
-typedef int (*f_sensor_call_v3_t)(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg);
-
-#if 0 // v2.x
 typedef struct s_ezlopi_device
 {
     uint32_t id;
     f_sensor_call_t func;
 } s_ezlopi_device_t;
-#endif
 
-typedef struct s_ezlopi_device_v3
-{
-    uint32_t id;
-    f_sensor_call_v3_t func;
-} s_ezlopi_device_v3_t;
-
-#if 0 // v2.x
 typedef struct l_ezlopi_configured_devices
 {
     void *user_arg;
@@ -104,22 +105,19 @@ typedef struct l_ezlopi_configured_devices
     struct l_ezlopi_configured_devices *next;
 
 } l_ezlopi_configured_devices_t;
-#endif
 
 typedef struct s_ezlopi_prep_arg
 {
     cJSON *cjson_device;
-    s_ezlopi_device_v3_t *device;
-} s_ezlopi_prep_arg_t;
+    s_ezlopi_device_t *device;
 
-s_ezlopi_device_v3_t *ezlopi_devices_list_get_list_v3(void);
+} s_ezlopi_prep_arg_t;
 
 /**
  * @brief Provides the list of available sensors
  *
  * @return f_sensor_call_t*
  */
-#if 0 // v2.x
 s_ezlopi_device_t *ezlopi_devices_list_get_list(void);
 
 // void ezlopi_devices_list_add(s_ezlopi_device_t *device);
@@ -127,7 +125,6 @@ s_ezlopi_device_t *ezlopi_devices_list_get_list(void);
 // int ezlopi_devices_list_add(s_ezlopi_device_t *device, s_ezlopi_device_properties_t *properties);
 int ezlopi_devices_list_add(s_ezlopi_device_t *device, s_ezlopi_device_properties_t *properties, void *user_arg);
 l_ezlopi_configured_devices_t *ezlopi_devices_list_get_configured_items(void);
-#endif
 
 #if 0
 /**

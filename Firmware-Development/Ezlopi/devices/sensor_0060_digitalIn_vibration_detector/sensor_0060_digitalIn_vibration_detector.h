@@ -3,15 +3,8 @@
 
 #include "ezlopi_actions.h"
 #include "ezlopi_devices.h"
-typedef enum
-{
-    SW420_VIBRATION_ACTIVITY_NO_ACTIVITY,
-    SW420_VIBRATION_ACTIVITY_SHAKE,
-    SW420_VIBRATION_ACTIVITY_TILT,
-    SW420_VIBRATION_ACTIVITY_DROP,
-    SW420_VIBRATION_ACTIVITY_MAX
-} e_sw420_vibration_activity_states_t;
-//----------------------------------------------------------------------------------------------------------------------
-int sensor_0060_digitalIn_vibration_detector(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg);
+
+//----------------------------------------------------------------------------------------------------------------------------------------
+int sensor_0060_digitalIn_vibration_detector(e_ezlopi_actions_t action, s_ezlopi_device_properties_t *properties, void *arg, void *user_arg);
 
 #endif
