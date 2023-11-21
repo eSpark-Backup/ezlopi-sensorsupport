@@ -1,0 +1,190 @@
+#include "cJSON.h"
+#include "trace.h"
+
+#include "ezlopi_actions.h"
+#include "ezlopi_timer.h"
+#include "items.h"
+#include "math.h"
+
+#include "ezlopi_cloud.h"
+#include "ezlopi_devices_list.h"
+#include "ezlopi_device_value_updated.h"
+#include "ezlopi_cloud_constants.h"
+#include "ezlopi_valueformatter.h"
+#include "trans_recv.h"
+
+#include "device_0067_RF_module.h"
+
+static bool rf_module_initialized = false;
+const char *rf_module_trigger_token[] =
+    {
+        "idle",
+        "sleep",
+        "turn off",
+        "unknown"};
+
+static l_ezlopi_item_t *rf_module_item = NULL;
+
+static int __prepare(void *arg);
+static int __init(l_ezlopi_item_t *item);
+static int __get_cjson_value(l_ezlopi_item_t *item, void *arg);
+static int __set_cjson_value(l_ezlopi_item_t *item, void *arg);
+static void __setup_device_cloud_params(l_ezlopi_device_t *device, cJSON *cj_device);
+
+
+int device_0067_RF_module(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void* user_arg)
+{
+    int ret = 0;
+
+    switch (action)
+    {
+    case EZLOPI_ACTION_PREPARE:
+    {
+        ret = __prepare(arg);
+        break;
+    }
+    case EZLOPI_ACTION_INITIALIZE:
+    {
+        ret = __init(item);
+        break;
+    }
+    case EZLOPI_ACTION_SET_VALUE:
+    {
+        ret = __set_cjson_value(item, arg);
+        break;
+    }
+    case EZLOPI_ACTION_HUB_GET_ITEM:
+    case EZLOPI_ACTION_GET_EZLOPI_VALUE:
+    {
+        ret = __get_cjson_value(item, arg);
+        break;
+    }
+    default:
+    {
+        break;
+    }
+    }
+
+    return ret;
+}
+
+static int __set_cjson_value(l_ezlopi_item_t *item, void *arg)
+{
+    int ret = 0;
+
+    cJSON *device_details = (cJSON *)arg;
+    ezlopi_rf_action_struct_t *rf_module_state = (ezlopi_rf_action_struct_t *)item->user_arg;
+    if (device_details)
+    {
+        if (ezlopi_item_name_energy_saving_mode == item->cloud_properties.item_name)
+        {
+            // CJSON_GET_VALUE_INT(device_details, "value", value);
+            char *value = NULL;
+            CJSON_GET_VALUE_STRING(device_details, "value", value);
+            strcpy(rf_module_state->previous_trigger_value, rf_module_state->current_trigger_value);
+            strcpy(rf_module_state->current_trigger_value, value);
+            ezlopi_device_value_updated_from_device_v3(rf_module_item);
+            ESP_LOGW("TEST01", "%s", rf_module_state->current_trigger_value);
+        }
+    }
+
+    return ret;
+}
+
+static int __get_cjson_value(l_ezlopi_item_t *item, void *arg)
+{
+    int ret = 0;
+
+    cJSON *param = (cJSON *)arg;
+    ezlopi_rf_action_struct_t *rf_module_state = (ezlopi_rf_action_struct_t *)item->user_arg;
+    if (param)
+    {
+        if (ezlopi_item_name_energy_saving_mode == item->cloud_properties.item_name)
+        {
+            //-------------------  POSSIBLE JSON ENUM CONTENTS ----------------------------------
+            cJSON *json_array_enum = cJSON_CreateArray();
+            if (NULL != json_array_enum)
+            {
+                for (uint8_t i = 0; i < RF_MAX_ENUMS; i++)
+                {
+                    cJSON *json_value = cJSON_CreateString(rf_module_trigger_token[i]);
+                    if (NULL != json_value)
+                    {
+                        cJSON_AddItemToArray(json_array_enum, json_value);
+                    }
+                }
+                cJSON_AddItemToObject(param, "enum", json_array_enum);
+            }
+            // cJSON_AddStringToObject(param, "value", rf_module_state->current_trigger_value);
+
+        }
+    }
+
+    return ret;
+}
+
+static int __init(l_ezlopi_item_t *item)
+{
+    int ret = 0;
+    if (
+        GPIO_IS_VALID_GPIO(item->interface.spi_master.mosi) &&
+        GPIO_IS_VALID_GPIO(item->interface.spi_master.mosi) &&
+        GPIO_IS_VALID_GPIO(item->interface.spi_master.sck)  &&
+        GPIO_IS_VALID_GPIO(item->interface.spi_master.cs)
+        )
+    {
+        ezlopi_spi_master_init(&item->interface.spi_master);
+        //TODO: Init CC1101
+        trans_recv_init(RECIEVER);//TODO: remove spi init from transrecvinit()
+        ret = 1;
+    }
+    return ret;
+}
+
+static int __prepare(void *arg)
+{
+    int ret = 0;
+    ezlopi_rf_action_struct_t *rf_module_state = (ezlopi_rf_action_struct_t*)malloc(sizeof(ezlopi_rf_action_struct_t));
+    s_ezlopi_prep_arg_t *prep_arg = (s_ezlopi_prep_arg_t *)arg;
+    if (prep_arg && prep_arg->cjson_device)
+    {
+        cJSON *cj_device = prep_arg->cjson_device;
+        l_ezlopi_device_t *device = ezlopi_device_add_device();
+            if (device)
+            {
+                __setup_device_cloud_params(device, cj_device);
+                rf_module_item = ezlopi_device_add_item_to_device(device, device_0067_RF_module);
+                if (rf_module_item)
+                {
+                    rf_module_item->cloud_properties.show = true;
+                    rf_module_item->cloud_properties.has_getter = true;
+                    rf_module_item->cloud_properties.has_setter = true;
+                    rf_module_item->cloud_properties.item_name = ezlopi_item_name_energy_saving_mode;
+                    rf_module_item->cloud_properties.value_type = value_type_token;
+                    rf_module_item->cloud_properties.scale = NULL;
+                    rf_module_item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
+                    rf_module_item->user_arg = rf_module_state;
+
+                    rf_module_item->interface_type = EZLOPI_DEVICE_INTERFACE_SPI_MASTER;
+                    CJSON_GET_VALUE_INT(cj_device, "miso", rf_module_item->interface.spi_master.miso);
+                    CJSON_GET_VALUE_INT(cj_device, "mosi", rf_module_item->interface.spi_master.mosi);
+                    CJSON_GET_VALUE_INT(cj_device, "sck", rf_module_item->interface.spi_master.sck);
+                    CJSON_GET_VALUE_INT(cj_device, "cs", rf_module_item->interface.spi_master.cs);
+                }
+            }
+    }
+
+    return ret;
+}
+
+static void __setup_device_cloud_params(l_ezlopi_device_t *device, cJSON *cj_device)
+{
+    char *device_name = NULL;
+    CJSON_GET_VALUE_STRING(cj_device, "dev_name", device_name);
+
+    ASSIGN_DEVICE_NAME_V2(device, device_name);
+    device->cloud_properties.category = category_remote_control;
+    device->cloud_properties.subcategory = subcategory_not_defined;
+    device->cloud_properties.device_type = dev_type_device;
+    device->cloud_properties.device_id = ezlopi_cloud_generate_device_id();
+}

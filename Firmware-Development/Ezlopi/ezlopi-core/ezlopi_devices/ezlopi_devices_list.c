@@ -5,6 +5,7 @@
 #include "device_0002_digitalOut_relay.h"
 #include "device_0003_digitalOut_plug.h"
 #include "device_0004_digitalIn_generic.h"
+#include "device_0067_RF_module.h"
 
 #include "sensor_0008_I2C_LTR303ALS.h"
 #include "device_0009_other_RMT_SK6812.h"
@@ -345,6 +346,12 @@ static s_ezlopi_device_v3_t device_array_v3[] = {
     {
         .id = EZLOPI_SENSOR_0066_UART_TFMINI,
         .func = sensor_0066_UART_TFMINI,
+    },
+#endif
+#ifdef EZLOPI_DEVICE_0067_RF_MODULE
+    {
+        .id = EZLOPI_DEVICE_0067_RF_MODULE,
+        .func = device_0067_RF_module,
     },
 #endif
     /**

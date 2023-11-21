@@ -16,6 +16,7 @@ idf_component_register(SRCS "ezlopi_devices.c" "ezlopi_device_value_updated.c" "
                                 device_0002_digitalOut_relay
                                 device_0003_digitalOut_plug
                                 device_0004_digitalIn_generic
+                                device_0067_RF_module
                                 
                                 sensor_0008_I2C_LTR303ALS
                                 device_0009_other_RMT_SK6812

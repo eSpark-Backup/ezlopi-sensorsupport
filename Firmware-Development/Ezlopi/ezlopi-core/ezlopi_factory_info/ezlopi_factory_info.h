@@ -409,12 +409,13 @@ static const char *test_device_constant_config =
     \"cmd\":3,\
     \"dev_detail\":[{\
                 \"dev_type\": 7,\
-                \"dev_name\": \"TFMINI-S Lidar\",\
+                \"dev_name\": \"RF Transceiver\",\
                 \"id_room\": \"\",\
-                \"id_item\": 66,\
-                \"gpio_tx\" : 17,\
-                \"gpio_rx\" : 16,\
-                \"baud_rate\": 115200\
+                \"id_item\": 67,\
+                \"miso\" : 11,\
+                \"mosi\" : 12,\
+                \"cs\" : 14,\
+                \"sck\": 13\
             },\
             {\
                 \"dev_type\" : 1,\
