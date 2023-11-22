@@ -20,8 +20,9 @@ const char *rf_module_trigger_token[] =
     {
         "idle",
         "sleep",
-        "turn off",
-        "unknown"};
+        "turn_off",
+        "unknown"
+    };
 
 static l_ezlopi_item_t *rf_module_item = NULL;
 
@@ -81,10 +82,22 @@ static int __set_cjson_value(l_ezlopi_item_t *item, void *arg)
             // CJSON_GET_VALUE_INT(device_details, "value", value);
             char *value = NULL;
             CJSON_GET_VALUE_STRING(device_details, "value", value);
-            strcpy(rf_module_state->previous_trigger_value, rf_module_state->current_trigger_value);
+            // ESP_LOGW("Rceived Value 1", "%s", value);
+            // strcpy(rf_module_state->previous_trigger_value, rf_module_state->current_trigger_value);
+            // ESP_LOGW("Rceived Value 1", "%s", rf_module_state->previous_trigger_value);
             strcpy(rf_module_state->current_trigger_value, value);
             ezlopi_device_value_updated_from_device_v3(rf_module_item);
-            ESP_LOGW("TEST01", "%s", rf_module_state->current_trigger_value);
+            ESP_LOGW("Received Value", "%s", rf_module_state->current_trigger_value);
+
+            /* loop through each token and apply which is received */
+            for (uint8_t i = 0; i < RF_MAX_ENUMS; i++)
+            {
+                if(!strcmp(value, rf_module_trigger_token[i])){
+                    if(i != RF_IDLE ) apply_trigger(i);
+                    break;
+                }
+            }
+
         }
     }
 
@@ -115,7 +128,7 @@ static int __get_cjson_value(l_ezlopi_item_t *item, void *arg)
                 }
                 cJSON_AddItemToObject(param, "enum", json_array_enum);
             }
-            // cJSON_AddStringToObject(param, "value", rf_module_state->current_trigger_value);
+            cJSON_AddStringToObject(param, "value", rf_module_state->current_trigger_value);
 
         }
     }
@@ -134,7 +147,6 @@ static int __init(l_ezlopi_item_t *item)
         )
     {
         ezlopi_spi_master_init(&item->interface.spi_master);
-        //TODO: Init CC1101
         trans_recv_init(RECIEVER);//TODO: remove spi init from transrecvinit()
         ret = 1;
     }
@@ -163,6 +175,8 @@ static int __prepare(void *arg)
                     rf_module_item->cloud_properties.value_type = value_type_token;
                     rf_module_item->cloud_properties.scale = NULL;
                     rf_module_item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
+                    /* initialize rf structure */
+                    rf_module_state->current_trigger_value = "unknown";
                     rf_module_item->user_arg = rf_module_state;
 
                     rf_module_item->interface_type = EZLOPI_DEVICE_INTERFACE_SPI_MASTER;

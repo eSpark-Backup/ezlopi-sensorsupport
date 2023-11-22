@@ -410,7 +410,7 @@ static const char *test_device_constant_config =
     \"dev_detail\":[{\
                 \"dev_type\": 7,\
                 \"dev_name\": \"RF Transceiver\",\
-                \"id_room\": \"\",\
+                \"id_room\": \"001\",\
                 \"id_item\": 67,\
                 \"miso\" : 11,\
                 \"mosi\" : 12,\
@@ -420,7 +420,7 @@ static const char *test_device_constant_config =
             {\
                 \"dev_type\" : 1,\
                 \"dev_name\" : \"Dining Room Main Lamp\",\
-                \"id_room\" : \"\",\
+                \"id_room\" : \"002\",\
                 \"id_item\" : 3,\
                 \"val_ip\" : true,\
                 \"val_op\" : false,\

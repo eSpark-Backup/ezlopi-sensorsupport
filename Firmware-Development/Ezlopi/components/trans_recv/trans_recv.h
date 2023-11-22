@@ -17,9 +17,9 @@
 
 enum TRIGGER
 {
-    SHUTDOWN,
     POWERUP,
-    SLEEP
+    SLEEP,
+    SHUTDOWN
 };
 
 enum TRANSCEIVER_MODE

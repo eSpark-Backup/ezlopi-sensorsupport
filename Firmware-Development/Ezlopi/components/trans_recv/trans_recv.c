@@ -1,4 +1,5 @@
 #include "trans_recv.h"
+#include "driver/rtc_io.h"
 
 static const char *TAG = "TRANSMITTER_RECIEVER";
 byte buffer[61] = {0};
@@ -19,9 +20,9 @@ void start_transceiver_task(enum TRANSCEIVER_MODE current_mode);
 
 Triggers_t triggers[NUM_TRIGGERS] =
 {
-    {"Trigger Shutdown", SHUTDOWN},
     {"Trigger Powerup", POWERUP},
-    {"Trigger Sleep", POWERUP}
+    {"Trigger Sleep", SLEEP},
+    {"Trigger Shutdown", SHUTDOWN}
     
 };
 
@@ -123,26 +124,27 @@ void recv_task(void *parameter){
                     currentTrigger = -1;
                 }
 
-                switch (currentTrigger)
-                {
-                case SHUTDOWN:
-                    setSyncWord(SHUTDOWN_SYNC_WORD_BYTE, 145);
-                    ESP_LOGI(TAG, "ESP SHUTTING DOWN");
-                    break;
-                case POWERUP:
-                    setSyncWord(ON_SYNC_WORD_BYTE, 145);
-                    ESP_LOGI(TAG, "ESP Powered Up");
-                    break;
-                case SLEEP:
-                    setSyncWord(WAKE_UP_SYNC_WORD_BYTE, 145);
-                    esp_sleep_enable_ext0_wakeup(GPIO_NUM_10, 1);
-                    ESP_LOGI(TAG, "Going to sleep now");
-                    delay(1000);
-                    esp_deep_sleep_start();
-                    break;
-                default:
-                    break;
-                }
+                // switch (currentTrigger)
+                // {
+                // case SHUTDOWN:
+                //     setSyncWord(SHUTDOWN_SYNC_WORD_BYTE, 145);
+                //     ESP_LOGI(TAG, "ESP SHUTTING DOWN");
+                //     break;
+                // case POWERUP:
+                //     setSyncWord(ON_SYNC_WORD_BYTE, 145);
+                //     ESP_LOGI(TAG, "ESP Powered Up");
+                //     break;
+                // case SLEEP:
+                //     setSyncWord(WAKE_UP_SYNC_WORD_BYTE, 145);
+                //     esp_sleep_enable_ext0_wakeup(GPIO_NUM_10, 1);
+                //     ESP_LOGI(TAG, "Going to sleep now");
+                //     delay(1000);
+                //     esp_deep_sleep_start();
+                //     break;
+                // default:
+                //     break;
+                // }
+                apply_trigger(currentTrigger);
             }
         }
     }
@@ -333,9 +335,12 @@ void apply_trigger(uint8_t trigger){
         break;
     case SLEEP:
         setSyncWord(WAKE_UP_SYNC_WORD_BYTE, 145);
+        // rtc_gpio_init(GPIO_NUM_10);
+        // rtc_gpio_pulldown_en(GPIO_NUM_10);
         esp_sleep_enable_ext0_wakeup(GPIO_NUM_10, 1);
+        // esp_sleep_enable_ext0_wakeup(GPIO_NUM_21, 0);
         ESP_LOGI(TAG, "Going to sleep now");
-        delay(1000);
+        delay(2000);
         esp_deep_sleep_start();
         break;
     default:
