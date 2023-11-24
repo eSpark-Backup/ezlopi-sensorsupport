@@ -3,6 +3,7 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := sample_project
+PROJECT_NAME := esp32dht21
 
 include $(IDF_PATH)/make/project.mk
+

@@ -1,35 +1,65 @@
+/* Blink Example
+
+   This example code is in the Public Domain (or CC0 licensed, at your option.)
+
+   Unless required by applicable law or agreed to in writing, this
+   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+   CONDITIONS OF ANY KIND, either express or implied.
+   */
 #include <stdio.h>
+#include <types.h>
+#include <utils.h>
+#include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "esp_system.h"
-#include "rom/ets_sys.h"
-#include "nvs_flash.h"
 #include "driver/gpio.h"
 #include "sdkconfig.h"
 
-#include "DHT22.h"
+#include "lib/dht21.h"
 
-void DHT_reader_task(void *pvParameter)
+#define BLINK_GPIO GPIO_NUM_2
+#define DHT21_SENSOR_GPIO GPIO_NUM_25
+
+#define vTaskMS(x) (x / portTICK_PERIOD_MS)
+
+void app_main(void)
 {
-		setDHTgpio(GPIO_NUM_4);
+	/* Configure the IOMUX register for pad BLINK_GPIO (some pads are
+	   muxed to GPIO on reset already, but some default to other
+	   functions and need to be switched to GPIO. Consult the
+	   Technical Reference for a list of pads and their default
+	   functions.)
+	   */
+	gpio_pad_select_gpio(BLINK_GPIO);
+	/* Set the GPIO as a push/pull output */
+	gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
+
+	struct dht21 sensor_data;
+	dht21_init(DHT21_SENSOR_GPIO);
+	gpio_set_direction(DHT21_SENSOR_GPIO, GPIO_MODE_OUTPUT);
+	gpio_set_level(DHT21_SENSOR_GPIO, HIGH);
+	vTaskDelay(vTaskMS(5000));
 
 	while(1) {
-	
-		printf("DHT Sensor Readings\n" );
-		int ret = readDHT();
-		
-		errorHandler(ret);
+		gpio_set_level(BLINK_GPIO, LOW);
 
-		printf("Humidity %.2f %%\n", getHumidity());
-		printf("Temperature %.2f degC\n\n", getTemperature());
-		
-		vTaskDelay(2000 / portTICK_RATE_MS);
+		vTaskDelay(vTaskMS(3000));
+
+		gpio_set_level(BLINK_GPIO, HIGH);
+
+		dht21_poll_data(DHT21_SENSOR_GPIO, &sensor_data);
+
+		vTaskDelay(vTaskMS(3000));
+
+		if (dht21_checksum_ok(&sensor_data)) {
+			float temp_in_float = (float)dht21_temperature(&sensor_data)/10;
+			float humidity_in_float = (float)dht21_humidity(&sensor_data)/10;
+			LOG("temp = %.2f, hum = %.2f", temp_in_float, humidity_in_float);
+
+			//LOG("temp = %d, hum = %u", dht21_temperature(&sensor_data), dht21_humidity(&sensor_data));
+		}
+
+		memset(&sensor_data, 0, sizeof(sensor_data));
+
 	}
-}
-
-void app_main()
-{
-	nvs_flash_init();
-        vTaskDelay(2000 / portTICK_RATE_MS);
-	xTaskCreate(&DHT_reader_task, "DHT_reader_task", 2048, NULL, 5, NULL );
 }
