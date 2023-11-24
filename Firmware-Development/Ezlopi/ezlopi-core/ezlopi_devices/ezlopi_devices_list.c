@@ -49,6 +49,7 @@
 #include "sensor_0054_PWM_YFS201_flowmeter.h"
 #include "sensor_0056_ADC_Force_Sensitive_Resistor.h"
 #include "sensor_0066_UART_TFMINI.h"
+#include "device_0068_other_addressable_RGB.h"
 
 static s_ezlopi_device_v3_t device_array_v3[] = {
 #ifdef EZLOPI_DEVICE_0001_DIGITALOUT_GENERIC
@@ -345,6 +346,12 @@ static s_ezlopi_device_v3_t device_array_v3[] = {
     {
         .id = EZLOPI_SENSOR_0066_UART_TFMINI,
         .func = sensor_0066_UART_TFMINI,
+    },
+#endif
+#ifdef EZLOPI_DEVICE_0068_ADDRESSABLE_LED
+    {
+        .id = EZLOPI_DEVICE_0068_ADDRESSABLE_LED,
+        .func = device_0068_other_addressable_RGB,
     },
 #endif
     /**

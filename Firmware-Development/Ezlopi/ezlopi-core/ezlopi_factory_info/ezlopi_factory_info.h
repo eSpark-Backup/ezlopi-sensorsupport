@@ -408,11 +408,12 @@ static const char *test_device_constant_config =
     "{\
     \"cmd\":3,\
     \"dev_detail\":[{\
-                \"dev_type\": 7,\
-                \"dev_name\": \"TFMINI-S Lidar\",\
+                \"dev_type\": 3,\
+                \"dev_name\": \"Addressable Led Controller\",\
                 \"id_room\": \"\",\
-                \"id_item\": 66,\
+                \"id_item\": 68,\
                 \"gpio_tx\" : 17,\
+                \"gpio_out\" : 2,\
                 \"gpio_rx\" : 16,\
                 \"baud_rate\": 115200\
             },\
@@ -424,7 +425,7 @@ static const char *test_device_constant_config =
                 \"val_ip\" : true,\
                 \"val_op\" : false,\
                 \"gpio_in\" : 21,\
-                \"gpio_out\" : 2,\
+                \"gpio_out\" : 3,\
                 \"is_ip\" : false,\
                 \"ip_inv\" : true,\
                 \"pullup_ip\" : true,\

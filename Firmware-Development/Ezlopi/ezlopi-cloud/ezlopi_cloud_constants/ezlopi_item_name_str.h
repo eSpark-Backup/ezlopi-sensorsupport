@@ -232,4 +232,29 @@ const static char *ezlopi_item_name_send_ir_code = "send_ir_code";
 const static char *ezlopi_item_name_learn_ir_code = "learn_ir_code";
 const static char *ezlopi_item_name_soil_humidity = "soil_humidity";
 
+const static char *ezlopi_item_name_led_segments = "led_segments";
+const static char *ezlopi_item_name_led_effects = "led_effects";
+const static char *ezlopi_item_name_led_palettes = "led_palettes";
+// const static char *ezlopi_item_name_led_switch = "led_switch";
+// const static char *ezlopi_item_name_led_dimmer = "led_dimmer";
+const static char *ezlopi_item_name_color_effect_select = "color_effect_select";
+const static char *ezlopi_item_name_color_palette_select = "color_palette_select";
+const static char *ezlopi_item_name_color_segment_grouping = "color_segment_grouping";
+const static char *ezlopi_item_name_color_segment_spacing = "color_segment_spacing";
+const static char *ezlopi_item_name_color_segment_offset = "color_segment_offset";
+const static char *ezlopi_item_name_color_segment_revers = "color_segment_revers";
+const static char *ezlopi_item_name_color_segment_mirror = "color_segment_mirror";
+const static char *ezlopi_item_name_color_effect_speed = "color_effect_speed";
+const static char *ezlopi_item_name_color_effect_intensity = "color_effect_intensity";
+const static char *ezlopi_item_name_color_effect_custom_slider_1 = "color_effect_custom_slider_1";
+const static char *ezlopi_item_name_color_effect_custom_slider_2 = "color_effect_custom_slider_2";
+const static char *ezlopi_item_name_color_effect_custom_slider_3 = "color_effect_custom_slider_3";
+const static char *ezlopi_item_name_color_effect_option_1 = "color_effect_option_1";
+const static char *ezlopi_item_name_color_effect_option_2 = "color_effect_option_2";
+const static char *ezlopi_item_name_color_effect_option_3 = "color_effect_option_3";
+const static char *ezlopi_item_name_color_segment_primary_color = "color_segment_primary_color";
+const static char *ezlopi_item_name_color_segment_secondary_color = "color_segment_secondary_color";
+const static char *ezlopi_item_name_color_segment_ternary_color = "color_segment_ternary_color";
+
+
 #endif // __EZLOPI_ITEM_NAME_STR_H__
