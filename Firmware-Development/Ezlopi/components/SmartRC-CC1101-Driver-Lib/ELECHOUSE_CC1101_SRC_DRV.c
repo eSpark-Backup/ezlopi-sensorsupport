@@ -93,17 +93,17 @@ esp_err_t ret = ESP_FAIL;
 
 s_ezlopi_spi_master_t spiObj = {
     .enable = true,
-    .cs = 14,
+    .cs = -1,
     .miso = 11,
     .mosi = 12,
     .sck = 13,
     .mode = EZLOPI_SPI_CPOL_LOW_CPHA_LOW,
     .clock_speed_mhz = 5,
-    .addr_bits = 8,
-    .command_bits = 8,
+    .addr_bits = 0,
+    .command_bits = 0,
     .transfer_sz = 32,
     .queue_size = 7,
-    .flags = SPI_DEVICE_NO_DUMMY, /* spi_device_interface_config_t flag */
+    .flags = SPICOMMON_BUSFLAG_MASTER, /* spi_device_interface_config_t flag */
     .channel = EZLOPI_SPI_2,
 };
 
@@ -238,11 +238,9 @@ void Reset(void)
   digitalWrite(SS_PIN, HIGH);
   delay(1);
   digitalWrite(SS_PIN, LOW);
-  while (digitalRead(MISO_PIN))
-    ;
+  while (digitalRead(MISO_PIN));
   spi_transfer(CC1101_SRES);
-  while (digitalRead(MISO_PIN))
-    ;
+  while (digitalRead(MISO_PIN));
   digitalWrite(SS_PIN, HIGH);
 }
 
@@ -259,10 +257,10 @@ void spiTransferWord(uint16_t inputData)
  ****************************************************************/
 esp_err_t Init(void)
 {
+  RCSwitchInit(&var);
   // enableTransmit(10,&var);
   setSpiPin(13, 11, 12, 14); // Set custom pins: (SCK, MISO, MOSI, CSN). Must be BEFORE Init()!
   setGDO(10, 9);             // Set custom GDO pins: (GDO0, GDO2). Gdo0 (tx) and Gdo2 (rx). Must be BEFORE Init();
-  RCSwitchInit(&var);
   setSpi();
   esp_err_t retu = SpiStart(); // spi initialization
   ESP_RETURN_ON_ERROR(retu, TAG, "failed to initialize SPI");
@@ -536,7 +534,7 @@ void setCCMode(bool s)
  *INPUT        :none
  *OUTPUT       :none
  ****************************************************************/
-void setModulation(byte m)
+void  setModulation(byte m)
 {
   if (m > 4)
   {

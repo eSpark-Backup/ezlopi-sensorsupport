@@ -87,7 +87,7 @@ void trans_recv_init(enum TRANSCEIVER_MODE mode){
 void recv_task(void *parameter){
     print_wakeup_reason();
     while(1){
-        vTaskDelay(10/portTICK_PERIOD_MS);
+        vTaskDelay(1/portTICK_PERIOD_MS);
         if (CheckReceiveFlag())
         {
 
@@ -301,14 +301,14 @@ void start_transceiver_task(enum TRANSCEIVER_MODE current_mode){
         break;
         case RECIEVER:
             ESP_LOGI(TAG, "Rx Mode");
-            xTaskCreate(
-                pin_hold_duration_read_task, // Function to be called
-                "pin_hold_duration_read_task",      // Name of the task
-                10000,        // Stack size
-                NULL,         // Parameter
-                1,            // Priority (1 is the lowest priority on ESP32)
-                &pin_hold_duration_read_task_h        // Task handle
-            );
+            // xTaskCreate(
+            //     pin_hold_duration_read_task, // Function to be called
+            //     "pin_hold_duration_read_task",      // Name of the task
+            //     10000,        // Stack size
+            //     NULL,         // Parameter
+            //     1,            // Priority (1 is the lowest priority on ESP32)
+            //     &pin_hold_duration_read_task_h        // Task handle
+            // );
 
             xTaskCreate(
                 recv_task, // Function to be called

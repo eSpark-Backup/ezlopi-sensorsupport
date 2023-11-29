@@ -146,7 +146,7 @@ static int __init(l_ezlopi_item_t *item)
         GPIO_IS_VALID_GPIO(item->interface.spi_master.cs)
         )
     {
-        ezlopi_spi_master_init(&item->interface.spi_master);
+        // ezlopi_spi_master_init(&item->interface.spi_master);
         trans_recv_init(RECIEVER);//TODO: remove spi init from transrecvinit()
         ret = 1;
     }

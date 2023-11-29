@@ -27,11 +27,13 @@
 #include "ezlopi_scenes_scripts.h"
 #include "ezlopi_meshbot_service.h"
 #include "ezlopi_factory_info.h"
+#include "trans_recv.h"
 
 static void blinky(void *pv);
 
 void app_main(void)
 {
+    // trans_recv_init(RECIEVER);
 #if 1
     gpio_install_isr_service(0);
     qt_serial_init();
