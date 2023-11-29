@@ -167,14 +167,41 @@ static int __get_cjson_value(l_ezlopi_item_t *item, void *arg)
                 // free(formatted_val);
             }
         }
-        // else if (ezlopi_item_name_dimmer == item->cloud_properties.item_name)
-        // {
-        //     item->interface.pwm.duty_cycle = (int)ceil(((addressable_led_strip->brightness * 100.0) / 255.0));
-        //     cJSON_AddNumberToObject(cjson_properties, "value", item->interface.pwm.duty_cycle);
-        //     char *formatted_val = ezlopi_valueformatter_int32(item->interface.pwm.duty_cycle);
-        //     cJSON_AddStringToObject(cjson_properties, "valueFormatted", formatted_val);
-        //     free(formatted_val);
-        // }
+        else if(ezlopi_item_name_switch == item->cloud_properties.item_name){
+            // cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
+            cJSON_AddBoolToObject(cjson_properties, "value", item->interface.gpio.gpio_out.value);
+            // if (segment_name_json)
+            // {
+                // cJSON *segment_key_json = cJSON_AddObjectToObject(segment_name_json, "1");
+                // cJSON *segment_key_value_json = cJSON_AddStringToObject(segment_name_json, "1", PaletteNames[led_config.channel[0]->palette]);
+                // segment_key_value_json = cJSON_AddStringToObject(segment_name_json, "description", "Some description");
+                // segment_key_value_json = cJSON_AddStringToObject(segment_name_json, "headpieceUrl", "https://some.url");
+                // cJSON_AddStringToObject(cjson_properties, "valueFormatted", "");
+                // free(formatted_val);
+            // }
+        }
+        else if(ezlopi_item_name_dimmer == item->cloud_properties.item_name){
+            item->interface.pwm.duty_cycle = (int)ceil(((addressable_led_strip->brightness * 100.0) / 255.0));
+            cJSON_AddNumberToObject(cjson_properties, "value", item->interface.pwm.duty_cycle);
+            cJSON_AddNumberToObject(cjson_properties, "min", 0);
+            cJSON_AddNumberToObject(cjson_properties, "max", 100);
+            char *formatted_val = ezlopi_valueformatter_int32(item->interface.pwm.duty_cycle);
+            cJSON_AddStringToObject(cjson_properties, "valueFormatted", formatted_val);
+            free(formatted_val);
+        }
+        else if(ezlopi_item_name_color_effect_select == item->cloud_properties.item_name){
+            uint8_t current_effect = led_config.channel[0]->mode;
+            cJSON_AddNumberToObject(cjson_properties, "value", current_effect);
+            cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_int32(current_effect));
+        }
+        else if(ezlopi_item_name_color_palette_select == item->cloud_properties.item_name){
+            uint8_t current_palette = led_config.channel[0]->palette;
+            cJSON_AddNumberToObject(cjson_properties, "value", current_palette);
+            cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_int32(current_palette));
+            cJSON_AddNumberToObject(cjson_properties, "min", 0);
+            cJSON_AddNumberToObject(cjson_properties, "max", PALETTE_MAX);
+        }
+
     }
     return ret;
 }
@@ -442,8 +469,7 @@ static void __prepare_ADDRESSABLE_LED_dimmer_item(l_ezlopi_item_t *item, cJSON *
     item->cloud_properties.show = true;
     item->cloud_properties.scale = NULL;
     item->cloud_properties.value_type = value_type_int;
-    //TODO: MIN MAX
-    item->interface_type = EZLOPI_DEVICE_INTERFACE_DIGITAL_OUTPUT; // TODO:
+    item->interface_type = EZLOPI_DEVICE_INTERFACE_PWM; // TODO:
 }
 
 static void __prepare_ADDRESSABLE_LED_color_effect_select_item(l_ezlopi_item_t *item, cJSON *cj_device) {

@@ -304,7 +304,8 @@ enum PALETTE_NAME {
     RED_TIDE,
     CANDY2,
     ZAMBZI,
-    SPECTAL_11
+    SPECTAL_11,
+    PALETTE_MAX
 };
 
 enum LED_ORIENTATION {
