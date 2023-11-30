@@ -25,7 +25,7 @@
 #include "dummy_led_config.h"
 #include "device_0068_other_addressable_RGB.h"
 
-static bool sk6812_led_strip_initialized = false;
+static bool ws2812_led_strip_initialized = false;
 
 static l_ezlopi_item_t *dimmer_up_item = NULL;
 static l_ezlopi_item_t *dimmer_down_item = NULL;
@@ -112,13 +112,15 @@ static int __get_cjson_value(l_ezlopi_item_t *item, void *arg)
         {
             led_config.channel[0]->start = 10;
             led_config.channel[0]->stop = 125;
+            cJSON_AddStringToObject(cjson_properties, "elementType", "led_segment");
+            cJSON_AddNumberToObject(cjson_properties, "elementMaxNumber", 10);
             cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
             if (segment_name_json)
             {
                 int green = addressable_led_strip->buf[0];
                 int red = addressable_led_strip->buf[1];
                 int blue = addressable_led_strip->buf[2];
-                cJSON *segment_key_json = cJSON_AddObjectToObject(segment_name_json, "1");
+                cJSON *segment_key_json = cJSON_AddObjectToObject(segment_name_json, "0");
                 cJSON *segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "name", "main");
                 segment_key_value_json = cJSON_AddNumberToObject(segment_key_json, "start", led_config.channel[0]->start);
                 segment_key_value_json = cJSON_AddNumberToObject(segment_key_json, "end", led_config.channel[0]->stop);
@@ -135,15 +137,44 @@ static int __get_cjson_value(l_ezlopi_item_t *item, void *arg)
             cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
             if (segment_name_json)
             {
-                cJSON *segment_key_json = cJSON_AddObjectToObject(segment_name_json, "1");
-                cJSON *segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "name", LEDModesStrings[led_config.channel[0]->mode]);
-                segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "description", "Some description");
-                segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "headpieceUrl", "https://some.url");
+                for(int i = 0; i < 5; i++)
+                {
+                    cJSON *segment_key_json = cJSON_AddObjectToObject(segment_name_json, ezlopi_valueformatter_int(i));
+                    cJSON *segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "name", LEDModesStrings[i]);
+                    segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "description", "Some description");
+                    segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "headpieceUrl", "https://some.url");
+                }
+                // cJSON *segment_key_json = cJSON_AddObjectToObject(segment_name_json, "1");
+                // cJSON *segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "name", LEDModesStrings[led_config.channel[0]->mode]);
+                // segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "description", "Some description");
+                // segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "headpieceUrl", "https://some.url");
+
                 // cJSON_AddNumberToObject(segment_name_json, "green", green);
                 // cJSON_AddNumberToObject(segment_name_json, "blue", blue);
                 // cJSON_AddNumberToObject(segment_name_json, "cwhite", ((red << 16) | (green << 8) | (blue)));
                 // char *formatted_val = ezlopi_valueformatter_rgb(red, green, blue);
                 cJSON_AddStringToObject(cjson_properties, "valueFormatted", "");
+                // free(formatted_val);
+            }
+        }
+        else if(ezlopi_item_name_led_palettes == item->cloud_properties.item_name){
+            led_config.channel[0]->palette = TEMPERATURE;
+            cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
+            if (segment_name_json)
+            {
+
+                for(int i = 0; i < 5; i++)
+                {
+                    cJSON *segment_key_json = cJSON_AddObjectToObject(segment_name_json, ezlopi_valueformatter_int(i));
+                    cJSON *segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "name", PaletteNames[i]);
+                    segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "description", "Some description");
+                    segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "headpieceUrl", "https://some.url");
+                }
+
+                // cJSON *segment_key_value_json = cJSON_AddStringToObject(segment_name_json, "1", PaletteNames[led_config.channel[0]->palette]);
+                // segment_key_value_json = cJSON_AddStringToObject(segment_name_json, "description", "Some description");
+                // segment_key_value_json = cJSON_AddStringToObject(segment_name_json, "headpieceUrl", "https://some.url");
+                // cJSON_AddStringToObject(cjson_properties, "valueFormatted", "");
                 // free(formatted_val);
             }
         }
@@ -154,52 +185,138 @@ static int __get_cjson_value(l_ezlopi_item_t *item, void *arg)
             char *formatted_val = ezlopi_valueformatter_bool(item->interface.gpio.gpio_out.value ? true : false);
             cJSON_AddStringToObject(cjson_properties, "valueFormatted", formatted_val);
         }
-        else if(ezlopi_item_name_led_palettes == item->cloud_properties.item_name){
-            led_config.channel[0]->palette = TEMPERATURE;
-            cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
-            if (segment_name_json)
-            {
-                // cJSON *segment_key_json = cJSON_AddObjectToObject(segment_name_json, "1");
-                cJSON *segment_key_value_json = cJSON_AddStringToObject(segment_name_json, "1", PaletteNames[led_config.channel[0]->palette]);
-                segment_key_value_json = cJSON_AddStringToObject(segment_name_json, "description", "Some description");
-                segment_key_value_json = cJSON_AddStringToObject(segment_name_json, "headpieceUrl", "https://some.url");
-                cJSON_AddStringToObject(cjson_properties, "valueFormatted", "");
-                // free(formatted_val);
-            }
-        }
-        else if(ezlopi_item_name_switch == item->cloud_properties.item_name){
-            // cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
-            cJSON_AddBoolToObject(cjson_properties, "value", item->interface.gpio.gpio_out.value);
-            // if (segment_name_json)
-            // {
-                // cJSON *segment_key_json = cJSON_AddObjectToObject(segment_name_json, "1");
-                // cJSON *segment_key_value_json = cJSON_AddStringToObject(segment_name_json, "1", PaletteNames[led_config.channel[0]->palette]);
-                // segment_key_value_json = cJSON_AddStringToObject(segment_name_json, "description", "Some description");
-                // segment_key_value_json = cJSON_AddStringToObject(segment_name_json, "headpieceUrl", "https://some.url");
-                // cJSON_AddStringToObject(cjson_properties, "valueFormatted", "");
-                // free(formatted_val);
-            // }
-        }
-        else if(ezlopi_item_name_dimmer == item->cloud_properties.item_name){
+        else if(ezlopi_item_name_dimmer == item->cloud_properties.item_name)
+        {
             item->interface.pwm.duty_cycle = (int)ceil(((addressable_led_strip->brightness * 100.0) / 255.0));
             cJSON_AddNumberToObject(cjson_properties, "value", item->interface.pwm.duty_cycle);
-            cJSON_AddNumberToObject(cjson_properties, "min", 0);
-            cJSON_AddNumberToObject(cjson_properties, "max", 100);
+            cJSON_AddNumberToObject(cjson_properties, "minValue", 0);
+            cJSON_AddNumberToObject(cjson_properties, "maxValue", 100);
             char *formatted_val = ezlopi_valueformatter_int32(item->interface.pwm.duty_cycle);
             cJSON_AddStringToObject(cjson_properties, "valueFormatted", formatted_val);
             free(formatted_val);
         }
-        else if(ezlopi_item_name_color_effect_select == item->cloud_properties.item_name){
+        else if(ezlopi_item_name_color_effect_select == item->cloud_properties.item_name)
+        {
             uint8_t current_effect = led_config.channel[0]->mode;
             cJSON_AddNumberToObject(cjson_properties, "value", current_effect);
             cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_int32(current_effect));
         }
-        else if(ezlopi_item_name_color_palette_select == item->cloud_properties.item_name){
+        else if(ezlopi_item_name_color_palette_select == item->cloud_properties.item_name)
+        {
             uint8_t current_palette = led_config.channel[0]->palette;
             cJSON_AddNumberToObject(cjson_properties, "value", current_palette);
             cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_int32(current_palette));
-            cJSON_AddNumberToObject(cjson_properties, "min", 0);
-            cJSON_AddNumberToObject(cjson_properties, "max", PALETTE_MAX);
+            cJSON_AddNumberToObject(cjson_properties, "minValue", 0);
+            cJSON_AddNumberToObject(cjson_properties, "maxValue", PALETTE_MAX);
+        }
+        else if(ezlopi_item_name_color_segment_grouping == item->cloud_properties.item_name)
+        {
+            cJSON_AddNumberToObject(cjson_properties, "value", 0);
+            cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_int32(0));
+            cJSON_AddNumberToObject(cjson_properties, "minValue", 0);
+            cJSON_AddNumberToObject(cjson_properties, "maxValue", 255);
+        }
+        else if (ezlopi_item_name_color_segment_spacing == item->cloud_properties.item_name)
+        {
+            cJSON_AddNumberToObject(cjson_properties, "value", 0);
+            cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_int32(0));
+            cJSON_AddNumberToObject(cjson_properties, "minValue", 0);
+            cJSON_AddNumberToObject(cjson_properties, "maxValue", 255);
+        }
+        else if(ezlopi_item_name_color_segment_offset == item->cloud_properties.item_name)
+        {
+            led_config.channel[0]->number_of_leds = 100;
+            cJSON_AddNumberToObject(cjson_properties, "value", 0);
+            cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_int32(0));
+            cJSON_AddNumberToObject(cjson_properties, "minValue", 0);
+            cJSON_AddNumberToObject(cjson_properties, "maxValue", led_config.channel[0]->number_of_leds);
+        }
+        else if(ezlopi_item_name_color_segment_revers == item->cloud_properties.item_name)
+        {
+            cJSON_AddBoolToObject(cjson_properties, "value", false);
+            cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_bool(false));
+        }
+        else if(ezlopi_item_name_color_segment_mirror == item->cloud_properties.item_name)
+        {
+            cJSON_AddBoolToObject(cjson_properties, "value", false);
+            cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_bool(false));
+        }
+        else if(ezlopi_item_name_color_effect_speed == item->cloud_properties.item_name)
+        {
+            cJSON_AddNumberToObject(cjson_properties, "value", 0);
+            cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_int32(0));
+            cJSON_AddNumberToObject(cjson_properties, "minValue", 0);
+            cJSON_AddNumberToObject(cjson_properties, "maxValue", 255);
+        }
+        else if(ezlopi_item_name_color_effect_intensity == item->cloud_properties.item_name)
+        {
+            cJSON_AddNumberToObject(cjson_properties, "value", 0);
+            cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_int32(0));
+            cJSON_AddNumberToObject(cjson_properties, "minValue", 0);
+            cJSON_AddNumberToObject(cjson_properties, "maxValue", 255); 
+        }
+        else if(ezlopi_item_name_color_effect_custom_slider_1 == item->cloud_properties.item_name)
+        {
+            cJSON_AddNumberToObject(cjson_properties, "value", 0);
+            cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_int32(0));
+            cJSON_AddNumberToObject(cjson_properties, "minValue", 0);
+            cJSON_AddNumberToObject(cjson_properties, "maxValue", 255);
+        }
+        else if(ezlopi_item_name_color_effect_custom_slider_2 == item->cloud_properties.item_name)
+        {
+            cJSON_AddNumberToObject(cjson_properties, "value", 0);
+            cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_int32(0));
+            cJSON_AddNumberToObject(cjson_properties, "minValue", 0);
+            cJSON_AddNumberToObject(cjson_properties, "maxValue", 255);
+        }
+        else if(ezlopi_item_name_color_effect_custom_slider_3 == item->cloud_properties.item_name)
+        {
+            cJSON_AddNumberToObject(cjson_properties, "value", 0);
+            cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_int32(0));
+            cJSON_AddNumberToObject(cjson_properties, "minValue", 0);
+            cJSON_AddNumberToObject(cjson_properties, "maxValue", 31);
+        }
+        else if(ezlopi_item_name_color_effect_option_1 == item->cloud_properties.item_name)
+        {
+            cJSON_AddBoolToObject(cjson_properties, "value", false);
+            cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_bool(false));
+        }
+        else if(ezlopi_item_name_color_effect_option_2 == item->cloud_properties.item_name)
+        {
+            cJSON_AddBoolToObject(cjson_properties, "value", false);
+            cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_bool(false));
+        }
+        else if(ezlopi_item_name_color_effect_option_3 == item->cloud_properties.item_name)
+        {
+            cJSON_AddBoolToObject(cjson_properties, "value", false);
+            cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_bool(false));
+        }
+        else if(ezlopi_item_name_color_segment_primary_color == item->cloud_properties.item_name)
+        {
+            cJSON* cjson_value_object  = cJSON_AddObjectToObject(cjson_properties, "value");
+            cJSON_AddNumberToObject(cjson_value_object, "wwhite",128);
+            cJSON_AddNumberToObject(cjson_value_object, "red",128);
+            cJSON_AddNumberToObject(cjson_value_object, "green",128);
+            cJSON_AddNumberToObject(cjson_value_object, "blue",128);
+            cJSON_AddStringToObject(cjson_properties, "valueFormatted", "...");
+        }
+        else if(ezlopi_item_name_color_segment_secondary_color == item->cloud_properties.item_name)
+        {
+            cJSON* cjson_value_object  = cJSON_AddObjectToObject(cjson_properties, "value");
+            cJSON_AddNumberToObject(cjson_value_object, "wwhite",128);
+            cJSON_AddNumberToObject(cjson_value_object, "red",128);
+            cJSON_AddNumberToObject(cjson_value_object, "green",128);
+            cJSON_AddNumberToObject(cjson_value_object, "blue",128);
+            cJSON_AddStringToObject(cjson_properties, "valueFormatted", "...");
+        }
+        else if(ezlopi_item_name_color_segment_ternary_color == item->cloud_properties.item_name)
+        {
+            cJSON* cjson_value_object  = cJSON_AddObjectToObject(cjson_properties, "value");
+            cJSON_AddNumberToObject(cjson_value_object, "wwhite",128);
+            cJSON_AddNumberToObject(cjson_value_object, "red",128);
+            cJSON_AddNumberToObject(cjson_value_object, "green",128);
+            cJSON_AddNumberToObject(cjson_value_object, "blue",128);
+            cJSON_AddStringToObject(cjson_properties, "valueFormatted", "...");
         }
 
     }
@@ -253,6 +370,98 @@ static int __set_cjson_value(l_ezlopi_item_t *item, void *arg)
             led_strip_flush(addressable_led_strip);
             ezlopi_device_value_updated_from_device_v3(dimmer_item);
         }
+        else if(ezlopi_item_name_led_segments == item->cloud_properties.item_name)
+        {
+
+        }
+        else if(ezlopi_item_name_led_effects == item->cloud_properties.item_name)
+        {
+
+        }
+        else if(ezlopi_item_name_led_palettes == item->cloud_properties.item_name)
+        {
+
+        }
+        else if(ezlopi_item_name_switch== item->cloud_properties.item_name)
+        {
+
+        }
+        else if(ezlopi_item_name_dimmer == item->cloud_properties.item_name)
+        {
+
+        }
+        else if(ezlopi_item_name_color_effect_select == item->cloud_properties.item_name)
+        {
+
+        }
+        else if(ezlopi_item_name_color_palette_select == item->cloud_properties.item_name)
+        {
+
+        }
+        else if(ezlopi_item_name_color_segment_grouping == item->cloud_properties.item_name)
+        {
+
+        }
+        else if(ezlopi_item_name_color_segment_spacing == item->cloud_properties.item_name)
+        {
+
+        }
+        else if(ezlopi_item_name_color_segment_offset == item->cloud_properties.item_name)
+        {
+
+        }
+        else if(ezlopi_item_name_color_segment_revers == item->cloud_properties.item_name)
+        {
+
+        }
+        else if(ezlopi_item_name_color_segment_mirror == item->cloud_properties.item_name)
+        {
+
+        }
+        else if(ezlopi_item_name_color_effect_speed == item->cloud_properties.item_name)
+        {
+
+        }
+        else if(ezlopi_item_name_color_effect_intensity == item->cloud_properties.item_name)
+        {
+
+        }
+        else if(ezlopi_item_name_color_effect_custom_slider_1 == item->cloud_properties.item_name)
+        {
+
+        }
+        else if(ezlopi_item_name_color_effect_custom_slider_2 == item->cloud_properties.item_name)
+        {
+
+        }
+        else if(ezlopi_item_name_color_effect_custom_slider_3 == item->cloud_properties.item_name)
+        {
+
+        }
+        else if(ezlopi_item_name_color_effect_option_1 == item->cloud_properties.item_name)
+        {
+
+        }
+        else if(ezlopi_item_name_color_effect_option_2 == item->cloud_properties.item_name)
+        {
+
+        }
+        else if(ezlopi_item_name_color_effect_option_3 == item->cloud_properties.item_name)
+        {
+
+        }
+        else if(ezlopi_item_name_color_segment_primary_color == item->cloud_properties.item_name)
+        {
+
+        }
+        else if(ezlopi_item_name_color_segment_secondary_color == item->cloud_properties.item_name)
+        {
+
+        }
+        else if(ezlopi_item_name_color_segment_ternary_color == item->cloud_properties.item_name)
+        {
+
+        }
         else
         {
             TRACE_B("item->cloud_properties.item_name => %s", item->cloud_properties.item_name);
@@ -265,13 +474,13 @@ static int __init(l_ezlopi_item_t *item)
 {
     int ret = 0;
     led_strip_t *addressable_led_strip = (led_strip_t *)item->user_arg;
-    if ((!sk6812_led_strip_initialized) && (NULL != addressable_led_strip))
+    if ((!ws2812_led_strip_initialized) && (NULL != addressable_led_strip))
     {
-        addressable_led_strip->type = LED_STRIP_SK6812;
-        addressable_led_strip->length = 1;
+        addressable_led_strip->type = LED_STRIP_WS2812;
+        addressable_led_strip->length = 100;
         addressable_led_strip->gpio = item->interface.pwm.gpio_num;
         addressable_led_strip->buf = NULL;
-        addressable_led_strip->brightness = 255;
+        addressable_led_strip->brightness = 10;
         addressable_led_strip->channel = RMT_CHANNEL_0;
 
         led_strip_install();
@@ -282,9 +491,9 @@ static int __init(l_ezlopi_item_t *item)
             .blue = 255,
         };
         led_strip_fill(addressable_led_strip, 0, addressable_led_strip->length, color);
-        led_strip_set_brightness(addressable_led_strip, 255);
+        led_strip_set_brightness(addressable_led_strip, addressable_led_strip->brightness);
         ESP_ERROR_CHECK(led_strip_flush(addressable_led_strip));
-        sk6812_led_strip_initialized = true;
+        ws2812_led_strip_initialized = true;
     }
     return ret;
 }
@@ -294,117 +503,16 @@ static void __prepare_device_properties(l_ezlopi_device_t *device, cJSON *cj_dev
     char *device_name = NULL;
     CJSON_GET_VALUE_STRING(cj_device, "dev_name", device_name);
     ASSIGN_DEVICE_NAME_V2(device, device_name);
-    device->cloud_properties.category = category_led_strip;
-    device->cloud_properties.subcategory = subcategory_addressable_main;
-    device->cloud_properties.device_type = dev_type_device;
+
+    // device->cloud_properties.category = category_led_strip;
+    // device->cloud_properties.subcategory = subcategory_addressable_main;
+    // device->cloud_properties.device_type = dev_type_device;
+
+    device->cloud_properties.category = category_dimmable_light;
+    device->cloud_properties.subcategory = subcategory_dimmable_colored;
+    device->cloud_properties.device_type = dev_type_dimmer_outlet;
+
     device->cloud_properties.device_id = ezlopi_cloud_generate_device_id();
-}
-
-static void __prepare_ADDRESSABLE_RGB_color_item(l_ezlopi_item_t *item, cJSON *cj_device)
-{
-    item->cloud_properties.has_getter = true;
-    item->cloud_properties.has_setter = true;
-    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
-    item->cloud_properties.item_name = ezlopi_item_name_rgbcolor,
-    item->cloud_properties.show = true;
-    item->cloud_properties.scale = NULL;
-    item->cloud_properties.value_type = value_type_rgb;
-    item->interface_type = EZLOPI_DEVICE_INTERFACE_PWM;
-    item->interface.pwm.channel = 0;
-    item->interface.pwm.value = 0;
-    CJSON_GET_VALUE_INT(cj_device, "gpio", item->interface.pwm.gpio_num);
-    CJSON_GET_VALUE_INT(cj_device, "duty_cycle", item->interface.pwm.duty_cycle);
-    CJSON_GET_VALUE_INT(cj_device, "freq_hz", item->interface.pwm.freq_hz);
-    item->interface.pwm.pwm_resln = 12;
-}
-
-static void __prepare_ADDRESSABLE_RGB_dimmer_item(l_ezlopi_item_t *item, cJSON *cj_device)
-{
-    item->cloud_properties.has_getter = true;
-    item->cloud_properties.has_setter = true;
-    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
-    item->cloud_properties.item_name = ezlopi_item_name_dimmer,
-    item->cloud_properties.show = true;
-    item->cloud_properties.scale = NULL;
-    item->cloud_properties.value_type = value_type_int;
-    item->interface_type = EZLOPI_DEVICE_INTERFACE_PWM;
-    item->interface.pwm.channel = 0;
-    item->interface.pwm.value = 0;
-    CJSON_GET_VALUE_INT(cj_device, "gpio", item->interface.pwm.gpio_num);
-    CJSON_GET_VALUE_INT(cj_device, "duty_cycle", item->interface.pwm.duty_cycle);
-    CJSON_GET_VALUE_INT(cj_device, "freq_hz", item->interface.pwm.freq_hz);
-    item->interface.pwm.pwm_resln = 12;
-}
-
-static void __prepare_ADDRESSABLE_RGB_dimmer_up_item(l_ezlopi_item_t *item, cJSON *cj_device)
-{
-    CJSON_GET_VALUE_INT(cj_device, "dev_type", item->interface_type);
-    item->cloud_properties.has_getter = true;
-    item->cloud_properties.has_setter = true;
-    item->cloud_properties.show = true;
-    item->cloud_properties.scale = NULL;
-    item->cloud_properties.item_name = ezlopi_item_name_dimmer_up;
-    item->cloud_properties.value_type = value_type_int;
-    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
-
-    CJSON_GET_VALUE_INT(cj_device, "gpio", item->interface.pwm.gpio_num);
-    CJSON_GET_VALUE_INT(cj_device, "duty_cycle", item->interface.pwm.duty_cycle);
-    CJSON_GET_VALUE_INT(cj_device, "freq_hz", item->interface.pwm.freq_hz);
-    item->interface.pwm.pwm_resln = 12;
-}
-
-static void __prepare_ADDRESSABLE_RGB_dimmer_down_item(l_ezlopi_item_t *item, cJSON *cj_device)
-{
-    CJSON_GET_VALUE_INT(cj_device, "dev_type", item->interface_type);
-    item->cloud_properties.has_getter = true;
-    item->cloud_properties.has_setter = true;
-    item->cloud_properties.show = true;
-    item->cloud_properties.scale = NULL;
-    item->cloud_properties.item_name = ezlopi_item_name_dimmer_down;
-    item->cloud_properties.value_type = value_type_int;
-    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
-
-    CJSON_GET_VALUE_INT(cj_device, "gpio", item->interface.pwm.gpio_num);
-    CJSON_GET_VALUE_INT(cj_device, "duty_cycle", item->interface.pwm.duty_cycle);
-    CJSON_GET_VALUE_INT(cj_device, "freq_hz", item->interface.pwm.freq_hz);
-    item->interface.pwm.pwm_resln = 12;
-}
-
-static void __prepare_ADDRESSABLE_RGB_dimmer_stop_item(l_ezlopi_item_t *item, cJSON *cj_device)
-{
-    CJSON_GET_VALUE_INT(cj_device, "dev_type", item->interface_type);
-    item->cloud_properties.has_getter = true;
-    item->cloud_properties.has_setter = true;
-    item->cloud_properties.show = true;
-    item->cloud_properties.scale = NULL;
-    item->cloud_properties.item_name = ezlopi_item_name_dimmer_stop;
-    item->cloud_properties.value_type = value_type_int;
-    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
-
-    CJSON_GET_VALUE_INT(cj_device, "gpio", item->interface.pwm.gpio_num);
-    CJSON_GET_VALUE_INT(cj_device, "duty_cycle", item->interface.pwm.duty_cycle);
-    CJSON_GET_VALUE_INT(cj_device, "freq_hz", item->interface.pwm.freq_hz);
-    item->interface.pwm.pwm_resln = 12;
-}
-
-static void __prepare_ADDRESSABLE_LED_onoff_switch_item(l_ezlopi_item_t *item, cJSON *cj_device)
-{
-    item->cloud_properties.has_getter = true;
-    item->cloud_properties.has_setter = true;
-    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
-    item->cloud_properties.item_name = ezlopi_item_name_switch,
-    item->cloud_properties.show = true;
-    item->cloud_properties.scale = NULL;
-    item->cloud_properties.value_type = value_type_bool;
-    item->interface_type = EZLOPI_DEVICE_INTERFACE_DIGITAL_OUTPUT;
-    item->interface.gpio.gpio_out.enable = true;
-    item->interface.gpio.gpio_out.gpio_num = 0;
-    item->interface.gpio.gpio_out.interrupt = false;
-    item->interface.gpio.gpio_out.invert = false;
-    item->interface.gpio.gpio_out.mode = GPIO_MODE_INPUT;
-    item->interface.gpio.gpio_out.pull = false;
-    item->interface.gpio.gpio_out.value = false;
-    item->interface.gpio.gpio_in.enable = false;
 }
 
 static void __prepare_ADDRESSABLE_LED_segment_item(l_ezlopi_item_t *item, cJSON *cj_device)
@@ -416,7 +524,14 @@ static void __prepare_ADDRESSABLE_LED_segment_item(l_ezlopi_item_t *item, cJSON 
     item->cloud_properties.show = true;
     item->cloud_properties.scale = NULL;
     item->cloud_properties.value_type = value_type_dictionary;
-    item->interface_type = EZLOPI_DEVICE_INTERFACE_DIGITAL_OUTPUT; //TODO:
+
+    item->interface_type = EZLOPI_DEVICE_INTERFACE_PWM; //TODO:
+    item->interface.pwm.channel = 0;
+    item->interface.pwm.value = 0;
+    CJSON_GET_VALUE_INT(cj_device, "gpio", item->interface.pwm.gpio_num);
+    CJSON_GET_VALUE_INT(cj_device, "duty_cycle", item->interface.pwm.duty_cycle);
+    CJSON_GET_VALUE_INT(cj_device, "freq_hz", item->interface.pwm.freq_hz);
+    item->interface.pwm.pwm_resln = 12;
     // item->interface.gpio.gpio_out.enable = true;
     // item->interface.gpio.gpio_out.gpio_num = 0;
     // item->interface.gpio.gpio_out.interrupt = false;
@@ -462,6 +577,15 @@ static void __prepare_ADDRESSABLE_LED_switch_item(l_ezlopi_item_t *item, cJSON *
 }
 
 static void __prepare_ADDRESSABLE_LED_dimmer_item(l_ezlopi_item_t *item, cJSON *cj_device) {
+    // item->cloud_properties.has_getter = true;
+    // item->cloud_properties.has_setter = true;
+    // item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
+    // item->cloud_properties.item_name = ezlopi_item_name_dimmer,
+    // item->cloud_properties.show = true;
+    // item->cloud_properties.scale = NULL;
+    // item->cloud_properties.value_type = value_type_int;
+    // item->interface_type = EZLOPI_DEVICE_INTERFACE_PWM; 
+
     item->cloud_properties.has_getter = true;
     item->cloud_properties.has_setter = true;
     item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
@@ -469,7 +593,13 @@ static void __prepare_ADDRESSABLE_LED_dimmer_item(l_ezlopi_item_t *item, cJSON *
     item->cloud_properties.show = true;
     item->cloud_properties.scale = NULL;
     item->cloud_properties.value_type = value_type_int;
-    item->interface_type = EZLOPI_DEVICE_INTERFACE_PWM; // TODO:
+    item->interface_type = EZLOPI_DEVICE_INTERFACE_PWM;
+    item->interface.pwm.channel = 0;
+    item->interface.pwm.value = 0;
+    CJSON_GET_VALUE_INT(cj_device, "gpio", item->interface.pwm.gpio_num);
+    CJSON_GET_VALUE_INT(cj_device, "duty_cycle", item->interface.pwm.duty_cycle);
+    CJSON_GET_VALUE_INT(cj_device, "freq_hz", item->interface.pwm.freq_hz);
+    item->interface.pwm.pwm_resln = 12;
 }
 
 static void __prepare_ADDRESSABLE_LED_color_effect_select_item(l_ezlopi_item_t *item, cJSON *cj_device) {

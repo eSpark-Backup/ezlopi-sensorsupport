@@ -338,22 +338,22 @@ static int __prepare(void *arg)
             switch_item = ezlopi_device_add_item_to_device(device, device_0009_other_RMT_SK6812);
             if (switch_item && dimmer_item && dimmer_up_item && dimmer_down_item && dimmer_stop_item && rgb_color_item)
             {
-                __prepare_SK6812_RGB_color_item(rgb_color_item, prep_arg->cjson_device);
+                // __prepare_SK6812_RGB_color_item(rgb_color_item, prep_arg->cjson_device);
                 __prepare_SK6812_RGB_dimmer_item(dimmer_item, prep_arg->cjson_device);
-                __prepare_SK6812_RGB_dimmer_up_item(dimmer_up_item, prep_arg->cjson_device);
-                __prepare_SK6812_RGB_dimmer_down_item(dimmer_down_item, prep_arg->cjson_device);
-                __prepare_SK6812_RGB_dimmer_stop_item(dimmer_stop_item, prep_arg->cjson_device);
-                __prepare_SK6812_LED_onoff_switch_item(switch_item, prep_arg->cjson_device);
+                // __prepare_SK6812_RGB_dimmer_up_item(dimmer_up_item, prep_arg->cjson_device);
+                // __prepare_SK6812_RGB_dimmer_down_item(dimmer_down_item, prep_arg->cjson_device);
+                // __prepare_SK6812_RGB_dimmer_stop_item(dimmer_stop_item, prep_arg->cjson_device);
+                // __prepare_SK6812_LED_onoff_switch_item(switch_item, prep_arg->cjson_device);
                 led_strip_t *sk6812_strip = (led_strip_t *)malloc(sizeof(led_strip_t));
                 if (sk6812_strip)
                 {
                     memset(sk6812_strip, 0, sizeof(led_strip_t));
-                    switch_item->user_arg = sk6812_strip;
+                    // switch_item->user_arg = sk6812_strip;
                     dimmer_item->user_arg = sk6812_strip;
-                    dimmer_up_item->user_arg = sk6812_strip;
-                    dimmer_down_item->user_arg = sk6812_strip;
-                    dimmer_stop_item->user_arg = sk6812_strip;
-                    rgb_color_item->user_arg = sk6812_strip;
+                    // dimmer_up_item->user_arg = sk6812_strip;
+                    // dimmer_down_item->user_arg = sk6812_strip;
+                    // dimmer_stop_item->user_arg = sk6812_strip;
+                    // rgb_color_item->user_arg = sk6812_strip;
                 }
             }
             else

@@ -412,25 +412,10 @@ static const char *test_device_constant_config =
                 \"dev_name\": \"Addressable Led Controller\",\
                 \"id_room\": \"\",\
                 \"id_item\": 68,\
-                \"gpio_tx\" : 17,\
+                \"gpio\" : 17,\
                 \"gpio_out\" : 2,\
                 \"gpio_rx\" : 16,\
                 \"baud_rate\": 115200\
-            },\
-            {\
-                \"dev_type\" : 1,\
-                \"dev_name\" : \"Dining Room Main Lamp\",\
-                \"id_room\" : \"\",\
-                \"id_item\" : 3,\
-                \"val_ip\" : true,\
-                \"val_op\" : false,\
-                \"gpio_in\" : 21,\
-                \"gpio_out\" : 3,\
-                \"is_ip\" : false,\
-                \"ip_inv\" : true,\
-                \"pullup_ip\" : true,\
-                \"pullup_op\" : true,\
-                \"op_inv\" : false\
             }\
     ],\
     \"dev_total\":1\

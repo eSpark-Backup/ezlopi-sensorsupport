@@ -1,0 +1,430 @@
+Answer received: {
+    "msg_id": 72,
+    "sender": {
+        "conn_id": "21bd71ab-2fca-4218-8938-981edee674ff",
+        "type": "ui"
+    },
+    "error": null,
+    "id": "_ID_",
+    "method": "hub.items.list",
+    "result": {
+        "items": [
+            {
+                "_id": "2000ca20",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": true,
+                "name": "led_segments",
+                "show": true,
+                "valueType": "dictionary",
+                "elementType": "led_segment",
+                "elementMaxNumber": 10,
+                "value": {
+                    "0": {
+                        "name": "main",
+                        "start": 10,
+                        "end": 125
+                    }
+                },
+                "valueFormatted": "",
+                "status": "synced"
+            },
+            {
+                "_id": "2000ca21",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": false,
+                "name": "led_effects",
+                "show": true,
+                "valueType": "dictionary",
+                "value": {
+                    "0": {
+                        "name": "LED_MODE_SOLID",
+                        "description": "Some description",
+                        "headpieceUrl": "https://some.url"
+                    },
+                    "1": {
+                        "name": "FX_MODE_BLINK",
+                        "description": "Some description",
+                        "headpieceUrl": "https://some.url"
+                    },
+                    "2": {
+                        "name": "FX_MODE_BREATH",
+                        "description": "Some description",
+                        "headpieceUrl": "https://some.url"
+                    },
+                    "3": {
+                        "name": "FX_MODE_STATIC",
+                        "description": "Some description",
+                        "headpieceUrl": "https://some.url"
+                    },
+                    "4": {
+                        "name": "FX_MODE_COLOR_WIPE",
+                        "description": "Some description",
+                        "headpieceUrl": "https://some.url"
+                    }
+                },
+                "valueFormatted": "",
+                "status": "synced"
+            },
+            {
+                "_id": "2000ca22",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": false,
+                "name": "led_palettes",
+                "show": true,
+                "valueType": "dictionary",
+                "value": {
+                    "0": {
+                        "name": "DEFAULT_PALETTE",
+                        "description": "Some description",
+                        "headpieceUrl": "https://some.url"
+                    },
+                    "1": {
+                        "name": "COLOR_1_2",
+                        "description": "Some description",
+                        "headpieceUrl": "https://some.url"
+                    },
+                    "2": {
+                        "name": "SUNSET_REAL",
+                        "description": "Some description",
+                        "headpieceUrl": "https://some.url"
+                    },
+                    "3": {
+                        "name": "RIVENDELL",
+                        "description": "Some description",
+                        "headpieceUrl": "https://some.url"
+                    },
+                    "4": {
+                        "name": "BREEZE",
+                        "description": "Some description",
+                        "headpieceUrl": "https://some.url"
+                    }
+                },
+                "status": "synced"
+            },
+            {
+                "_id": "2000ca23",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": true,
+                "name": "switch",
+                "show": true,
+                "valueType": "bool",
+                "value": true,
+                "valueFormatted": "true",
+                "status": "synced"
+            },
+            {
+                "_id": "2000ca24",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": true,
+                "name": "dimmer",
+                "show": true,
+                "valueType": "int",
+                "value": 4,
+                "minValue": 0,
+                "maxValue": 100,
+                "valueFormatted": "4",
+                "status": "synced"
+            },
+            {
+                "_id": "2000ca25",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": true,
+                "name": "color_effect_select",
+                "show": true,
+                "valueType": "int",
+                "value": 27,
+                "valueFormatted": "27",
+                "status": "synced"
+            },
+            {
+                "_id": "2000ca26",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": true,
+                "name": "color_palette_select",
+                "show": true,
+                "valueType": "int",
+                "value": 43,
+                "valueFormatted": "43",
+                "minValue": 0,
+                "maxValue": 62,
+                "status": "synced"
+            },
+            {
+                "_id": "2000ca27",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": true,
+                "name": "color_segment_grouping",
+                "show": true,
+                "valueType": "int",
+                "value": 0,
+                "valueFormatted": "0",
+                "minValue": 0,
+                "maxValue": 255,
+                "status": "synced"
+            },
+            {
+                "_id": "2000ca28",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": true,
+                "name": "color_segment_spacing",
+                "show": true,
+                "valueType": "int",
+                "value": 0,
+                "valueFormatted": "0",
+                "minValue": 0,
+                "maxValue": 255,
+                "status": "synced"
+            },
+            {
+                "_id": "2000ca29",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": true,
+                "name": "color_segment_offset",
+                "show": true,
+                "valueType": "int",
+                "value": 0,
+                "valueFormatted": "0",
+                "minValue": 0,
+                "maxValue": 100,
+                "status": "synced"
+            },
+            {
+                "_id": "2000ca2a",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": true,
+                "name": "color_segment_revers",
+                "show": true,
+                "valueType": "bool",
+                "value": false,
+                "valueFormatted": "false",
+                "status": "synced"
+            },
+            {
+                "_id": "2000ca2b",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": true,
+                "name": "color_segment_mirror",
+                "show": true,
+                "valueType": "bool",
+                "value": false,
+                "valueFormatted": "false",
+                "status": "synced"
+            },
+            {
+                "_id": "2000ca2c",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": true,
+                "name": "color_effect_speed",
+                "show": true,
+                "valueType": "int",
+                "value": 0,
+                "valueFormatted": "0",
+                "minValue": 0,
+                "maxValue": 255,
+                "status": "synced"
+            },
+            {
+                "_id": "2000ca2d",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": true,
+                "name": "color_effect_intensity",
+                "show": true,
+                "valueType": "int",
+                "value": 0,
+                "valueFormatted": "0",
+                "minValue": 0,
+                "maxValue": 255,
+                "status": "synced"
+            },
+            {
+                "_id": "2000ca2e",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": true,
+                "name": "color_effect_custom_slider_1",
+                "show": true,
+                "valueType": "int",
+                "value": 0,
+                "valueFormatted": "0",
+                "minValue": 0,
+                "maxValue": 255,
+                "status": "synced"
+            },
+            {
+                "_id": "2000ca2f",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": true,
+                "name": "color_effect_custom_slider_2",
+                "show": true,
+                "valueType": "int",
+                "value": 0,
+                "valueFormatted": "0",
+                "minValue": 0,
+                "maxValue": 255,
+                "status": "synced"
+            },
+            {
+                "_id": "2000ca30",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": true,
+                "name": "color_effect_custom_slider_3",
+                "show": true,
+                "valueType": "int",
+                "value": 0,
+                "valueFormatted": "0",
+                "minValue": 0,
+                "maxValue": 31,
+                "status": "synced"
+            },
+            {
+                "_id": "2000ca31",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": true,
+                "name": "color_effect_option_1",
+                "show": true,
+                "valueType": "bool",
+                "value": false,
+                "valueFormatted": "false",
+                "status": "synced"
+            },
+            {
+                "_id": "2000ca32",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": true,
+                "name": "color_effect_option_2",
+                "show": true,
+                "valueType": "bool",
+                "value": false,
+                "valueFormatted": "false",
+                "status": "synced"
+            },
+            {
+                "_id": "2000ca33",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": true,
+                "name": "color_effect_option_3",
+                "show": true,
+                "valueType": "bool",
+                "value": false,
+                "valueFormatted": "false",
+                "status": "synced"
+            },
+            {
+                "_id": "2000ca34",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": true,
+                "name": "color_segment_primary_color",
+                "show": true,
+                "valueType": "rgb",
+                "value": {
+                    "wwhite": 128,
+                    "red": 128,
+                    "green": 128,
+                    "blue": 128
+                },
+                "valueFormatted": "...",
+                "status": "synced"
+            },
+            {
+                "_id": "2000ca35",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": true,
+                "name": "color_segment_secondary_color",
+                "show": true,
+                "valueType": "rgb",
+                "value": {
+                    "wwhite": 128,
+                    "red": 128,
+                    "green": 128,
+                    "blue": 128
+                },
+                "valueFormatted": "...",
+                "status": "synced"
+            },
+            {
+                "_id": "2000ca36",
+                "deviceId": "1000ca20",
+                "deviceName": "Addressable Led Controller",
+                "deviceArmed": true,
+                "hasGetter": true,
+                "hasSetter": true,
+                "name": "color_segment_ternary_color",
+                "show": true,
+                "valueType": "rgb",
+                "value": {
+                    "wwhite": 128,
+                    "red": 128,
+                    "green": 128,
+                    "blue": 128
+                },
+                "valueFormatted": "...",
+                "status": "synced"
+            }
+        ]
+    }
+}
