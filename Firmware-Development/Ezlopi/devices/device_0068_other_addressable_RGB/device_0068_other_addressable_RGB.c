@@ -25,6 +25,9 @@
 #include "dummy_led_config.h"
 #include "device_0068_other_addressable_RGB.h"
 
+#include "esp_heap_caps.h"
+#include "esp_system.h"
+
 static bool ws2812_led_strip_initialized = false;
 
 static l_ezlopi_item_t *dimmer_up_item = NULL;
@@ -113,7 +116,7 @@ static int __get_cjson_value(l_ezlopi_item_t *item, void *arg)
             led_config.channel[0]->start = 10;
             led_config.channel[0]->stop = 125;
             cJSON_AddStringToObject(cjson_properties, "elementType", "led_segment");
-            cJSON_AddNumberToObject(cjson_properties, "elementMaxNumber", 10);
+            cJSON_AddNumberToObject(cjson_properties, "elementsMaxNumber", 10);
             cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
             if (segment_name_json)
             {
@@ -137,12 +140,14 @@ static int __get_cjson_value(l_ezlopi_item_t *item, void *arg)
             cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
             if (segment_name_json)
             {
-                for(int i = 0; i < 5; i++)
+                for(int i = 0; i < 10; i++)
                 {
                     cJSON *segment_key_json = cJSON_AddObjectToObject(segment_name_json, ezlopi_valueformatter_int(i));
                     cJSON *segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "name", LEDModesStrings[i]);
                     segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "description", "Some description");
                     segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "headpieceUrl", "https://some.url");
+                    // heap_caps_print_heap_info(MALLOC_CAP_DEFAULT);
+                    ESP_LOGE("", "Heap Memory %d", esp_get_minimum_free_heap_size());
                 }
                 // cJSON *segment_key_json = cJSON_AddObjectToObject(segment_name_json, "1");
                 // cJSON *segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "name", LEDModesStrings[led_config.channel[0]->mode]);
@@ -372,7 +377,14 @@ static int __set_cjson_value(l_ezlopi_item_t *item, void *arg)
         }
         else if(ezlopi_item_name_led_segments == item->cloud_properties.item_name)
         {
-
+            cJSON* element = cJSON_GetObjectItem(cjson_params, "element");
+            cJSON* value = cJSON_GetObjectItem(element, "value");
+            int start = 0, end = 0;
+            CJSON_GET_VALUE_INT(value, "start", start);
+            CJSON_GET_VALUE_INT(value, "start", end);
+            addressable_led_strip->length = end - start;
+            led_strip_flush(addressable_led_strip);
+            ezlopi_device_value_updated_from_device_v3(segment_item);
         }
         else if(ezlopi_item_name_led_effects == item->cloud_properties.item_name)
         {
@@ -504,13 +516,13 @@ static void __prepare_device_properties(l_ezlopi_device_t *device, cJSON *cj_dev
     CJSON_GET_VALUE_STRING(cj_device, "dev_name", device_name);
     ASSIGN_DEVICE_NAME_V2(device, device_name);
 
-    // device->cloud_properties.category = category_led_strip;
-    // device->cloud_properties.subcategory = subcategory_addressable_main;
-    // device->cloud_properties.device_type = dev_type_device;
+    device->cloud_properties.category = category_led_strip;
+    device->cloud_properties.subcategory = subcategory_addressable_main;
+    device->cloud_properties.device_type = dev_type_device;
 
-    device->cloud_properties.category = category_dimmable_light;
-    device->cloud_properties.subcategory = subcategory_dimmable_colored;
-    device->cloud_properties.device_type = dev_type_dimmer_outlet;
+    // device->cloud_properties.category = category_dimmable_light;
+    // device->cloud_properties.subcategory = subcategory_dimmable_colored;
+    // device->cloud_properties.device_type = dev_type_dimmer_outlet;
 
     device->cloud_properties.device_id = ezlopi_cloud_generate_device_id();
 }
