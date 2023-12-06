@@ -23,6 +23,8 @@ idf_component_register(SRCS "web_provisioning.c" "${provisioning_src}"
                 ezlopi_factory_info
                 ezlopi_http
                 ezlopi_websocket_client
-                ezlopi_wifi                
+                ezlopi_wifi      
+                
+                dictionary
 
 )

@@ -44,6 +44,7 @@ const static char *method_hub_devices_list = "hub.devices.list";
 // const static char *method_hub_device_settings_list = "hub.device.settings.list";
 // const static char *method_hub_setting_value_set_request = "hub.setting.value.set";
 // const static char *method_hub_setting_value_reset_request = "hub.setting.value.reset";
+const static char *method_hub_device_setting_updated = "hub.device.setting.updated";
 // const static char *method_hub_extensions_plugin_info_installed = "hub.extensions.plugin.info.installed";
 // const static char *method_hub_extensions_plugin_install_execute = "hub.extensions.plugin.install.execute";
 // const static char *method_hub_software_update_execute = "hub.software.update.execute";
@@ -66,6 +67,7 @@ const static char *method_hub_item_dictionary_value_add = "hub.item.dictionary.v
 const static char *method_hub_item_dictionary_value_remove = "hub.item.dictionary.value.remove";
 const static char *method_hub_items_list = "hub.items.list";
 const static char *method_hub_item_dictionary_value_set = "hub.item.dictionary.value.set";
+const static char *method_hub_item_dictionary_updated = "hub.item.dictionary.updated";
 const static char *method_hub_item_value_set = "hub.item.value.set";
 const static char *method_hub_item_value_percent_apply = "hub.item.value.percent.apply";
 const static char *method_hub_modes_get = "hub.modes.get";
@@ -115,5 +117,6 @@ const static char *method_hub_reboot = "hub.reboot";
 // const static char *method_hub_network_enabled_set = "hub.network.enabled.set";
 // const static char *method_hub_detection_devices_scan_start = "hub.detection.devices.scan.start";
 // const static char *method_hub_detection_devices_scans_top = "hub.detection.devices.scan.stop";
+const static char *method_hub_scene_run_progress = "hub.scene.run.progress";
 
 #endif // __EZLOPI_METHODS_STR_H__
