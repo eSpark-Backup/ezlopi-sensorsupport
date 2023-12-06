@@ -13,7 +13,7 @@
 #include "ezlopi_cloud_constants.h"
 #include "ezlopi_cloud_methods_str.h"
 #include "ezlopi_devices_list.h"
-#include "ezlopi_cloud_value_type_str.h"
+// #include "ezlopi_cloud_value_type_str.h"
 #include "web_provisioning.h"
 
 void dictionary_clear_v3(cJSON *cj_request, cJSON *cj_response)
