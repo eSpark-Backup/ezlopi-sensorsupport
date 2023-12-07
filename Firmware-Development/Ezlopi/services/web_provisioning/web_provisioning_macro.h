@@ -45,7 +45,7 @@ CLOUD_METHOD("hub.nma.register.repeat", register_repeat, NULL)
 CLOUD_METHOD("hub.reboot", __hub_reboot, NULL)
 CLOUD_METHOD("registered", registered, NULL)
 
-CLOUD_METHOD("hub.item.dictionary.value.set", dictionary_set_value_v3, dictionary_update_v3)
+CLOUD_METHOD("hub.item.dictionary.value.set", items_set_value_v3, dictionary_update_v3)
 CLOUD_METHOD("hub.item.dictionary.value.add", dictionary_add_value_v3, dictionary_update_v3)
 CLOUD_METHOD("hub.item.dictionary.value.remove", dictionary_remove_value_v3, dictionary_update_v3)
 CLOUD_METHOD("hub.item.dictionary.clear", dictionary_clear_v3, dictionary_update_v3)
