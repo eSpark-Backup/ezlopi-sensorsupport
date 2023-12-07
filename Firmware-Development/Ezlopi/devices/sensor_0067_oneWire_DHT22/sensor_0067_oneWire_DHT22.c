@@ -15,10 +15,10 @@
 #include "trace.h"
 #include "ezlopi_adc.h"
 #include "dht22.h"
-#include "dht21.h" //Tayyab
-#include "utils.h" //Tayyab
-float temp_in_float; //Tayyab
-float humidity_in_float; //Tayyab
+#include "dht21.h" //include header files
+#include "utils.h" //include header files
+float temp_in_float; //for float
+float humidity_in_float; //for humidity
 
 
 #include "sensor_0067_oneWire_DHT22.h"
@@ -89,18 +89,15 @@ static int __notify(l_ezlopi_item_t *item)
         if (dht22_data)
         {
 
-            readDHT();
             if (ezlopi_item_name_temp == item->cloud_properties.item_name)
             {
-            //@ my code:
-            dht21_poll_data(25, &sensor_data);
-            //vTaskDelay(vTaskMS(3000));
+            //@ my code
+            dht21_poll_data(item->interface.onewire_master.onewire_pin, &sensor_data);
             if (dht21_checksum_ok(&sensor_data)) {
 			temp_in_float = (float)dht21_temperature(&sensor_data)/10;
 			humidity_in_float = (float)dht21_humidity(&sensor_data)/10;
 			LOG("temp = %.2f, hum = %.2f", temp_in_float, humidity_in_float);
-
-			//LOG("temp = %d, hum = %u", dht21_temperature(&sensor_data), dht21_humidity(&sensor_data));
+            
 		    }
 		    memset(&sensor_data, 0, sizeof(sensor_data));
             //@ end my code
