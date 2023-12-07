@@ -59,5 +59,6 @@ const static char *subcategory_sound = "sound";
 const static char *subcategory_navigation = "navigation";
 // const static char *subcategory_seismicity = "seismicity";
 // const static char *subcategory_time = "time";
+const static char *subcategory_addressable_main = "addressable_main";
 
 #endif // __EZLOPI_SUBCATEGORY_H__

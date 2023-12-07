@@ -61,6 +61,7 @@ idf_component_register(SRCS "ezlopi_devices.c" "ezlopi_device_value_updated.c" "
                                 sensor_0063_other_MQ9_LPG_flameable_detector
                                 sensor_0065_digitalIn_float_switch
                                 sensor_0066_tfmini_lidar_range_module
+                                device_0068_other_addressable_RGB
                                 )
 
 

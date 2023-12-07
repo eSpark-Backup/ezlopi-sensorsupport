@@ -40,5 +40,6 @@ const static char *category_flow_meter = "flow_meter";
 // const static char *category_state_sensor = "state_sensor";
 const static char *category_level_sensor = "level_sensor";
 // const static char *category_clock = "clock";
+const static char *category_led_strip = "led_strip";
 
 #endif // __EZLOPI_CATEGORY_H__
