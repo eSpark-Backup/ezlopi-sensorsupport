@@ -162,9 +162,10 @@ typedef struct s_basic_factory_info
 #endif
 
     void print_factory_info_v2(void);
-    uint32_t ezlopi_factory_info_v2_get_provisioning_status(void);
     const esp_partition_t *ezlopi_factory_info_v2_init(void);
-    void ezlopi_factory_info_v2_free(void *arg);
+
+    uint32_t ezlopi_factory_info_v2_get_provisioning_status(void);
+
     uint16_t ezlopi_factory_info_v2_get_version(void);
     char *ezlopi_factory_info_v2_get_name(void);
     char *ezlopi_factory_info_v2_get_manufacturer(void);
@@ -195,6 +196,7 @@ typedef struct s_basic_factory_info
     int ezlopi_factory_info_v2_set_ssl_public_key(char *data);
     int ezlopi_factory_info_v2_set_ssl_private_key(char *data);
 
+    void ezlopi_factory_info_v2_free(void *arg);
     int ezlopi_factory_info_v2_factory_reset(void);
 
 #if (EZLOPI_DEVICE_TYPE_GENERIC == EZLOPI_DEVICE_TYPE)
@@ -404,21 +406,48 @@ static const char *switch_box_constant_config =
 #elif (EZLOPI_DEVICE_TYPE_TEST_DEVICE == EZLOPI_DEVICE_TYPE)
 #define EZLOPI_DEVICE_TYPE_NAME "generic"
 static const char *test_device_constant_config =
-
+#if 0
     "{\
     \"cmd\":3,\
     \"dev_detail\":[{\
-                \"dev_type\": 3,\
-                \"dev_name\": \"Addressable Led Controller\",\
+                \"dev_type\": 10,\
+                \"dev_name\": \"fingerprint\",\
                 \"id_room\": \"\",\
-                \"id_item\": 68,\
-                \"gpio\" : 17,\
-                \"gpio_out\" : 2,\
-                \"gpio_rx\" : 16,\
-                \"baud_rate\": 115200\
+                \"id_item\": 66,\
+                \"gpio1\": 17,\
+                \"gpio2\": 16,\
+                \"gpio3\": 25\
             }\
     ],\
-    \"dev_total\":1\
+    \"dev_total\":2\
+    }";
+#endif
+    "{\
+    \"cmd\":3,\
+    \"dev_detail\":[    {\
+      \"dev_type\": 7,\
+      \"dev_name\": \"DHT 22 Office \",\
+      \"id_room\": \"\",\
+      \"id_item\": 16,\
+      \"gpio\": 18\
+    },\
+                {\
+                \"dev_name\": \"LED Office\",\
+                \"dev_type\": 1,\
+                \"gpio_in\": -1,\
+                \"gpio_out\": 2,\
+                \"id_item\": 1,\
+                \"id_room\": \"\",\
+                \"ip_inv\": true,\
+                \"is_ip\": false,\
+                \"op_inv\": false,\
+                \"pullup_ip\": true,\
+                \"pullup_op\": true,\
+                \"val_ip\": true,\
+                \"val_op\": false\
+            }\
+    ],\
+    \"dev_total\":2\
     }";
 
 #endif
