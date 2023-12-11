@@ -271,7 +271,7 @@ void led_channel_rgb(int c, int x, int y, uint8_t r, uint8_t g, uint8_t b) {
 
 void led_rgb_rtp(int x, int y, uint8_t r, uint8_t g, uint8_t b) {
 	for (int c = 0; c < led_get_max_lines(); c++) {
-		if (led_config.channel[c]->mode == LED_MODE_SOLID) {  //FIXME: LED_MODE_NETWORK
+		if (led_config.channel[c]->mode == FX_MODE_SOLID) {  //FIXME: LED_MODE_NETWORK
 			led_channel_rgb(c, x, y, r, g, b);
 		}
 	}
@@ -285,7 +285,7 @@ void led_channel_block(int c, int x, int y, uint8_t *r, uint8_t *g, uint8_t *b) 
 
 void led_block(int x, int y, uint8_t *r, uint8_t *g, uint8_t *b) {
 	for (int c = 0; c < led_get_max_lines(); c++) {
-		if (led_config.channel[c]->mode == LED_MODE_SOLID) { //FIXME: LED_MODE_NETWORK
+		if (led_config.channel[c]->mode == FX_MODE_SOLID) { //FIXME: LED_MODE_NETWORK
 			led_channel_block(c, x, y, r, g, b);
 		}
 	}
@@ -653,7 +653,7 @@ static void task(void *args) {
 				// case LED_MODE_SQUARE:
 				// 	fillSquare(i);
 				// 	break;
-				case LED_MODE_SOLID:
+				case FX_MODE_SOLID:
 					fill(i, 255, 0, 0);
 					break;
 				// case LED_MODE_PRODUCTION_TEST:
@@ -843,7 +843,7 @@ static void task(void *args) {
 					// WS2812FX_call(i, WS2812FX_mode_2Ddna);
 					WS2812FX_mode_2Ddna(i);
 					break;
-				case FX_MODE_2DDNA_SPIRAL:
+				case FX_MODE_DDNA_SPIRAL:
 					WS2812FX_mode_2DDNASpiral(i);
 					break;
 				default:

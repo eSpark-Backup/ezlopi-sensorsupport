@@ -125,8 +125,8 @@ static void setDefaults() {
 		// led_config.channel[0]->selected = true;
 
 		// led_config.channel[i]->mode = LED_MODE_SOLID + i; //:FIXME: Revert back to solid by default
-		// led_config.channel[i]->mode = FX_MODE_COLOR_WIPE;
-		led_config.channel[i]->mode = FX_MODE_DNA2D;
+		led_config.channel[i]->mode = FX_MODE_COLOR_WIPE;
+		// led_config.channel[i]->mode = FX_MODE_DNA2D;
 
 		led_config.channel[i]->black[0] = led_config.channel[i]->black[1] =
 				led_config.channel[i]->black[2] = -1;
@@ -870,7 +870,7 @@ void config_set_channels(uint8_t seg_id) {
 	led_config.channel[led_config.channels] = (struct LED_CONFIG_CHANNEL*)calloc(1,sizeof(struct LED_CONFIG_CHANNEL));
 	led_config.channel[led_config.channels]->segment_id = seg_id;
 	led_config.channel[led_config.channels]->selected = true;
-	led_config.channel[led_config.channels]->mode = LED_MODE_SOLID;
+	led_config.channel[led_config.channels]->mode = FX_MODE_SOLID;
 	led_config.channel[led_config.channels]->speed = 1000;
 
 	led_config.channel[led_config.channels]->black[0] = led_config.channel[led_config.channels]->black[1] =

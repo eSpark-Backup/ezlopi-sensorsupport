@@ -10,5 +10,8 @@ idf_component_register(SRCS "device_0068_other_addressable_RGB.c"
                         ezlopi_devices 
                         ezlopi_cloud_constants 
                         gpio_isr_service
+
+                        led
+                        config
                         )
 

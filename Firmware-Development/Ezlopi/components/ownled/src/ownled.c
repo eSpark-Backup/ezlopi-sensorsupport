@@ -322,9 +322,14 @@ void ownled_init()
 				 version_gpio[i],
 				 &RMT.tx_lim_ch[i]);
 	}
-	ESP_ERROR_CHECK(esp_intr_alloc(ETS_RMT_INTR_SOURCE,
+	vTaskDelay(500/portTICK_PERIOD_MS);
+	ESP_ERROR_CHECK(
+		esp_intr_alloc(ETS_RMT_INTR_SOURCE,
 								   ESP_INTR_FLAG_LEVEL5 | ESP_INTR_FLAG_IRAM,
-								   NULL, NULL, &isr_handle));
+								   NULL, NULL, &isr_handle)
+								   
+					);
+	// ESP_LOGW(TAG, "Interrup Allocated on Core %d", esp_intr_get_cpu(isr_handle));
 }
 
 extern esp_err_t ownled_setColorOrder(enum OWNLED_COLOR_ORDER order)

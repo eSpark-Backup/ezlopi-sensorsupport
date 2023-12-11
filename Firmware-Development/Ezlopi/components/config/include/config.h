@@ -15,9 +15,6 @@
 #include "led.h"
 #include <stdint.h>
 
-#include "effect_str.h"
-#include "palette_str.h"
-
 typedef uint8_t byte;
 
 void config_init();
