@@ -1,6 +1,7 @@
 
 
 idf_component_register(SRCS "device_0068_other_addressable_RGB.c"
+                            "set_cjson_value.c"
                         INCLUDE_DIRS "."
                         REQUIRES trace 
                         led_strip
