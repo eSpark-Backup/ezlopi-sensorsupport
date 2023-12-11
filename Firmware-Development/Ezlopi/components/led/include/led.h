@@ -159,6 +159,8 @@ struct LED_CONFIG_CHANNEL {
   uint16_t speed;
   uint8_t options;
   uint8_t palette;
+
+  char *segment_name;
 };
 
 struct LED_CONFIG {

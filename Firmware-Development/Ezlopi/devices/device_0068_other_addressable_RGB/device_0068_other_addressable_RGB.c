@@ -32,6 +32,7 @@
 #include "config.h"
 #include "led.h"
 static bool ws2812_led_strip_initialized = false;
+struct LED_CONFIG* led_config;
 
 char* LEDModesStrings[] = {
     #define FX_MODE(x, y) y,
@@ -73,12 +74,14 @@ static l_ezlopi_item_t *color_segment_secondary_color_item = NULL;
 static l_ezlopi_item_t *color_segment_ternary_color_item = NULL;
 
 
-static struct LED_CONFIG led_config;
 
 static int __prepare(void *arg);
 static int __init(l_ezlopi_item_t *item);
 static int __set_cjson_value(l_ezlopi_item_t *item, void *arg);
 static int __get_cjson_value(l_ezlopi_item_t *item, void *arg);
+static int __add_cjson_value(l_ezlopi_item_t *item, void *arg);
+static int __remove_cjson_value(l_ezlopi_item_t *item, void *arg);
+
 
 int device_0068_other_addressable_RGB(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg)
 {
@@ -107,6 +110,16 @@ int device_0068_other_addressable_RGB(e_ezlopi_actions_t action, l_ezlopi_item_t
         ret = __get_cjson_value(item, arg);
         break;
     }
+    case EZLOPI_ACTION_ADD_VALUE:
+    {
+        ret = __add_cjson_value(item, arg);
+        break;
+    }
+    case EZLOPI_ACTION_REMOVE_VALUE:
+    {
+        ret = __remove_cjson_value(item, arg);
+        break;
+    }
     default:
     {
         break;
@@ -126,20 +139,22 @@ static int __get_cjson_value(l_ezlopi_item_t *item, void *arg)
     {
         if (ezlopi_item_name_led_segments == item->cloud_properties.item_name)
         {
-            // led_config.channel[0]->start = 10;
-            // led_config.channel[0]->stop = 125;
+            char *formatted_key = NULL;
             cJSON_AddStringToObject(cjson_properties, "elementType", "led_segment");
             cJSON_AddNumberToObject(cjson_properties, "elementsMaxNumber", 10);
             cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
             if (segment_name_json)
             {
-                int green = addressable_led_strip->buf[0];
-                int red = addressable_led_strip->buf[1];
-                int blue = addressable_led_strip->buf[2];
-                cJSON *segment_key_json = cJSON_AddObjectToObject(segment_name_json, "0");
-                cJSON *segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "name", "main");
-                segment_key_value_json = cJSON_AddNumberToObject(segment_key_json, "start", led_config.channel[0]->start);
-                segment_key_value_json = cJSON_AddNumberToObject(segment_key_json, "end", led_config.channel[0]->stop);
+
+                for(int i = 0; i < config_get_channels(); i++)
+                {
+                    formatted_key = ezlopi_valueformatter_int(led_config->channel[i]->segment_id);
+                    cJSON *segment_key_json = cJSON_AddObjectToObject(segment_name_json, formatted_key);
+                    cJSON *segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "name", led_config->channel[i]->segment_name);
+                    segment_key_value_json = cJSON_AddNumberToObject(segment_key_json, "start", led_config->channel[i]->start);
+                    segment_key_value_json = cJSON_AddNumberToObject(segment_key_json, "end", led_config->channel[i]->stop);
+                    free(formatted_key);
+                }
                 // cJSON_AddNumberToObject(segment_name_json, "green", green);
                 // cJSON_AddNumberToObject(segment_name_json, "blue", blue);
                 // cJSON_AddNumberToObject(segment_name_json, "cwhite", ((red << 16) | (green << 8) | (blue)));
@@ -149,7 +164,7 @@ static int __get_cjson_value(l_ezlopi_item_t *item, void *arg)
             }
         }
         else if(ezlopi_item_name_led_effects == item->cloud_properties.item_name){
-            led_config.channel[0]->mode = FX_MODE_ANDROID;
+            led_config->channel[0]->mode = FX_MODE_ANDROID;
             cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
             if (segment_name_json)
             {
@@ -176,7 +191,7 @@ static int __get_cjson_value(l_ezlopi_item_t *item, void *arg)
             }
         }
         else if(ezlopi_item_name_led_palettes == item->cloud_properties.item_name){
-            led_config.channel[0]->palette = 27;
+            led_config->channel[0]->palette = 27;
             cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
             if (segment_name_json)
             {
@@ -393,7 +408,7 @@ static int __set_cjson_value(l_ezlopi_item_t *item, void *arg)
             cJSON* element = cJSON_GetObjectItem(cjson_params, "element");
             cJSON* value = cJSON_GetObjectItem(element, "value");
             int start = 0, end = 0; 
-            char *key = NULL;
+            char *key = NULL, *name = NULL;
             CJSON_GET_VALUE_INT(value, "start", start);
             CJSON_GET_VALUE_INT(value, "end", end);
             CJSON_GET_VALUE_STRING(cjson_params, "key", key);
@@ -401,7 +416,12 @@ static int __set_cjson_value(l_ezlopi_item_t *item, void *arg)
             // led_strip_flush(addressable_led_strip);
             // ezlopi_device_value_updated_from_device_v3(segment_item);
             // config_set_segment_start_stop(ctoi(key) , start, end);
-            config_set_segment_start_stop(0 , start, end);
+            if(atoi(key) < config_get_channels())
+            {
+                config_set_segment_start_stop(atoi(key) , start, end);
+                CJSON_GET_VALUE_STRING(value, "name", name);
+                led_config->channel[atoi(key)]->segment_name = strdup(name);
+            }
         }
         else if(ezlopi_item_name_led_effects == item->cloud_properties.item_name)
         {
@@ -531,6 +551,7 @@ static int __init(l_ezlopi_item_t *item)
         led_on();
         config_update_channels();
         ws2812_led_strip_initialized = true;
+        led_config = config_return_config_pointer();
     }
 
     return ret;
@@ -841,7 +862,7 @@ static void __prepare_ADDRESSABLE_LED_color_segment_ternary_color_item(l_ezlopi_
 static int __prepare(void *arg)
 {
     int ret = 0;
-    led_config.channel[0] = (struct LED_CONFIG_CHANNEL*)malloc(sizeof(struct LED_CONFIG_CHANNEL));
+    // led_config.channel[0] = (struct LED_CONFIG_CHANNEL*)malloc(sizeof(struct LED_CONFIG_CHANNEL));
 
     s_ezlopi_prep_arg_t *prep_arg = (s_ezlopi_prep_arg_t *)arg;
     if (prep_arg && prep_arg->cjson_device)
@@ -962,6 +983,48 @@ static int __prepare(void *arg)
         else
         {
             ezlopi_device_free_device(device);
+        }
+    }
+
+    return ret;
+}
+
+static int __add_cjson_value(l_ezlopi_item_t *item, void *arg)
+{
+    int ret = 0;
+
+    char *segment_name = NULL;
+    int segment_start = 0, segment_stop = 0;
+    cJSON *cjson_params = (cJSON *)arg;
+    if(NULL !=  cjson_params)
+    {
+        if (ezlopi_item_name_led_segments == item->cloud_properties.item_name)
+        {
+            cJSON* element = cJSON_GetObjectItem(cjson_params, "element");
+            cJSON* value = cJSON_GetObjectItem(element, "value");
+            CJSON_GET_VALUE_STRING(value, "name", segment_name);
+            CJSON_GET_VALUE_INT(value, "start", segment_start);
+            CJSON_GET_VALUE_INT(value, "end", segment_stop);
+
+            config_set_segment_start_stop(config_get_channels(), segment_start, segment_stop);
+            led_config->channel[config_get_channels()-1]->segment_name = strdup(segment_name);
+        }
+    }
+
+    return ret;
+}
+
+static int __remove_cjson_value(l_ezlopi_item_t *item, void *arg)
+{
+    int ret = 0;
+    char* key = 0;
+    cJSON *cjson_params = (cJSON *)arg;
+    if(NULL !=  cjson_params)
+    {
+        if (ezlopi_item_name_led_segments == item->cloud_properties.item_name)
+        {
+            CJSON_GET_VALUE_STRING(cjson_params, "key", key);
+            config_delete_segment(atoi(key));
         }
     }
 

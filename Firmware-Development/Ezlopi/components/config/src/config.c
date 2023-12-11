@@ -131,10 +131,12 @@ static void setDefaults() {
 		led_config.channel[i]->black[0] = led_config.channel[i]->black[1] =
 				led_config.channel[i]->black[2] = -1;
 
-		led_config.channel[i]->start = i*100;
-		led_config.channel[i]->stop = led_config.channel[i]->start+100;
+		led_config.channel[i]->start = i*10;
+		led_config.channel[i]->stop = led_config.channel[i]->start+10;
 
 		led_config.channel[i]->segment_id = i;
+		char *default_segment_name = "main";
+		led_config.channel[i]->segment_name = strdup(default_segment_name);
 
 		led_config.channel[i]->number_of_leds = led_config.channel[i]->stop - led_config.channel[i]->start;
 
@@ -391,7 +393,7 @@ void config_delete_segment(int id){
 		led_set_config(&led_config);
 	}
 
-	// led_config.channels--;
+	// led_config.channels--; //FIXME: It was commented before ezlo integration
 
 }
 
@@ -932,4 +934,9 @@ void config_set_partition_name(const char *pn)
 {
 	strcpy(partition_name, pn);
 	ESP_LOGI(TAG, "NVS partition name is %s",partition_name);
+}
+
+const struct LED_CONFIG* config_return_config_pointer()
+{
+	return &led_config;
 }

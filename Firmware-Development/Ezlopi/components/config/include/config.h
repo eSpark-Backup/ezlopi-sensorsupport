@@ -38,6 +38,7 @@ void config_set_option(int id, bool flag, uint8_t bit_mask);
 void config_delete_segment(int id);
 void config_apply_palette(uint8_t palette);
 
+const struct LED_CONFIG* config_return_config_pointer();
 // const char *config_get_wifi_sta_ssid();
 // const char *config_get_wifi_sta_password();
 // const char *config_get_wifi_ap_ssid();

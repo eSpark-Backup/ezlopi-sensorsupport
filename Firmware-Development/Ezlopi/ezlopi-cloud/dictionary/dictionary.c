@@ -206,6 +206,7 @@ void dictionary_update_v3(cJSON *cj_request, cJSON *cj_response)
                         {
                             cJSON_AddStringToObject(cj_result, "scale", curr_item->cloud_properties.scale);
                         }
+                        vTaskDelay(2000/portTICK_PERIOD_MS);
                         curr_item->func(EZLOPI_ACTION_GET_EZLOPI_VALUE, curr_item, cj_result, curr_item->user_arg);
                         cJSON_AddStringToObject(cj_result, "valueType", curr_item->cloud_properties.value_type);
                     }
