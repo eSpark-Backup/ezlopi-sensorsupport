@@ -14,27 +14,6 @@
 
 static struct LED_CONFIG *led_config;
 
-void set_segment_callback(cJSON* cjson_params, struct LED_CONFIG* led_config, void *arg)
-{
-    cJSON* element = cJSON_GetObjectItem(cjson_params, "element");
-    cJSON* value = cJSON_GetObjectItem(element, "value");
-    int start = 0, end = 0; 
-    char *key = NULL, *name = NULL;
-    CJSON_GET_VALUE_INT(value, "start", start);
-    CJSON_GET_VALUE_INT(value, "end", end);
-    CJSON_GET_VALUE_STRING(cjson_params, "key", key);
-    // addressable_led_strip->length = end - start;
-    // led_strip_flush(addressable_led_strip);
-    // ezlopi_device_value_updated_from_device_v3(segment_item);
-    // config_set_segment_start_stop(ctoi(key) , start, end);
-    if(atoi(key) < config_get_channels())
-    {
-        config_set_segment_start_stop(atoi(key) , start, end);
-        CJSON_GET_VALUE_STRING(value, "name", name);
-        led_config->channel[atoi(key)]->segment_name = strdup(name);
-    }
-}
-
 void processLedSegments(void* arg) {
     printf("Processing LED Segments\n");
     
@@ -82,16 +61,12 @@ void processDimmer(void* arg) {
 void processColorEffectSelect(void* arg) {
     printf("Processing Color Effect Select\n");
 
-    char *key = NULL, *name = NULL;
     int value_recieved = 0;
     cJSON *cjson_params = (cJSON *)arg;
 
     char *jsonString = cJSON_Print(cjson_params);
     printf("JSON String: %s\n", jsonString);
     free(jsonString);
-
-    // cJSON* element = cJSON_GetObjectItem(cjson_params, "element");
-    // cJSON* value = cJSON_GetObjectItem(cjson_params, "value");
 
     CJSON_GET_VALUE_INT(cjson_params, "value", value_recieved);
 
@@ -100,6 +75,17 @@ void processColorEffectSelect(void* arg) {
 
 void processColorPaletteSelect(void* arg) {
     printf("Processing Color Palette Select\n");
+
+    int value_recieved = 0;
+    cJSON *cjson_params = (cJSON *)arg;
+
+    char *jsonString = cJSON_Print(cjson_params);
+    printf("JSON String: %s\n", jsonString);
+    free(jsonString);
+
+    CJSON_GET_VALUE_INT(cjson_params, "value", value_recieved);
+
+    config_apply_palette(value_recieved);
 }
 
 void processColorSegmentGrouping(void* arg) {
@@ -116,18 +102,63 @@ void processColorSegmentOffset(void* arg) {
 
 void processColorSegmentReverse(void* arg) {
     printf("Processing Color Segment Reverse\n");
+
+    int value_recieved = 0;
+    cJSON *cjson_params = (cJSON *)arg;
+
+    char *jsonString = cJSON_Print(cjson_params);
+    printf("JSON String: %s\n", jsonString);
+    free(jsonString);
+
+    CJSON_GET_VALUE_INT(cjson_params, "value", value_recieved);
+
+    config_set_reverse_option(0, value_recieved);
+
 }
 
 void processColorSegmentMirror(void* arg) {
     printf("Processing Color Segment Mirror\n");
+
+    int value_recieved = 0;
+    cJSON *cjson_params = (cJSON *)arg;
+
+    char *jsonString = cJSON_Print(cjson_params);
+    printf("JSON String: %s\n", jsonString);
+    free(jsonString);
+
+    CJSON_GET_VALUE_INT(cjson_params, "value", value_recieved);
+
+    //TODO: Mirror funciton
 }
 
 void processColorEffectSpeed(void* arg) {
     printf("Processing Color Effect Speed\n");
+
+    int value_recieved = 0;
+    cJSON *cjson_params = (cJSON *)arg;
+
+    char *jsonString = cJSON_Print(cjson_params);
+    printf("JSON String: %s\n", jsonString);
+    free(jsonString);
+
+    CJSON_GET_VALUE_INT(cjson_params, "value", value_recieved);
+
+    config_set_effect_speed(value_recieved);
 }
 
 void processColorEffectIntensity(void* arg) {
     printf("Processing Color Effect Intensity\n");
+
+    int value_recieved = 0;
+    cJSON *cjson_params = (cJSON *)arg;
+
+    char *jsonString = cJSON_Print(cjson_params);
+    printf("JSON String: %s\n", jsonString);
+    free(jsonString);
+
+    CJSON_GET_VALUE_INT(cjson_params, "value", value_recieved);
+
+    config_set_effect_intensity(value_recieved);
 }
 
 void processColorEffectCustomSlider1(void* arg) {
@@ -154,26 +185,51 @@ void processColorEffectOption3(void* arg) {
     printf("Processing Color Effect Option 3\n");
 }
 
+
+
+uint32_t extract_rgb_value_from_json(void *arg)
+{
+    static uint32_t extracted_rgb;
+    cJSON* cjson_params = (cJSON*)arg;
+    cJSON* value_object = cJSON_GetObjectItem(cjson_params, "value");
+
+    uint8_t red = cJSON_GetObjectItem(value_object, "red")->valueint;
+    uint8_t green = cJSON_GetObjectItem(value_object, "green")->valueint;
+    uint8_t blue = cJSON_GetObjectItem(value_object, "blue")->valueint;
+    extracted_rgb = ((uint32_t)red << 16) | ((uint32_t)green << 8) | ((uint32_t)blue << 0);
+
+    return extracted_rgb;
+}
+
+uint32_t rgbcolor[3] = {0};
 void processColorSegmentPrimaryColor(void* arg) {
     printf("Processing Color Segment Primary Color\n");
+    rgbcolor[0] = extract_rgb_value_from_json(arg);
+    config_setColor(rgbcolor);
 }
 
 void processColorSegmentSecondaryColor(void* arg) {
     printf("Processing Color Segment Secondary Color\n");
+    rgbcolor[1] = extract_rgb_value_from_json(arg);
+    config_setColor(rgbcolor);
 }
 
 void processColorSegmentTertiaryColor(void* arg) {
     printf("Processing Color Segment Tertiary Color\n");
+    rgbcolor[2] = extract_rgb_value_from_json(arg);
+    config_setColor(rgbcolor);
 }
 
 void processUnknown(void* arg) {
-    printf("Unknown item name\n");
+    // printf("Unknown item name\n");
+    ESP_LOGE("set_cjson_value", "Unknown Item name!");
 }
 
 
 void processItem(const char* itemName, void *arg) {
     led_config = config_return_config_pointer();
- static const ItemHandler itemHandlers[] = {
+ 
+  const ItemHandler itemHandlers[] = {
         {"led_segments", processLedSegments},
         {"led_effects", processLedEffects},
         {"led_palettes", processLedPalettes},
@@ -196,7 +252,7 @@ void processItem(const char* itemName, void *arg) {
         {"color_effect_option_3", processColorEffectOption3},
         {"color_segment_primary_color", processColorSegmentPrimaryColor},
         {"color_segment_secondary_color", processColorSegmentSecondaryColor},
-        {"color_segment_tertiary_color", processColorSegmentTertiaryColor},
+        {"color_segment_ternary_color", processColorSegmentTertiaryColor},
         {"unknown", processUnknown}  // Default case
     };
 
@@ -209,5 +265,7 @@ void processItem(const char* itemName, void *arg) {
     }
 
     // If itemName is not found, execute default handler
-    itemHandlers[i].itemHandler(arg);
+    itemHandlers[i-1].itemHandler(arg);
 }
+
+

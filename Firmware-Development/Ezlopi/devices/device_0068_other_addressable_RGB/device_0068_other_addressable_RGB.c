@@ -737,23 +737,23 @@ static int __prepare(void *arg)
             switch_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
             dimmer_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
             color_effect_select_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            // color_palette_select_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
+            color_palette_select_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
             // color_segment_grouping_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
             // color_segment_spacing_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
             // color_segment_offset_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            // color_segment_revers_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
+            color_segment_revers_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
             // color_segment_mirror_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            // color_effect_speed_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            // color_effect_intencity_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
+            color_effect_speed_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
+            color_effect_intencity_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
             // color_effect_custom_slider_1_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
             // color_effect_custom_slider_2_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
             // color_effect_custom_slider_3_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
             // color_effect_option_1_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
             // color_effect_option_2_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
             // color_effect_option_3_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            // color_segment_primary_color_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            // color_segment_secondary_color_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            // color_segment_ternary_color_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
+            color_segment_primary_color_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
+            color_segment_secondary_color_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
+            color_segment_ternary_color_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
 
             if (segment_item && effects_item && palettes_item && switch_item && dimmer_item && color_effect_select_item)
             {
@@ -766,27 +766,27 @@ static int __prepare(void *arg)
 
                 __prepare_ADDRESSABLE_LED_segment_item(segment_item, prep_arg->cjson_device);
                 __prepare_ADDRESSABLE_LED_effects_item(effects_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_LED_palettes_item(palettes_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_LED_switch_item(switch_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_LED_dimmer_item(dimmer_item, prep_arg->cjson_device);
+                __prepare_ADDRESSABLE_LED_palettes_item(palettes_item, prep_arg->cjson_device);
+                __prepare_ADDRESSABLE_LED_switch_item(switch_item, prep_arg->cjson_device);
+                __prepare_ADDRESSABLE_LED_dimmer_item(dimmer_item, prep_arg->cjson_device);
                 __prepare_ADDRESSABLE_LED_color_effect_select_item(color_effect_select_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_LED_color_palette_select_item(color_palette_select_item, prep_arg->cjson_device);
+                __prepare_ADDRESSABLE_LED_color_palette_select_item(color_palette_select_item, prep_arg->cjson_device);
                 // __prepare_ADDRESSABLE_LED_color_segment_grouping_item(color_segment_grouping_item, prep_arg->cjson_device);
                 // __prepare_ADDRESSABLE_LED_color_segment_spacing_item(color_segment_spacing_item, prep_arg->cjson_device);
                 // __prepare_ADDRESSABLE_LED_color_segment_offset_item(color_segment_offset_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_LED_color_segment_revers_item(color_segment_revers_item, prep_arg->cjson_device);
+                __prepare_ADDRESSABLE_LED_color_segment_revers_item(color_segment_revers_item, prep_arg->cjson_device);
                 // __prepare_ADDRESSABLE_LED_color_segment_mirror_item(color_segment_mirror_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_LED_color_effect_speed_item(color_effect_speed_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_LED_color_effect_intencity_item(color_effect_intencity_item, prep_arg->cjson_device);
+                __prepare_ADDRESSABLE_LED_color_effect_speed_item(color_effect_speed_item, prep_arg->cjson_device);
+                __prepare_ADDRESSABLE_LED_color_effect_intencity_item(color_effect_intencity_item, prep_arg->cjson_device);
                 // __prepare_ADDRESSABLE_LED_color_effect_custom_slider_1_item(color_effect_custom_slider_1_item, prep_arg->cjson_device);
                 // __prepare_ADDRESSABLE_LED_color_effect_custom_slider_2_item(color_effect_custom_slider_2_item, prep_arg->cjson_device);
                 // __prepare_ADDRESSABLE_LED_color_effect_custom_slider_3_item(color_effect_custom_slider_3_item, prep_arg->cjson_device);
                 // __prepare_ADDRESSABLE_LED_color_effect_option_1_item(color_effect_option_1_item, prep_arg->cjson_device);
                 // __prepare_ADDRESSABLE_LED_color_effect_option_2_item(color_effect_option_2_item, prep_arg->cjson_device);
                 // __prepare_ADDRESSABLE_LED_color_effect_option_3_item(color_effect_option_3_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_LED_color_segment_primary_color_item(color_segment_primary_color_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_LED_color_segment_secondary_color_item(color_segment_secondary_color_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_LED_color_segment_ternary_color_item(color_segment_ternary_color_item, prep_arg->cjson_device);
+                __prepare_ADDRESSABLE_LED_color_segment_primary_color_item(color_segment_primary_color_item, prep_arg->cjson_device);
+                __prepare_ADDRESSABLE_LED_color_segment_secondary_color_item(color_segment_secondary_color_item, prep_arg->cjson_device);
+                __prepare_ADDRESSABLE_LED_color_segment_ternary_color_item(color_segment_ternary_color_item, prep_arg->cjson_device);
 
 
                 
@@ -803,27 +803,27 @@ static int __prepare(void *arg)
 
                     segment_item->user_arg = addressable_led_strip;
                     effects_item->user_arg = addressable_led_strip;
-                    // palettes_item->user_arg = addressable_led_strip;
-                    // switch_item->user_arg = addressable_led_strip;
-                    // dimmer_item->user_arg = addressable_led_strip;
+                    palettes_item->user_arg = addressable_led_strip;
+                    switch_item->user_arg = addressable_led_strip;
+                    dimmer_item->user_arg = addressable_led_strip;
                     color_effect_select_item->user_arg = addressable_led_strip;
-                    // color_palette_select_item->user_arg = addressable_led_strip;
+                    color_palette_select_item->user_arg = addressable_led_strip;
                     // color_segment_grouping_item->user_arg = addressable_led_strip;
                     // color_segment_spacing_item->user_arg = addressable_led_strip;
                     // color_segment_offset_item->user_arg = addressable_led_strip;
-                    // color_segment_revers_item->user_arg = addressable_led_strip;
+                    color_segment_revers_item->user_arg = addressable_led_strip;
                     // color_segment_mirror_item->user_arg = addressable_led_strip;
-                    // color_effect_speed_item->user_arg = addressable_led_strip;
-                    // color_effect_intencity_item->user_arg = addressable_led_strip;
+                    color_effect_speed_item->user_arg = addressable_led_strip;
+                    color_effect_intencity_item->user_arg = addressable_led_strip;
                     // color_effect_custom_slider_1_item->user_arg = addressable_led_strip;
                     // color_effect_custom_slider_2_item->user_arg = addressable_led_strip;
                     // color_effect_custom_slider_3_item->user_arg = addressable_led_strip;
                     // color_effect_option_1_item->user_arg = addressable_led_strip;
                     // color_effect_option_2_item->user_arg = addressable_led_strip;
                     // color_effect_option_3_item->user_arg = addressable_led_strip;
-                    // color_segment_primary_color_item->user_arg = addressable_led_strip;
-                    // color_segment_secondary_color_item->user_arg = addressable_led_strip;
-                    // color_segment_ternary_color_item->user_arg = addressable_led_strip;
+                    color_segment_primary_color_item->user_arg = addressable_led_strip;
+                    color_segment_secondary_color_item->user_arg = addressable_led_strip;
+                    color_segment_ternary_color_item->user_arg = addressable_led_strip;
 
 
                 }

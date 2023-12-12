@@ -32,8 +32,6 @@ typedef struct {
     void (*itemHandler)(void* arg);
 } ItemHandler;
 
-void set_segment_callback(cJSON* cjson_params, struct LED_CONFIG* led_config, void *arg);
-// void set_bool(cJSON* cjson_params, struct LED_CONFIG* led_config);
 void processItem(const char* itemName, void *arg);
 
 
