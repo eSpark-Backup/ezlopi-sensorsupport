@@ -411,7 +411,7 @@ static const char *test_device_constant_config =
     \"cmd\":3,\
     \"dev_detail\":[{\
                 \"dev_type\": 10,\
-                \"dev_name\": \"fingerprint\",\
+                \"dev_name\": \"Addressable LED Controller\",\
                 \"id_room\": \"\",\
                 \"id_item\": 68,\
                 \"gpio\": 17,\

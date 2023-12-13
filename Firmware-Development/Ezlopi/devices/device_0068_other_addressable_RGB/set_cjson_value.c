@@ -14,7 +14,7 @@
 
 static struct LED_CONFIG *led_config;
 
-void processLedSegments(void* arg) {
+static void processLedSegments(void* arg) {
     printf("Processing LED Segments\n");
     
     cJSON *cjson_params = (cJSON *)arg;
@@ -40,25 +40,25 @@ void processLedSegments(void* arg) {
     }
 }
 
-void processLedEffects(void* arg) {
+static void processLedEffects(void* arg) {
     //There will be no implementation for this as this is just for getting palette names setting api is listed below
     printf("Processing LED Effects\n");
 }
 
-void processLedPalettes(void* arg) {
+static void processLedPalettes(void* arg) {
     //There will be no implementation for this as this is just for getting palette names setting api is listed below
     printf("Processing LED Palettes\n");
 }
 
-void processSwitch(void* arg) {
+static void processSwitch(void* arg) {
     printf("Processing Switch\n");
 }
 
-void processDimmer(void* arg) {
+static void processDimmer(void* arg) {
     printf("Processing Dimmer\n");
 }
 
-void processColorEffectSelect(void* arg) {
+static void processColorEffectSelect(void* arg) {
     printf("Processing Color Effect Select\n");
 
     int value_recieved = 0;
@@ -73,7 +73,7 @@ void processColorEffectSelect(void* arg) {
     config_setMode(value_recieved);
 }
 
-void processColorPaletteSelect(void* arg) {
+static void processColorPaletteSelect(void* arg) {
     printf("Processing Color Palette Select\n");
 
     int value_recieved = 0;
@@ -88,19 +88,19 @@ void processColorPaletteSelect(void* arg) {
     config_apply_palette(value_recieved);
 }
 
-void processColorSegmentGrouping(void* arg) {
+static void processColorSegmentGrouping(void* arg) {
     printf("Processing Color Segment Grouping\n");
 }
 
-void processColorSegmentSpacing(void* arg) {
+static void processColorSegmentSpacing(void* arg) {
     printf("Processing Color Segment Spacing\n");
 }
 
-void processColorSegmentOffset(void* arg) {
+static void processColorSegmentOffset(void* arg) {
     printf("Processing Color Segment Offset\n");
 }
 
-void processColorSegmentReverse(void* arg) {
+static void processColorSegmentReverse(void* arg) {
     printf("Processing Color Segment Reverse\n");
 
     int value_recieved = 0;
@@ -116,7 +116,7 @@ void processColorSegmentReverse(void* arg) {
 
 }
 
-void processColorSegmentMirror(void* arg) {
+static void processColorSegmentMirror(void* arg) {
     printf("Processing Color Segment Mirror\n");
 
     int value_recieved = 0;
@@ -131,7 +131,7 @@ void processColorSegmentMirror(void* arg) {
     //TODO: Mirror funciton
 }
 
-void processColorEffectSpeed(void* arg) {
+static void processColorEffectSpeed(void* arg) {
     printf("Processing Color Effect Speed\n");
 
     int value_recieved = 0;
@@ -146,7 +146,7 @@ void processColorEffectSpeed(void* arg) {
     config_set_effect_speed(value_recieved);
 }
 
-void processColorEffectIntensity(void* arg) {
+static void processColorEffectIntensity(void* arg) {
     printf("Processing Color Effect Intensity\n");
 
     int value_recieved = 0;
@@ -161,27 +161,27 @@ void processColorEffectIntensity(void* arg) {
     config_set_effect_intensity(value_recieved);
 }
 
-void processColorEffectCustomSlider1(void* arg) {
+static void processColorEffectCustomSlider1(void* arg) {
     printf("Processing Color Effect Custom Slider 1\n");
 }
 
-void processColorEffectCustomSlider2(void* arg) {
+static void processColorEffectCustomSlider2(void* arg) {
     printf("Processing Color Effect Custom Slider 2\n");
 }
 
-void processColorEffectCustomSlider3(void* arg) {
+static void processColorEffectCustomSlider3(void* arg) {
     printf("Processing Color Effect Custom Slider 3\n");
 }
 
-void processColorEffectOption1(void* arg) {
+static void processColorEffectOption1(void* arg) {
     printf("Processing Color Effect Option 1\n");
 }
 
-void processColorEffectOption2(void* arg) {
+static void processColorEffectOption2(void* arg) {
     printf("Processing Color Effect Option 2\n");
 }
 
-void processColorEffectOption3(void* arg) {
+static void processColorEffectOption3(void* arg) {
     printf("Processing Color Effect Option 3\n");
 }
 
@@ -202,25 +202,25 @@ uint32_t extract_rgb_value_from_json(void *arg)
 }
 
 uint32_t rgbcolor[3] = {0};
-void processColorSegmentPrimaryColor(void* arg) {
+static void processColorSegmentPrimaryColor(void* arg) {
     printf("Processing Color Segment Primary Color\n");
     rgbcolor[0] = extract_rgb_value_from_json(arg);
     config_setColor(rgbcolor);
 }
 
-void processColorSegmentSecondaryColor(void* arg) {
+static void processColorSegmentSecondaryColor(void* arg) {
     printf("Processing Color Segment Secondary Color\n");
     rgbcolor[1] = extract_rgb_value_from_json(arg);
     config_setColor(rgbcolor);
 }
 
-void processColorSegmentTertiaryColor(void* arg) {
+static void processColorSegmentTertiaryColor(void* arg) {
     printf("Processing Color Segment Tertiary Color\n");
     rgbcolor[2] = extract_rgb_value_from_json(arg);
     config_setColor(rgbcolor);
 }
 
-void processUnknown(void* arg) {
+static void processUnknown(void* arg) {
     // printf("Unknown item name\n");
     ESP_LOGE("set_cjson_value", "Unknown Item name!");
 }

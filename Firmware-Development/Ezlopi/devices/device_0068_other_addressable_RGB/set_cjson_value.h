@@ -33,6 +33,7 @@ typedef struct {
 } ItemHandler;
 
 void processItem(const char* itemName, void *arg);
+void process_item_get(const char* itemName, void *arg);
 
 
 #endif // SET_CJSON_VALUE_FILE_H

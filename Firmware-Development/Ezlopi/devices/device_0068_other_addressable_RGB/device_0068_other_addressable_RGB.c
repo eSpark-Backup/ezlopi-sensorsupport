@@ -28,22 +28,18 @@
 #include "esp_heap_caps.h"
 #include "esp_system.h"
 
-// #include "dummy_led_config.h"
 #include "config.h"
 #include "led.h"
 #include "set_cjson_value.h"
 static bool ws2812_led_strip_initialized = false;
 struct LED_CONFIG* led_config;
 
-char* LEDModesStrings[] = {
-    #define FX_MODE(x, y) y,
-    #include "effect_list.h"
-};
-
 char* PaletteNames[] = {
     #define PALETTE(x, y) y,
     #include "palette_list.h"
 };
+
+static l_ezlopi_device_t *device = NULL;
 
 static l_ezlopi_item_t *dimmer_up_item = NULL;
 static l_ezlopi_item_t *dimmer_down_item = NULL;
@@ -134,225 +130,9 @@ static int __get_cjson_value(l_ezlopi_item_t *item, void *arg)
 {
     int ret = 0;
 
-    led_strip_t *addressable_led_strip   = (led_strip_t *)item->user_arg;
-    cJSON *cjson_properties = (cJSON *)arg;
-    if ((NULL != cjson_properties) && (NULL != addressable_led_strip))
+    if (NULL != arg)
     {
-        if (ezlopi_item_name_led_segments == item->cloud_properties.item_name)
-        {
-            char *formatted_key = NULL;
-            cJSON_AddStringToObject(cjson_properties, "elementType", "led_segment");
-            cJSON_AddNumberToObject(cjson_properties, "elementsMaxNumber", 10);
-            cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
-            if (segment_name_json)
-            {
-
-                for(int i = 0; i < config_get_channels(); i++)
-                {
-                    formatted_key = ezlopi_valueformatter_int(led_config->channel[i]->segment_id);
-                    cJSON *segment_key_json = cJSON_AddObjectToObject(segment_name_json, formatted_key);
-                    cJSON *segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "name", led_config->channel[i]->segment_name);
-                    segment_key_value_json = cJSON_AddNumberToObject(segment_key_json, "start", led_config->channel[i]->start);
-                    segment_key_value_json = cJSON_AddNumberToObject(segment_key_json, "end", led_config->channel[i]->stop);
-                    free(formatted_key);
-                }
-                // cJSON_AddNumberToObject(segment_name_json, "green", green);
-                // cJSON_AddNumberToObject(segment_name_json, "blue", blue);
-                // cJSON_AddNumberToObject(segment_name_json, "cwhite", ((red << 16) | (green << 8) | (blue)));
-                // char *formatted_val = ezlopi_valueformatter_rgb(red, green, blue);
-                cJSON_AddStringToObject(cjson_properties, "valueFormatted", "");
-                // free(formatted_val);
-            }
-        }
-        else if(ezlopi_item_name_led_effects == item->cloud_properties.item_name){
-            led_config->channel[0]->mode = FX_MODE_ANDROID;
-            cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
-            if (segment_name_json)
-            {
-                for(int i = 0; i < 1; i++)
-                {
-                    cJSON *segment_key_json = cJSON_AddObjectToObject(segment_name_json, ezlopi_valueformatter_int(i));
-                    cJSON *segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "name", LEDModesStrings[i]);
-                    segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "description", "Some description");
-                    segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "headpieceUrl", "https://some.url");
-                    // heap_caps_print_heap_info(MALLOC_CAP_DEFAULT);
-                    ESP_LOGE("", "Heap Memory %d", esp_get_minimum_free_heap_size());
-                }
-                // cJSON *segment_key_json = cJSON_AddObjectToObject(segment_name_json, "1");
-                // cJSON *segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "name", LEDModesStrings[led_config.channel[0]->mode]);
-                // segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "description", "Some description");
-                // segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "headpieceUrl", "https://some.url");
-
-                // cJSON_AddNumberToObject(segment_name_json, "green", green);
-                // cJSON_AddNumberToObject(segment_name_json, "blue", blue);
-                // cJSON_AddNumberToObject(segment_name_json, "cwhite", ((red << 16) | (green << 8) | (blue)));
-                // char *formatted_val = ezlopi_valueformatter_rgb(red, green, blue);
-                cJSON_AddStringToObject(cjson_properties, "valueFormatted", "");
-                // free(formatted_val);
-            }
-        }
-        else if(ezlopi_item_name_led_palettes == item->cloud_properties.item_name){
-            led_config->channel[0]->palette = 27;
-            cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
-            if (segment_name_json)
-            {
-
-                for(int i = 0; i < 1; i++)
-                {
-                    cJSON *segment_key_json = cJSON_AddObjectToObject(segment_name_json, ezlopi_valueformatter_int(i));
-                    cJSON *segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "name", PaletteNames[i]);
-                    segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "description", "Some description");
-                    segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "headpieceUrl", "https://some.url");
-                }
-
-                // cJSON *segment_key_value_json = cJSON_AddStringToObject(segment_name_json, "1", PaletteNames[led_config.channel[0]->palette]);
-                // segment_key_value_json = cJSON_AddStringToObject(segment_name_json, "description", "Some description");
-                // segment_key_value_json = cJSON_AddStringToObject(segment_name_json, "headpieceUrl", "https://some.url");
-                // cJSON_AddStringToObject(cjson_properties, "valueFormatted", "");
-                // free(formatted_val);
-            }
-        }
-        // else if (ezlopi_item_name_switch == item->cloud_properties.item_name)
-        // {
-        //     item->interface.gpio.gpio_out.value = (0 == addressable_led_strip->brightness) ? 0 : 1;
-        //     cJSON_AddBoolToObject(cjson_properties, "value", item->interface.gpio.gpio_out.value);
-        //     char *formatted_val = ezlopi_valueformatter_bool(item->interface.gpio.gpio_out.value ? true : false);
-        //     cJSON_AddStringToObject(cjson_properties, "valueFormatted", formatted_val);
-        // }
-        // else if(ezlopi_item_name_dimmer == item->cloud_properties.item_name)
-        // {
-        //     item->interface.pwm.duty_cycle = (int)ceil(((addressable_led_strip->brightness * 100.0) / 255.0));
-        //     cJSON_AddNumberToObject(cjson_properties, "value", item->interface.pwm.duty_cycle);
-        //     cJSON_AddNumberToObject(cjson_properties, "minValue", 0);
-        //     cJSON_AddNumberToObject(cjson_properties, "maxValue", 100);
-        //     char *formatted_val = ezlopi_valueformatter_int32(item->interface.pwm.duty_cycle);
-        //     cJSON_AddStringToObject(cjson_properties, "valueFormatted", formatted_val);
-        //     free(formatted_val);
-        // }
-        // else if(ezlopi_item_name_color_effect_select == item->cloud_properties.item_name)
-        // {
-        //     uint8_t current_effect = led_config.channel[0]->mode;
-        //     cJSON_AddNumberToObject(cjson_properties, "value", current_effect);
-        //     cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_int32(current_effect));
-        // }
-        // else if(ezlopi_item_name_color_palette_select == item->cloud_properties.item_name)
-        // {
-        //     uint8_t current_palette = led_config.channel[0]->palette;
-        //     cJSON_AddNumberToObject(cjson_properties, "value", current_palette);
-        //     cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_int32(current_palette));
-        //     cJSON_AddNumberToObject(cjson_properties, "minValue", 0);
-        //     cJSON_AddNumberToObject(cjson_properties, "maxValue", 255);
-        // }
-        // else if(ezlopi_item_name_color_segment_grouping == item->cloud_properties.item_name)
-        // {
-        //     cJSON_AddNumberToObject(cjson_properties, "value", 0);
-        //     cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_int32(0));
-        //     cJSON_AddNumberToObject(cjson_properties, "minValue", 0);
-        //     cJSON_AddNumberToObject(cjson_properties, "maxValue", 255);
-        // }
-        // else if (ezlopi_item_name_color_segment_spacing == item->cloud_properties.item_name)
-        // {
-        //     cJSON_AddNumberToObject(cjson_properties, "value", 0);
-        //     cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_int32(0));
-        //     cJSON_AddNumberToObject(cjson_properties, "minValue", 0);
-        //     cJSON_AddNumberToObject(cjson_properties, "maxValue", 255);
-        // }
-        // else if(ezlopi_item_name_color_segment_offset == item->cloud_properties.item_name)
-        // {
-        //     led_config.channel[0]->number_of_leds = 100;
-        //     cJSON_AddNumberToObject(cjson_properties, "value", 0);
-        //     cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_int32(0));
-        //     cJSON_AddNumberToObject(cjson_properties, "minValue", 0);
-        //     cJSON_AddNumberToObject(cjson_properties, "maxValue", led_config.channel[0]->number_of_leds);
-        // }
-        // else if(ezlopi_item_name_color_segment_revers == item->cloud_properties.item_name)
-        // {
-        //     cJSON_AddBoolToObject(cjson_properties, "value", false);
-        //     cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_bool(false));
-        // }
-        // else if(ezlopi_item_name_color_segment_mirror == item->cloud_properties.item_name)
-        // {
-        //     cJSON_AddBoolToObject(cjson_properties, "value", false);
-        //     cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_bool(false));
-        // }
-        // else if(ezlopi_item_name_color_effect_speed == item->cloud_properties.item_name)
-        // {
-        //     cJSON_AddNumberToObject(cjson_properties, "value", 0);
-        //     cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_int32(0));
-        //     cJSON_AddNumberToObject(cjson_properties, "minValue", 0);
-        //     cJSON_AddNumberToObject(cjson_properties, "maxValue", 255);
-        // }
-        // else if(ezlopi_item_name_color_effect_intensity == item->cloud_properties.item_name)
-        // {
-        //     cJSON_AddNumberToObject(cjson_properties, "value", 0);
-        //     cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_int32(0));
-        //     cJSON_AddNumberToObject(cjson_properties, "minValue", 0);
-        //     cJSON_AddNumberToObject(cjson_properties, "maxValue", 255); 
-        // }
-        // else if(ezlopi_item_name_color_effect_custom_slider_1 == item->cloud_properties.item_name)
-        // {
-        //     cJSON_AddNumberToObject(cjson_properties, "value", 0);
-        //     cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_int32(0));
-        //     cJSON_AddNumberToObject(cjson_properties, "minValue", 0);
-        //     cJSON_AddNumberToObject(cjson_properties, "maxValue", 255);
-        // }
-        // else if(ezlopi_item_name_color_effect_custom_slider_2 == item->cloud_properties.item_name)
-        // {
-        //     cJSON_AddNumberToObject(cjson_properties, "value", 0);
-        //     cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_int32(0));
-        //     cJSON_AddNumberToObject(cjson_properties, "minValue", 0);
-        //     cJSON_AddNumberToObject(cjson_properties, "maxValue", 255);
-        // }
-        // else if(ezlopi_item_name_color_effect_custom_slider_3 == item->cloud_properties.item_name)
-        // {
-        //     cJSON_AddNumberToObject(cjson_properties, "value", 0);
-        //     cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_int32(0));
-        //     cJSON_AddNumberToObject(cjson_properties, "minValue", 0);
-        //     cJSON_AddNumberToObject(cjson_properties, "maxValue", 31);
-        // }
-        // else if(ezlopi_item_name_color_effect_option_1 == item->cloud_properties.item_name)
-        // {
-        //     cJSON_AddBoolToObject(cjson_properties, "value", false);
-        //     cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_bool(false));
-        // }
-        // else if(ezlopi_item_name_color_effect_option_2 == item->cloud_properties.item_name)
-        // {
-        //     cJSON_AddBoolToObject(cjson_properties, "value", false);
-        //     cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_bool(false));
-        // }
-        // else if(ezlopi_item_name_color_effect_option_3 == item->cloud_properties.item_name)
-        // {
-        //     cJSON_AddBoolToObject(cjson_properties, "value", false);
-        //     cJSON_AddStringToObject(cjson_properties, "valueFormatted", ezlopi_valueformatter_bool(false));
-        // }
-        // else if(ezlopi_item_name_color_segment_primary_color == item->cloud_properties.item_name)
-        // {
-        //     cJSON* cjson_value_object  = cJSON_AddObjectToObject(cjson_properties, "value");
-        //     cJSON_AddNumberToObject(cjson_value_object, "wwhite",128);
-        //     cJSON_AddNumberToObject(cjson_value_object, "red",128);
-        //     cJSON_AddNumberToObject(cjson_value_object, "green",128);
-        //     cJSON_AddNumberToObject(cjson_value_object, "blue",128);
-        //     cJSON_AddStringToObject(cjson_properties, "valueFormatted", "...");
-        // }
-        // else if(ezlopi_item_name_color_segment_secondary_color == item->cloud_properties.item_name)
-        // {
-        //     cJSON* cjson_value_object  = cJSON_AddObjectToObject(cjson_properties, "value");
-        //     cJSON_AddNumberToObject(cjson_value_object, "wwhite",128);
-        //     cJSON_AddNumberToObject(cjson_value_object, "red",128);
-        //     cJSON_AddNumberToObject(cjson_value_object, "green",128);
-        //     cJSON_AddNumberToObject(cjson_value_object, "blue",128);
-        //     cJSON_AddStringToObject(cjson_properties, "valueFormatted", "...");
-        // }
-        // else if(ezlopi_item_name_color_segment_ternary_color == item->cloud_properties.item_name)
-        // {
-        //     cJSON* cjson_value_object  = cJSON_AddObjectToObject(cjson_properties, "value");
-        //     cJSON_AddNumberToObject(cjson_value_object, "wwhite",128);
-        //     cJSON_AddNumberToObject(cjson_value_object, "red",128);
-        //     cJSON_AddNumberToObject(cjson_value_object, "green",128);
-        //     cJSON_AddNumberToObject(cjson_value_object, "blue",128);
-        //     cJSON_AddStringToObject(cjson_properties, "valueFormatted", "...");
-        // }
-
+        process_item_get(item->cloud_properties.item_name, arg);
     }
     return ret;
 }
@@ -362,10 +142,7 @@ static int __set_cjson_value(l_ezlopi_item_t *item, void *arg)
     int ret = 0;
     static uint8_t previous_brightness = 0;
 
-    led_strip_t *addressable_led_strip = (led_strip_t *)item->user_arg;
-    // cJSON *cjson_params = (cJSON *)arg;
-
-    if ((NULL != addressable_led_strip))
+    if ((NULL != arg))
     {
         processItem(item->cloud_properties.item_name, arg);
     }
@@ -416,8 +193,8 @@ static void __prepare_device_properties(l_ezlopi_device_t *device, cJSON *cj_dev
     CJSON_GET_VALUE_STRING(cj_device, "dev_name", device_name);
     ASSIGN_DEVICE_NAME_V2(device, device_name);
 
-    device->cloud_properties.category = category_led_strip;
-    device->cloud_properties.subcategory = subcategory_addressable_main;
+    device->cloud_properties.category = category_dimmable_light;
+    device->cloud_properties.subcategory = subcategory_dimmable_colored;
     device->cloud_properties.device_type = dev_type_device;
 
     // device->cloud_properties.category = category_dimmable_light;
@@ -720,7 +497,7 @@ static int __prepare(void *arg)
     s_ezlopi_prep_arg_t *prep_arg = (s_ezlopi_prep_arg_t *)arg;
     if (prep_arg && prep_arg->cjson_device)
     {
-        l_ezlopi_device_t *device = ezlopi_device_add_device();
+        device = ezlopi_device_add_device();
         if (device)
         {
             __prepare_device_properties(device, prep_arg->cjson_device);
@@ -790,43 +567,43 @@ static int __prepare(void *arg)
 
 
                 
-                led_strip_t *addressable_led_strip = (led_strip_t *)malloc(sizeof(led_strip_t));
-                if (addressable_led_strip)
-                {
-                    memset(addressable_led_strip, 0, sizeof(led_strip_t));
-                    // switch_item->user_arg = addressable_led_strip;
-                    // dimmer_item->user_arg = addressable_led_strip;
-                    // dimmer_up_item->user_arg = addressable_led_strip;
-                    // dimmer_down_item->user_arg = addressable_led_strip;
-                    // dimmer_stop_item->user_arg = addressable_led_strip;
-                    // rgb_color_item->user_arg = addressable_led_strip;
+                // led_strip_t *addressable_led_strip = (led_strip_t *)malloc(sizeof(led_strip_t));
+                // if (addressable_led_strip)
+                // {
+                //     memset(addressable_led_strip, 0, sizeof(led_strip_t));
+                //     // switch_item->user_arg = addressable_led_strip;
+                //     // dimmer_item->user_arg = addressable_led_strip;
+                //     // dimmer_up_item->user_arg = addressable_led_strip;
+                //     // dimmer_down_item->user_arg = addressable_led_strip;
+                //     // dimmer_stop_item->user_arg = addressable_led_strip;
+                //     // rgb_color_item->user_arg = addressable_led_strip;
 
-                    segment_item->user_arg = addressable_led_strip;
-                    effects_item->user_arg = addressable_led_strip;
-                    palettes_item->user_arg = addressable_led_strip;
-                    switch_item->user_arg = addressable_led_strip;
-                    dimmer_item->user_arg = addressable_led_strip;
-                    color_effect_select_item->user_arg = addressable_led_strip;
-                    color_palette_select_item->user_arg = addressable_led_strip;
-                    // color_segment_grouping_item->user_arg = addressable_led_strip;
-                    // color_segment_spacing_item->user_arg = addressable_led_strip;
-                    // color_segment_offset_item->user_arg = addressable_led_strip;
-                    color_segment_revers_item->user_arg = addressable_led_strip;
-                    // color_segment_mirror_item->user_arg = addressable_led_strip;
-                    color_effect_speed_item->user_arg = addressable_led_strip;
-                    color_effect_intencity_item->user_arg = addressable_led_strip;
-                    // color_effect_custom_slider_1_item->user_arg = addressable_led_strip;
-                    // color_effect_custom_slider_2_item->user_arg = addressable_led_strip;
-                    // color_effect_custom_slider_3_item->user_arg = addressable_led_strip;
-                    // color_effect_option_1_item->user_arg = addressable_led_strip;
-                    // color_effect_option_2_item->user_arg = addressable_led_strip;
-                    // color_effect_option_3_item->user_arg = addressable_led_strip;
-                    color_segment_primary_color_item->user_arg = addressable_led_strip;
-                    color_segment_secondary_color_item->user_arg = addressable_led_strip;
-                    color_segment_ternary_color_item->user_arg = addressable_led_strip;
+                //     segment_item->user_arg = addressable_led_strip;
+                //     effects_item->user_arg = addressable_led_strip;
+                //     palettes_item->user_arg = addressable_led_strip;
+                //     switch_item->user_arg = addressable_led_strip;
+                //     dimmer_item->user_arg = addressable_led_strip;
+                //     color_effect_select_item->user_arg = addressable_led_strip;
+                //     color_palette_select_item->user_arg = addressable_led_strip;
+                //     // color_segment_grouping_item->user_arg = addressable_led_strip;
+                //     // color_segment_spacing_item->user_arg = addressable_led_strip;
+                //     // color_segment_offset_item->user_arg = addressable_led_strip;
+                //     color_segment_revers_item->user_arg = addressable_led_strip;
+                //     // color_segment_mirror_item->user_arg = addressable_led_strip;
+                //     color_effect_speed_item->user_arg = addressable_led_strip;
+                //     color_effect_intencity_item->user_arg = addressable_led_strip;
+                //     // color_effect_custom_slider_1_item->user_arg = addressable_led_strip;
+                //     // color_effect_custom_slider_2_item->user_arg = addressable_led_strip;
+                //     // color_effect_custom_slider_3_item->user_arg = addressable_led_strip;
+                //     // color_effect_option_1_item->user_arg = addressable_led_strip;
+                //     // color_effect_option_2_item->user_arg = addressable_led_strip;
+                //     // color_effect_option_3_item->user_arg = addressable_led_strip;
+                //     color_segment_primary_color_item->user_arg = addressable_led_strip;
+                //     color_segment_secondary_color_item->user_arg = addressable_led_strip;
+                //     color_segment_ternary_color_item->user_arg = addressable_led_strip;
 
 
-                }
+                // }
             }
             else
             {
@@ -861,6 +638,40 @@ static int __add_cjson_value(l_ezlopi_item_t *item, void *arg)
 
             config_set_segment_start_stop(config_get_channels(), segment_start, segment_stop);
             led_config->channel[config_get_channels()-1]->segment_name = strdup(segment_name);
+        }
+
+        //iterate to last device and malloc next device
+        l_ezlopi_device_t *curr_device = ezlopi_device_get_head();
+        while (curr_device->next)
+        {
+            curr_device = curr_device->next;
+        }
+
+        curr_device->next = ezlopi_device_add_device();
+        l_ezlopi_device_t *new_device = curr_device->next;
+
+        if(new_device)
+        {
+            ASSIGN_DEVICE_NAME_V2(new_device, "test_device");
+
+            /*Prepare Device*/
+            cJSON* cj_device = cJSON_CreateObject();
+            cJSON_AddStringToObject(cj_device, "dev_name", segment_name);
+            __prepare_device_properties(new_device, cj_device);
+
+            new_device->items =  ezlopi_device_add_item_to_device(new_device, device_0068_other_addressable_RGB);
+            l_ezlopi_item_t *test_item_device = new_device->items;
+
+            test_item_device->cloud_properties.item_name = ezlopi_item_name_color_palette_select;
+            test_item_device->cloud_properties.value_type = value_type_int;
+            test_item_device->cloud_properties.has_getter = true;
+            test_item_device->cloud_properties.has_setter = true;
+            test_item_device->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
+            test_item_device->cloud_properties.item_name = ezlopi_item_name_color_segment_primary_color,
+            test_item_device->cloud_properties.show = true;
+            test_item_device->cloud_properties.scale = NULL;
+            test_item_device->cloud_properties.value_type = value_type_rgb;
+            test_item_device->interface_type = EZLOPI_DEVICE_INTERFACE_DIGITAL_OUTPUT;
         }
     }
 
