@@ -39,12 +39,17 @@ char* PaletteNames[] = {
     #include "palette_list.h"
 };
 
-static l_ezlopi_device_t *device = NULL;
+// Define a structure to hold item information
+typedef struct {
+    l_ezlopi_item_t *item;
+    void (*prepareFunction)(l_ezlopi_item_t *item, cJSON *cjson_device);
+} DeviceItem;
 
-static l_ezlopi_item_t *dimmer_up_item = NULL;
-static l_ezlopi_item_t *dimmer_down_item = NULL;
-static l_ezlopi_item_t *dimmer_stop_item = NULL;
-static l_ezlopi_item_t *rgb_color_item = NULL;
+// Declare a pointer to an array of DeviceItem structures
+DeviceItem* deviceItems = NULL;
+int itemCount = 0;
+
+static l_ezlopi_device_t *device = NULL;
 
 static l_ezlopi_item_t *segment_item = NULL;
 static l_ezlopi_item_t *effects_item = NULL;
@@ -70,8 +75,6 @@ static l_ezlopi_item_t *color_segment_primary_color_item = NULL;
 static l_ezlopi_item_t *color_segment_secondary_color_item = NULL;
 static l_ezlopi_item_t *color_segment_ternary_color_item = NULL;
 
-
-
 static int __prepare(void *arg);
 static int __init(l_ezlopi_item_t *item);
 static int __set_cjson_value(l_ezlopi_item_t *item, void *arg);
@@ -79,6 +82,9 @@ static int __get_cjson_value(l_ezlopi_item_t *item, void *arg);
 static int __add_cjson_value(l_ezlopi_item_t *item, void *arg);
 static int __remove_cjson_value(l_ezlopi_item_t *item, void *arg);
 
+void add_item_to_device_struct(l_ezlopi_item_t *newItem, void* prepareFunction);
+void prepare_all_items(void* prep_arg);
+void* return_prep_fcn_ptr(int index);
 
 int device_0068_other_addressable_RGB(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg)
 {
@@ -86,41 +92,41 @@ int device_0068_other_addressable_RGB(e_ezlopi_actions_t action, l_ezlopi_item_t
 
     switch (action)
     {
-    case EZLOPI_ACTION_PREPARE:
-    {
-        ret = __prepare(arg);
-        break;
-    }
-    case EZLOPI_ACTION_INITIALIZE:
-    {
-        ret = __init(item);
-        break;
-    }
-    case EZLOPI_ACTION_SET_VALUE:
-    {
-        ret = __set_cjson_value(item, arg);
-        break;
-    }
-    case EZLOPI_ACTION_HUB_GET_ITEM:
-    case EZLOPI_ACTION_GET_EZLOPI_VALUE:
-    {
-        ret = __get_cjson_value(item, arg);
-        break;
-    }
-    case EZLOPI_ACTION_ADD_VALUE:
-    {
-        ret = __add_cjson_value(item, arg);
-        break;
-    }
-    case EZLOPI_ACTION_REMOVE_VALUE:
-    {
-        ret = __remove_cjson_value(item, arg);
-        break;
-    }
-    default:
-    {
-        break;
-    }
+        case EZLOPI_ACTION_PREPARE:
+        {
+            ret = __prepare(arg);
+            break;
+        }
+        case EZLOPI_ACTION_INITIALIZE:
+        {
+            ret = __init(item);
+            break;
+        }
+        case EZLOPI_ACTION_SET_VALUE:
+        {
+            ret = __set_cjson_value(item, arg);
+            break;
+        }
+        case EZLOPI_ACTION_HUB_GET_ITEM:
+        case EZLOPI_ACTION_GET_EZLOPI_VALUE:
+        {
+            ret = __get_cjson_value(item, arg);
+            break;
+        }
+        case EZLOPI_ACTION_ADD_VALUE:
+        {
+            ret = __add_cjson_value(item, arg);
+            break;
+        }
+        case EZLOPI_ACTION_REMOVE_VALUE:
+        {
+            ret = __remove_cjson_value(item, arg);
+            break;
+        }
+        default:
+        {
+            break;
+        }
     }
 
     return ret;
@@ -129,7 +135,6 @@ int device_0068_other_addressable_RGB(e_ezlopi_actions_t action, l_ezlopi_item_t
 static int __get_cjson_value(l_ezlopi_item_t *item, void *arg)
 {
     int ret = 0;
-
     if (NULL != arg)
     {
         process_item_get(item->cloud_properties.item_name, arg);
@@ -140,8 +145,6 @@ static int __get_cjson_value(l_ezlopi_item_t *item, void *arg)
 static int __set_cjson_value(l_ezlopi_item_t *item, void *arg)
 {
     int ret = 0;
-    static uint8_t previous_brightness = 0;
-
     if ((NULL != arg))
     {
         processItem(item->cloud_properties.item_name, arg);
@@ -152,28 +155,6 @@ static int __set_cjson_value(l_ezlopi_item_t *item, void *arg)
 static int __init(l_ezlopi_item_t *item)
 {
     int ret = 0;
-    // led_strip_t *addressable_led_strip = (led_strip_t *)item->user_arg;
-    // if ((!ws2812_led_strip_initialized) && (NULL != addressable_led_strip))
-    // {
-    //     addressable_led_strip->type = LED_STRIP_WS2812;
-    //     addressable_led_strip->length = 100;
-    //     addressable_led_strip->gpio = item->interface.pwm.gpio_num;
-    //     addressable_led_strip->buf = NULL;
-    //     addressable_led_strip->brightness = 10;
-    //     addressable_led_strip->channel = RMT_CHANNEL_0;
-
-    //     led_strip_install();
-    //     ESP_ERROR_CHECK(led_strip_init(addressable_led_strip));
-    //     rgb_t color = {
-    //         .red = 255,
-    //         .green = 255,
-    //         .blue = 255,
-    //     };
-    //     led_strip_fill(addressable_led_strip, 0, addressable_led_strip->length, color);
-    //     led_strip_set_brightness(addressable_led_strip, addressable_led_strip->brightness);
-    //     ESP_ERROR_CHECK(led_strip_flush(addressable_led_strip));
-    //     ws2812_led_strip_initialized = true;
-    // }
     
     if(!ws2812_led_strip_initialized)
     {
@@ -492,123 +473,35 @@ static void __prepare_ADDRESSABLE_LED_color_segment_ternary_color_item(l_ezlopi_
 static int __prepare(void *arg)
 {
     int ret = 0;
-    // led_config.channel[0] = (struct LED_CONFIG_CHANNEL*)malloc(sizeof(struct LED_CONFIG_CHANNEL));
 
     s_ezlopi_prep_arg_t *prep_arg = (s_ezlopi_prep_arg_t *)arg;
     if (prep_arg && prep_arg->cjson_device)
     {
-        device = ezlopi_device_add_device();
+        /*Check If there is device already*/
+        l_ezlopi_device_t *curr_device = ezlopi_device_get_head();
+        if(NULL == curr_device)
+        {
+            curr_device = ezlopi_device_add_device();
+        }
+        device = curr_device;
+
+        /*if device, add items*/
         if (device)
         {
             __prepare_device_properties(device, prep_arg->cjson_device);
-            // rgb_color_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            // dimmer_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            // dimmer_up_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            // dimmer_down_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            // dimmer_stop_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            // switch_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
 
-            segment_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            effects_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            palettes_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            switch_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            dimmer_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            color_effect_select_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            color_palette_select_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            // color_segment_grouping_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            // color_segment_spacing_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            // color_segment_offset_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            color_segment_revers_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            // color_segment_mirror_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            color_effect_speed_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            color_effect_intencity_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            // color_effect_custom_slider_1_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            // color_effect_custom_slider_2_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            // color_effect_custom_slider_3_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            // color_effect_option_1_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            // color_effect_option_2_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            // color_effect_option_3_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            color_segment_primary_color_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            color_segment_secondary_color_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
-            color_segment_ternary_color_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
+            l_ezlopi_item_t *current_item = device->items;
 
-            if (segment_item && effects_item && palettes_item && switch_item && dimmer_item && color_effect_select_item)
+            /*add items to device*/
+            for(int i = 0; i < COLOR_EFFECT_CUSTOM_SLIDER_1; i++)
             {
-                // __prepare_ADDRESSABLE_RGB_color_item(rgb_color_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_RGB_dimmer_item(dimmer_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_RGB_dimmer_up_item(dimmer_up_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_RGB_dimmer_down_item(dimmer_down_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_RGB_dimmer_stop_item(dimmer_stop_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_LED_onoff_switch_item(switch_item, prep_arg->cjson_device);
-
-                __prepare_ADDRESSABLE_LED_segment_item(segment_item, prep_arg->cjson_device);
-                __prepare_ADDRESSABLE_LED_effects_item(effects_item, prep_arg->cjson_device);
-                __prepare_ADDRESSABLE_LED_palettes_item(palettes_item, prep_arg->cjson_device);
-                __prepare_ADDRESSABLE_LED_switch_item(switch_item, prep_arg->cjson_device);
-                __prepare_ADDRESSABLE_LED_dimmer_item(dimmer_item, prep_arg->cjson_device);
-                __prepare_ADDRESSABLE_LED_color_effect_select_item(color_effect_select_item, prep_arg->cjson_device);
-                __prepare_ADDRESSABLE_LED_color_palette_select_item(color_palette_select_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_LED_color_segment_grouping_item(color_segment_grouping_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_LED_color_segment_spacing_item(color_segment_spacing_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_LED_color_segment_offset_item(color_segment_offset_item, prep_arg->cjson_device);
-                __prepare_ADDRESSABLE_LED_color_segment_revers_item(color_segment_revers_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_LED_color_segment_mirror_item(color_segment_mirror_item, prep_arg->cjson_device);
-                __prepare_ADDRESSABLE_LED_color_effect_speed_item(color_effect_speed_item, prep_arg->cjson_device);
-                __prepare_ADDRESSABLE_LED_color_effect_intencity_item(color_effect_intencity_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_LED_color_effect_custom_slider_1_item(color_effect_custom_slider_1_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_LED_color_effect_custom_slider_2_item(color_effect_custom_slider_2_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_LED_color_effect_custom_slider_3_item(color_effect_custom_slider_3_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_LED_color_effect_option_1_item(color_effect_option_1_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_LED_color_effect_option_2_item(color_effect_option_2_item, prep_arg->cjson_device);
-                // __prepare_ADDRESSABLE_LED_color_effect_option_3_item(color_effect_option_3_item, prep_arg->cjson_device);
-                __prepare_ADDRESSABLE_LED_color_segment_primary_color_item(color_segment_primary_color_item, prep_arg->cjson_device);
-                __prepare_ADDRESSABLE_LED_color_segment_secondary_color_item(color_segment_secondary_color_item, prep_arg->cjson_device);
-                __prepare_ADDRESSABLE_LED_color_segment_ternary_color_item(color_segment_ternary_color_item, prep_arg->cjson_device);
-
-
-                
-                // led_strip_t *addressable_led_strip = (led_strip_t *)malloc(sizeof(led_strip_t));
-                // if (addressable_led_strip)
-                // {
-                //     memset(addressable_led_strip, 0, sizeof(led_strip_t));
-                //     // switch_item->user_arg = addressable_led_strip;
-                //     // dimmer_item->user_arg = addressable_led_strip;
-                //     // dimmer_up_item->user_arg = addressable_led_strip;
-                //     // dimmer_down_item->user_arg = addressable_led_strip;
-                //     // dimmer_stop_item->user_arg = addressable_led_strip;
-                //     // rgb_color_item->user_arg = addressable_led_strip;
-
-                //     segment_item->user_arg = addressable_led_strip;
-                //     effects_item->user_arg = addressable_led_strip;
-                //     palettes_item->user_arg = addressable_led_strip;
-                //     switch_item->user_arg = addressable_led_strip;
-                //     dimmer_item->user_arg = addressable_led_strip;
-                //     color_effect_select_item->user_arg = addressable_led_strip;
-                //     color_palette_select_item->user_arg = addressable_led_strip;
-                //     // color_segment_grouping_item->user_arg = addressable_led_strip;
-                //     // color_segment_spacing_item->user_arg = addressable_led_strip;
-                //     // color_segment_offset_item->user_arg = addressable_led_strip;
-                //     color_segment_revers_item->user_arg = addressable_led_strip;
-                //     // color_segment_mirror_item->user_arg = addressable_led_strip;
-                //     color_effect_speed_item->user_arg = addressable_led_strip;
-                //     color_effect_intencity_item->user_arg = addressable_led_strip;
-                //     // color_effect_custom_slider_1_item->user_arg = addressable_led_strip;
-                //     // color_effect_custom_slider_2_item->user_arg = addressable_led_strip;
-                //     // color_effect_custom_slider_3_item->user_arg = addressable_led_strip;
-                //     // color_effect_option_1_item->user_arg = addressable_led_strip;
-                //     // color_effect_option_2_item->user_arg = addressable_led_strip;
-                //     // color_effect_option_3_item->user_arg = addressable_led_strip;
-                //     color_segment_primary_color_item->user_arg = addressable_led_strip;
-                //     color_segment_secondary_color_item->user_arg = addressable_led_strip;
-                //     color_segment_ternary_color_item->user_arg = addressable_led_strip;
-
-
-                // }
+                current_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
+                add_item_to_device_struct(current_item, return_prep_fcn_ptr(i));
+                current_item = current_item->next;
+                ESP_LOGW("", "Adding Items");
             }
-            else
-            {
-                ezlopi_device_free_device(device);
-            }
+            /*now prepare all items which are added*/
+            prepare_all_items(prep_arg->cjson_device);
         }
         else
         {
@@ -619,6 +512,134 @@ static int __prepare(void *arg)
     return ret;
 }
 
+// Function to add a new device item
+void add_item_to_device_struct(l_ezlopi_item_t *newItem, void* prepareFunction) {
+    // Resize the array to accommodate the new item
+    deviceItems = realloc(deviceItems, (size_t)((sizeof(DeviceItem) * itemCount) + sizeof(DeviceItem)));
+    if (!deviceItems) {
+        // Handle memory allocation failure
+        return;
+    }
+
+    // Add the new item to the array
+    deviceItems[itemCount].item = newItem;
+    deviceItems[itemCount].prepareFunction = prepareFunction;
+    ++itemCount;
+}
+
+// Function to prepare all device items
+void prepare_all_items(void* prep_arg) {
+    ESP_LOGW("", "Preparing Items");
+    cJSON* cj_device = (cJSON*)prep_arg;
+    for (size_t i = 0; i < itemCount; ++i) {
+        deviceItems[i].prepareFunction(deviceItems[i].item, cj_device);
+        ESP_LOGW("", "Preparing Items");
+    }
+}
+
+void* return_prep_fcn_ptr(int index)
+{
+    void* ret_ptr = NULL;
+    switch (index)
+    {
+    case LED_SEGMENTS:
+        ret_ptr = __prepare_ADDRESSABLE_LED_segment_item;
+        break;
+    case LED_EFFECTS:
+        ret_ptr = __prepare_ADDRESSABLE_LED_effects_item;
+        break;
+    case LED_PALETTES:
+        ret_ptr = __prepare_ADDRESSABLE_LED_palettes_item;
+        break;
+    case SWITCH:
+        ret_ptr = __prepare_ADDRESSABLE_LED_switch_item;
+        break;
+
+    case DIMMER:
+        ret_ptr = __prepare_ADDRESSABLE_LED_dimmer_item;
+        break;
+
+    case COLOR_EFFECT_SELECT:
+        ret_ptr = __prepare_ADDRESSABLE_LED_color_effect_select_item;
+        break;
+
+    case COLOR_PALETTE_SELECT:
+        ret_ptr = __prepare_ADDRESSABLE_LED_color_palette_select_item;
+        break;
+
+    case COLOR_SEGMENT_GROUPING:
+        ret_ptr = __prepare_ADDRESSABLE_LED_color_segment_grouping_item;
+        break;
+
+    case COLOR_SEGMENT_SPACING:
+        ret_ptr = __prepare_ADDRESSABLE_LED_color_segment_spacing_item;
+        break;
+
+    case COLOR_SEGMENT_OFFSET:
+        ret_ptr = __prepare_ADDRESSABLE_LED_color_segment_offset_item;
+        break;
+
+    case COLOR_SEGMENT_REVERSE:
+        ret_ptr = __prepare_ADDRESSABLE_LED_color_segment_revers_item;
+        break;
+
+    case COLOR_SEGMENT_MIRROR:
+        ret_ptr = __prepare_ADDRESSABLE_LED_color_segment_mirror_item;
+        break;
+
+    case COLOR_EFFECT_SPEED:
+        ret_ptr = __prepare_ADDRESSABLE_LED_color_effect_speed_item;
+        break;
+
+    case COLOR_EFFECT_INTENSITY:
+        ret_ptr = __prepare_ADDRESSABLE_LED_color_effect_intencity_item;
+        break;
+
+    case COLOR_EFFECT_CUSTOM_SLIDER_1:
+        ret_ptr = __prepare_ADDRESSABLE_LED_color_effect_custom_slider_1_item;
+        break;
+
+    case COLOR_EFFECT_CUSTOM_SLIDER_2:
+        ret_ptr = __prepare_ADDRESSABLE_LED_color_effect_custom_slider_2_item;
+        break;
+
+    case COLOR_EFFECT_CUSTOM_SLIDER_3:
+        ret_ptr = __prepare_ADDRESSABLE_LED_color_effect_custom_slider_3_item;
+        break;
+
+    case COLOR_EFFECT_OPTION_1:
+        ret_ptr = __prepare_ADDRESSABLE_LED_color_effect_option_1_item;
+        break;
+
+    case COLOR_EFFECT_OPTION_2:
+        ret_ptr = __prepare_ADDRESSABLE_LED_color_effect_option_2_item;
+        break;
+
+    case COLOR_EFFECT_OPTION_3:
+        ret_ptr = __prepare_ADDRESSABLE_LED_color_effect_option_3_item;
+        break;
+
+    case COLOR_SEGMENT_PRIMARY_COLOR:
+        ret_ptr = __prepare_ADDRESSABLE_LED_color_segment_primary_color_item;
+        break;
+
+    case COLOR_SEGMENT_SECONDARY_COLOR:
+        ret_ptr = __prepare_ADDRESSABLE_LED_color_segment_secondary_color_item;
+        break;
+
+    case COLOR_SEGMENT_TERNARY_COLOR:
+        ret_ptr = __prepare_ADDRESSABLE_LED_color_segment_ternary_color_item;
+        break;
+
+    case ITEM_UNKNOWN_MAX:
+        // Handle the unknown case or return a default value
+        break;
+    default:
+        break;
+    }
+    return ret_ptr;
+}
+
 static int __add_cjson_value(l_ezlopi_item_t *item, void *arg)
 {
     int ret = 0;
@@ -626,6 +647,7 @@ static int __add_cjson_value(l_ezlopi_item_t *item, void *arg)
     char *segment_name = NULL;
     int segment_start = 0, segment_stop = 0;
     cJSON *cjson_params = (cJSON *)arg;
+
     if(NULL !=  cjson_params)
     {
         if (ezlopi_item_name_led_segments == item->cloud_properties.item_name)
@@ -640,38 +662,44 @@ static int __add_cjson_value(l_ezlopi_item_t *item, void *arg)
             led_config->channel[config_get_channels()-1]->segment_name = strdup(segment_name);
         }
 
+        /*==========================ADD NEW DEVICE FOR SEGMENT============================*/
+
+        /*rest the item count every time when adding new device*/
+        itemCount = 0;
+
         //iterate to last device and malloc next device
         l_ezlopi_device_t *curr_device = ezlopi_device_get_head();
-        while (curr_device->next)
+
+        while (curr_device)
         {
             curr_device = curr_device->next;
         }
 
-        curr_device->next = ezlopi_device_add_device();
-        l_ezlopi_device_t *new_device = curr_device->next;
+        /*malloc new device*/
+        curr_device = ezlopi_device_add_device();
+        l_ezlopi_device_t *new_device = curr_device;
 
         if(new_device)
         {
-            ASSIGN_DEVICE_NAME_V2(new_device, "test_device");
-
             /*Prepare Device*/
             cJSON* cj_device = cJSON_CreateObject();
             cJSON_AddStringToObject(cj_device, "dev_name", segment_name);
             __prepare_device_properties(new_device, cj_device);
 
-            new_device->items =  ezlopi_device_add_item_to_device(new_device, device_0068_other_addressable_RGB);
-            l_ezlopi_item_t *test_item_device = new_device->items;
+            // new_device->items =  ezlopi_device_add_item_to_device(new_device, device_0068_other_addressable_RGB);
+            l_ezlopi_item_t *current_item = new_device->items;
 
-            test_item_device->cloud_properties.item_name = ezlopi_item_name_color_palette_select;
-            test_item_device->cloud_properties.value_type = value_type_int;
-            test_item_device->cloud_properties.has_getter = true;
-            test_item_device->cloud_properties.has_setter = true;
-            test_item_device->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
-            test_item_device->cloud_properties.item_name = ezlopi_item_name_color_segment_primary_color,
-            test_item_device->cloud_properties.show = true;
-            test_item_device->cloud_properties.scale = NULL;
-            test_item_device->cloud_properties.value_type = value_type_rgb;
-            test_item_device->interface_type = EZLOPI_DEVICE_INTERFACE_DIGITAL_OUTPUT;
+            /*add items to device*/
+            for(int i = SWITCH; i < COLOR_EFFECT_CUSTOM_SLIDER_1; i++)
+            {
+                current_item = ezlopi_device_add_item_to_device(new_device, device_0068_other_addressable_RGB);
+                add_item_to_device_struct(current_item, return_prep_fcn_ptr(i));
+                current_item = current_item->next;
+            }
+
+            /*now prepare all items which are added*/
+            prepare_all_items(cj_device);
+
         }
     }
 

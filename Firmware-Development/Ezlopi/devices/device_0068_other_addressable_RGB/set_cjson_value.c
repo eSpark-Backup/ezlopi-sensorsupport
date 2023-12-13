@@ -8,14 +8,18 @@
 #include "items.h"
 #include "math.h"
 
+#include "ezlopi_devices.h"  //for iterating and checking selected flag
+#include "ezlopi_valueformatter.h"
+
 #include "led.h"
 #include "config.h"
 #include "set_cjson_value.h"
 
 static struct LED_CONFIG *led_config;
+uint8_t get_segment_number(void *arg);
 
 static void processLedSegments(void* arg) {
-    printf("Processing LED Segments\n");
+    printf("SET: Processing LED Segments\n");
     
     cJSON *cjson_params = (cJSON *)arg;
 
@@ -37,29 +41,30 @@ static void processLedSegments(void* arg) {
         config_set_segment_start_stop(atoi(key) , start, end);
         CJSON_GET_VALUE_STRING(value, "name", name);
         led_config->channel[atoi(key)]->segment_name = strdup(name);
+        led_config->channel[atoi(key)]->segment_id = atoi(key);
     }
 }
 
 static void processLedEffects(void* arg) {
     //There will be no implementation for this as this is just for getting palette names setting api is listed below
-    printf("Processing LED Effects\n");
+    printf("SET: Processing LED Effects\n");
 }
 
 static void processLedPalettes(void* arg) {
     //There will be no implementation for this as this is just for getting palette names setting api is listed below
-    printf("Processing LED Palettes\n");
+    printf("SET: Processing LED Palettes\n");
 }
 
 static void processSwitch(void* arg) {
-    printf("Processing Switch\n");
+    printf("SET: Processing Switch\n");
 }
 
 static void processDimmer(void* arg) {
-    printf("Processing Dimmer\n");
+    printf("SET: Processing Dimmer\n");
 }
 
 static void processColorEffectSelect(void* arg) {
-    printf("Processing Color Effect Select\n");
+    printf("SET: Processing Color Effect Select\n");
 
     int value_recieved = 0;
     cJSON *cjson_params = (cJSON *)arg;
@@ -74,7 +79,7 @@ static void processColorEffectSelect(void* arg) {
 }
 
 static void processColorPaletteSelect(void* arg) {
-    printf("Processing Color Palette Select\n");
+    printf("SET: Processing Color Palette Select\n");
 
     int value_recieved = 0;
     cJSON *cjson_params = (cJSON *)arg;
@@ -89,19 +94,19 @@ static void processColorPaletteSelect(void* arg) {
 }
 
 static void processColorSegmentGrouping(void* arg) {
-    printf("Processing Color Segment Grouping\n");
+    printf("SET: Processing Color Segment Grouping\n");
 }
 
 static void processColorSegmentSpacing(void* arg) {
-    printf("Processing Color Segment Spacing\n");
+    printf("SET: Processing Color Segment Spacing\n");
 }
 
 static void processColorSegmentOffset(void* arg) {
-    printf("Processing Color Segment Offset\n");
+    printf("SET: Processing Color Segment Offset\n");
 }
 
 static void processColorSegmentReverse(void* arg) {
-    printf("Processing Color Segment Reverse\n");
+    printf("SET: Processing Color Segment Reverse\n");
 
     int value_recieved = 0;
     cJSON *cjson_params = (cJSON *)arg;
@@ -117,7 +122,7 @@ static void processColorSegmentReverse(void* arg) {
 }
 
 static void processColorSegmentMirror(void* arg) {
-    printf("Processing Color Segment Mirror\n");
+    printf("SET: Processing Color Segment Mirror\n");
 
     int value_recieved = 0;
     cJSON *cjson_params = (cJSON *)arg;
@@ -132,7 +137,7 @@ static void processColorSegmentMirror(void* arg) {
 }
 
 static void processColorEffectSpeed(void* arg) {
-    printf("Processing Color Effect Speed\n");
+    printf("SET: Processing Color Effect Speed\n");
 
     int value_recieved = 0;
     cJSON *cjson_params = (cJSON *)arg;
@@ -147,7 +152,7 @@ static void processColorEffectSpeed(void* arg) {
 }
 
 static void processColorEffectIntensity(void* arg) {
-    printf("Processing Color Effect Intensity\n");
+    printf("SET: Processing Color Effect Intensity\n");
 
     int value_recieved = 0;
     cJSON *cjson_params = (cJSON *)arg;
@@ -162,27 +167,27 @@ static void processColorEffectIntensity(void* arg) {
 }
 
 static void processColorEffectCustomSlider1(void* arg) {
-    printf("Processing Color Effect Custom Slider 1\n");
+    printf("SET: Processing Color Effect Custom Slider 1\n");
 }
 
 static void processColorEffectCustomSlider2(void* arg) {
-    printf("Processing Color Effect Custom Slider 2\n");
+    printf("SET: Processing Color Effect Custom Slider 2\n");
 }
 
 static void processColorEffectCustomSlider3(void* arg) {
-    printf("Processing Color Effect Custom Slider 3\n");
+    printf("SET: Processing Color Effect Custom Slider 3\n");
 }
 
 static void processColorEffectOption1(void* arg) {
-    printf("Processing Color Effect Option 1\n");
+    printf("SET: Processing Color Effect Option 1\n");
 }
 
 static void processColorEffectOption2(void* arg) {
-    printf("Processing Color Effect Option 2\n");
+    printf("SET: Processing Color Effect Option 2\n");
 }
 
 static void processColorEffectOption3(void* arg) {
-    printf("Processing Color Effect Option 3\n");
+    printf("SET: Processing Color Effect Option 3\n");
 }
 
 
@@ -203,19 +208,19 @@ uint32_t extract_rgb_value_from_json(void *arg)
 
 uint32_t rgbcolor[3] = {0};
 static void processColorSegmentPrimaryColor(void* arg) {
-    printf("Processing Color Segment Primary Color\n");
+    printf("SET: Processing Color Segment Primary Color\n");
     rgbcolor[0] = extract_rgb_value_from_json(arg);
     config_setColor(rgbcolor);
 }
 
 static void processColorSegmentSecondaryColor(void* arg) {
-    printf("Processing Color Segment Secondary Color\n");
+    printf("SET: Processing Color Segment Secondary Color\n");
     rgbcolor[1] = extract_rgb_value_from_json(arg);
     config_setColor(rgbcolor);
 }
 
 static void processColorSegmentTertiaryColor(void* arg) {
-    printf("Processing Color Segment Tertiary Color\n");
+    printf("SET: Processing Color Segment Tertiary Color\n");
     rgbcolor[2] = extract_rgb_value_from_json(arg);
     config_setColor(rgbcolor);
 }
@@ -257,15 +262,82 @@ void processItem(const char* itemName, void *arg) {
     };
 
     size_t i;
+    char *key_recieved_int = 0;
+    
     for (i = 0; i < sizeof(itemHandlers) / sizeof(itemHandlers[0]); ++i) {
         if (strcmp(itemName, itemHandlers[i].itemName) == 0) {
+            int active_segment = get_segment_number(arg);
+            config_set_selected_flag(active_segment, true);
             itemHandlers[i].itemHandler(arg);
+            config_set_selected_flag(active_segment, false);
             return;
         }
     }
 
     // If itemName is not found, execute default handler
-    itemHandlers[i-1].itemHandler(arg);
+    itemHandlers[i].itemHandler(arg);
+    
 }
 
+// Function to convert integer to dynamically allocated string
+char* intToString(int num) {
+    // Determine the number of digits in the integer
+    int digits = snprintf(NULL, 0, "%d", num);
 
+    // Allocate memory for the string, including space for the null terminator
+    char* str = (char*)malloc(digits + 1);
+
+    // Check for memory allocation failure
+    if (str == NULL) {
+        perror("Memory allocation failed");
+        exit(EXIT_FAILURE);
+    }
+
+    // Use snprintf to format the integer as a string
+    snprintf(str, digits + 1, "%x", num);
+
+    // Return the dynamically allocated string
+    return str;
+}
+
+uint8_t get_segment_number(void *arg)
+{
+    l_ezlopi_device_t *device = ezlopi_device_get_head();
+    uint8_t found_item = 0;
+
+    uint8_t segment_index = 0;
+    char *item_id_rx = 0, *formatted_item_id = 0;
+
+    cJSON* params = (cJSON*)arg;
+    CJSON_GET_VALUE_STRING(params, "_id", item_id_rx);
+
+    ESP_LOGW("", "ID RX %s", item_id_rx);
+
+    while(device)
+    {
+        l_ezlopi_item_t *item = device->items;
+        while(item)
+        {
+            ESP_LOGW("", "segment Index %d", segment_index);
+            formatted_item_id = intToString(item->cloud_properties.item_id);
+
+            ESP_LOGW("item_id_recieved : ", "%s",item_id_rx);
+            ESP_LOGW("item_id : ", "%s" ,formatted_item_id);
+            if(!strcmp(formatted_item_id, item_id_rx))
+            {
+                return segment_index;
+                found_item = 1;
+                break;
+            }
+            item = item->next;
+        }
+        if(found_item)
+        {
+            break;
+        }
+        device = device->next;
+        segment_index++;
+    }
+    free(formatted_item_id);
+    return segment_index;
+}

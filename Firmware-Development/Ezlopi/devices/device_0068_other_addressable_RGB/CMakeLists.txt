@@ -10,6 +10,7 @@ idf_component_register(SRCS "get_cjson_value.c" "device_0068_other_addressable_R
                         ezlopi_timer 
                         ezlopi_devices 
                         ezlopi_cloud_constants 
+                        ezlopi_valueformatter
                         gpio_isr_service
 
                         led

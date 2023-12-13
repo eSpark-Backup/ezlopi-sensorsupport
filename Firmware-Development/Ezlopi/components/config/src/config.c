@@ -871,7 +871,7 @@ void config_set_channels(uint8_t seg_id) {
 	// led_config.channels = seg_id < led_config.channels ? led_config.channels : seg_id+1;
 	led_config.channel[led_config.channels] = (struct LED_CONFIG_CHANNEL*)calloc(1,sizeof(struct LED_CONFIG_CHANNEL));
 	led_config.channel[led_config.channels]->segment_id = seg_id;
-	led_config.channel[led_config.channels]->selected = true;
+	led_config.channel[led_config.channels]->selected = false;
 	led_config.channel[led_config.channels]->mode = FX_MODE_SOLID;
 	led_config.channel[led_config.channels]->speed = 1000;
 

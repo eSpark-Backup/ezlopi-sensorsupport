@@ -25,6 +25,7 @@ char* LEDModesStrings[] = {
 
 static void processLedSegments(void *arg)
 {
+    printf("GET: Processing LED Segments\n");
     char *formatted_key = NULL;
     cJSON *cjson_properties = (cJSON *)arg;
     
@@ -49,7 +50,7 @@ static void processLedSegments(void *arg)
 
 static void processLedEffects(void *arg)
 {
-    printf("Processing LED Effects\n");
+    printf("GET: Processing LED Effects\n");
 
     char *formatted_value = NULL;
     cJSON* cjson_properties = (cJSON*)arg;
@@ -74,107 +75,107 @@ static void processLedEffects(void *arg)
 
 static void processLedPalettes(void *arg) 
 {
-    printf("Processing LED Palettes\n");
+    printf("GET: Processing LED Palettes\n");
 }
 
 static void processSwitch(void *arg) 
 {
-    printf("Processing Switch\n");
+    printf("GET: Processing Switch\n");
 }
 
 static void processDimmer(void *arg) 
 {
-    printf("Processing Dimmer\n");
+    printf("GET: Processing Dimmer\n");
 }
 
 static void processColorEffectSelect(void *arg) 
 {
-    printf("Processing Color Effect Select\n");
+    printf("GET: Processing Color Effect Select\n");
 }
 
 static void processColorPaletteSelect(void *arg) 
 {
-    printf("Processing Color Palette Select\n");
+    printf("GET: Processing Color Palette Select\n");
 }
 
 static void processColorSegmentGrouping(void *arg) 
 {
-    printf("Processing Color Segment Grouping\n");
+    printf("GET: Processing Color Segment Grouping\n");
 }
 
 static void processColorSegmentSpacing(void *arg) 
 {
-    printf("Processing Color Segment Spacing\n");
+    printf("GET: Processing Color Segment Spacing\n");
 }
 
 static void processColorSegmentOffset(void *arg) 
 {
-    printf("Processing Color Segment Offset\n");
+    printf("GET: Processing Color Segment Offset\n");
 }
 
 static void processColorSegmentReverse(void *arg) 
 {
-    printf("Processing Color Segment Reverse\n");
+    printf("GET: Processing Color Segment Reverse\n");
 }
 
 static void processColorSegmentMirror(void *arg) 
 {
-    printf("Processing Color Segment Mirror\n");
+    printf("GET: Processing Color Segment Mirror\n");
 }
 
 static void processColorEffectSpeed(void *arg) 
 {
-    printf("Processing Color Effect Speed\n");
+    printf("GET: Processing Color Effect Speed\n");
 }
 
 static void processColorEffectIntensity(void *arg) 
 {
-    printf("Processing Color Effect Intensity\n");
+    printf("GET: Processing Color Effect Intensity\n");
 }
 
 static void processColorEffectCustomSlider1(void *arg) 
 {
-    printf("Processing Color Effect Custom Slider 1\n");
+    printf("GET: Processing Color Effect Custom Slider 1\n");
 }
 
 static void processColorEffectCustomSlider2(void *arg) 
 {
-    printf("Processing Color Effect Custom Slider 2\n");
+    printf("GET: Processing Color Effect Custom Slider 2\n");
 }
 
 static void processColorEffectCustomSlider3(void *arg) 
 {
-    printf("Processing Color Effect Custom Slider 3\n");
+    printf("GET: Processing Color Effect Custom Slider 3\n");
 }
 
 static void processColorEffectOption1(void *arg) 
 {
-    printf("Processing Color Effect Option 1\n");
+    printf("GET: Processing Color Effect Option 1\n");
 }
 
 static void processColorEffectOption2(void *arg) 
 {
-    printf("Processing Color Effect Option 2\n");
+    printf("GET: Processing Color Effect Option 2\n");
 }
 
 static void processColorEffectOption3(void *arg) 
 {
-    printf("Processing Color Effect Option 3\n");
+    printf("GET: Processing Color Effect Option 3\n");
 }
 
 static void processColorSegmentPrimaryColor(void) 
 {
-    printf("Processing Color Segment Primary Color\n");
+    printf("GET: Processing Color Segment Primary Color\n");
 }
 
 static void processColorSegmentSecondaryColor(void) 
 {
-    printf("Processing Color Segment Secondary Color\n");
+    printf("GET: Processing Color Segment Secondary Color\n");
 }
 
 static void processColorSegmentTertiaryColor(void) 
 {
-    printf("Processing Color Segment Tertiary Color\n");
+    printf("GET: Processing Color Segment Tertiary Color\n");
 }
 
 static void processUnknown(void) 
@@ -222,5 +223,5 @@ void process_item_get(const char* itemName, void *arg)
     }
 
     // If itemName is not found, execute default handler
-    itemHandlers[i-1].itemHandler(arg);
+    itemHandlers[i].itemHandler(arg);
 }

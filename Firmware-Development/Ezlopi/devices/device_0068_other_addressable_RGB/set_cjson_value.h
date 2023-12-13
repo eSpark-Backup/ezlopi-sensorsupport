@@ -2,6 +2,7 @@
 #define SET_CJSON_VALUE_FILE_H
 
 enum ItemNames {
+    LED_SEGMENTS,
     LED_EFFECTS,
     LED_PALETTES,
     SWITCH,
@@ -24,7 +25,7 @@ enum ItemNames {
     COLOR_SEGMENT_PRIMARY_COLOR,
     COLOR_SEGMENT_SECONDARY_COLOR,
     COLOR_SEGMENT_TERNARY_COLOR,
-    UNKNOWN
+    ITEM_UNKNOWN_MAX
 };
 
 typedef struct {
