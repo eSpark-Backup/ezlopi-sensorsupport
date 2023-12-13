@@ -21,11 +21,11 @@ float temp_in_float; //for float
 float humidity_in_float; //for humidity
 
 
-#include "sensor_0067_oneWire_DHT22.h"
+#include "sensor_0067_oneWire_DHT21.h"
 
 struct dht21 sensor_data;//@
 
-static int dht22_sensor_prepare_v3(void *arg);
+static int dht21_sensor_prepare_v3(void *arg);
 static int dht22_sensor_init_v3(l_ezlopi_item_t *item);
 static int dht22_sensor_get_sensor_value_v3(l_ezlopi_item_t *item, void *args);
 static int dht11_sensor_setup_item_properties_temperature(l_ezlopi_item_t *item, cJSON *cj_device, void *user_arg);
@@ -35,7 +35,7 @@ static int dht22_sensor_setup_device_cloud_properties_temperature(l_ezlopi_devic
 
 static int __notify(l_ezlopi_item_t *item);
 
-int sensor_0067_oneWire_DHT22(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg)
+int sensor_0067_oneWire_DHT21(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg)
 {
     TRACE_B("Action: %s", ezlopi_actions_to_string(action));
     int ret = 0;
@@ -43,7 +43,7 @@ int sensor_0067_oneWire_DHT22(e_ezlopi_actions_t action, l_ezlopi_item_t *item, 
     {
     case EZLOPI_ACTION_PREPARE:
     {
-        dht22_sensor_prepare_v3(arg);
+        dht21_sensor_prepare_v3(arg);
         break;
     }
     case EZLOPI_ACTION_INITIALIZE:
@@ -85,7 +85,7 @@ static int __notify(l_ezlopi_item_t *item)
     int ret = 0;
     if (item)
     {
-        s_ezlopi_dht22_data_t2 *dht22_data = (s_ezlopi_dht22_data_t2 *)item->user_arg;
+        s_ezlopi_dht21_data_t *dht22_data = (s_ezlopi_dht21_data_t *)item->user_arg;
         if (dht22_data)
         {
 
@@ -135,7 +135,7 @@ static int dht22_sensor_get_sensor_value_v3(l_ezlopi_item_t *item, void *args)
     if (item && cj_properties)
     {
 
-        s_ezlopi_dht22_data_t2 *dht22_data = (s_ezlopi_dht22_data_t2 *)item->user_arg;
+        s_ezlopi_dht21_data_t *dht22_data = (s_ezlopi_dht21_data_t *)item->user_arg;
 
         if (ezlopi_item_name_temp == item->cloud_properties.item_name)
         {
@@ -159,7 +159,7 @@ static int dht22_sensor_get_sensor_value_v3(l_ezlopi_item_t *item, void *args)
     return ret;
 }
 
-static int dht22_sensor_prepare_v3(void *arg)
+static int dht21_sensor_prepare_v3(void *arg)
 {
     int ret = 0;
     s_ezlopi_prep_arg_t *prep_arg = (s_ezlopi_prep_arg_t *)arg;
@@ -171,20 +171,20 @@ static int dht22_sensor_prepare_v3(void *arg)
             l_ezlopi_device_t *parent_device = ezlopi_device_add_device();
             if (parent_device)
             {
-                s_ezlopi_dht22_data_t2 *dht22_sensor_data = (s_ezlopi_dht22_data_t2 *)malloc(sizeof(s_ezlopi_dht22_data_t2));
+                s_ezlopi_dht21_data_t *dht22_sensor_data = (s_ezlopi_dht21_data_t *)malloc(sizeof(s_ezlopi_dht21_data_t));
 
                 if (dht22_sensor_data)
                 {
 
                     dht22_sensor_setup_device_cloud_properties_temperature(parent_device, cjson_device);
 
-                    l_ezlopi_item_t *item_temperature = ezlopi_device_add_item_to_device(parent_device, sensor_0067_oneWire_DHT22);
+                    l_ezlopi_item_t *item_temperature = ezlopi_device_add_item_to_device(parent_device, sensor_0067_oneWire_DHT21);
                     if (item_temperature)
                     {
                         dht11_sensor_setup_item_properties_temperature(item_temperature, cjson_device, dht22_sensor_data);
                     }
 
-                    l_ezlopi_item_t *item_humidity = ezlopi_device_add_item_to_device(parent_device, sensor_0067_oneWire_DHT22);
+                    l_ezlopi_item_t *item_humidity = ezlopi_device_add_item_to_device(parent_device, sensor_0067_oneWire_DHT21);
                     if (item_humidity)
                     {
 

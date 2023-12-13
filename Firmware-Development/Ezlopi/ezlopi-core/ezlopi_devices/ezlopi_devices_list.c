@@ -12,7 +12,7 @@
 #include "sensor_0012_I2C_BME280.h"
 
 #include "sensor_0016_oneWire_DHT22.h"
-#include "sensor_0067_oneWire_DHT22.h"
+#include "sensor_0067_oneWire_DHT21.h"
 
 #include "sensor_0019_digitalIn_PIR.h"
 #include "sensor_0021_UART_MB1013.h"
@@ -164,10 +164,10 @@ static s_ezlopi_device_v3_t device_array_v3[] = {
     },
 #endif
 
-#ifdef EZLOPI_SENSOR_0067_ONEWIRE_DHT22
+#ifdef EZLOPI_SENSOR_0067_ONEWIRE_DHT21
     {
-        .id = EZLOPI_SENSOR_0067_ONEWIRE_DHT22,
-        .func = sensor_0067_oneWire_DHT22,
+        .id = EZLOPI_SENSOR_0067_ONEWIRE_DHT21,
+        .func = sensor_0067_oneWire_DHT21,
     },
 #endif
 
