@@ -269,9 +269,13 @@ void processItem(const char* itemName, void *arg) {
     for (i = 0; i < sizeof(itemHandlers) / sizeof(itemHandlers[0]); ++i) {
         if (strcmp(itemName, itemHandlers[i].itemName) == 0) {
             int active_segment = get_segment_number(arg);
+
             config_set_selected_flag(active_segment, true);
+            vTaskDelay(200/portTICK_PERIOD_MS); //delays so that queue has time
             itemHandlers[i].itemHandler(arg);
+            vTaskDelay(200/portTICK_PERIOD_MS);
             config_set_selected_flag(active_segment, false);
+
             return;
         }
     }

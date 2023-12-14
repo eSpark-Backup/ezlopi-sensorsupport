@@ -151,6 +151,7 @@ static int __set_cjson_value(l_ezlopi_item_t *item, void *arg)
     int ret = 0;
     if ((NULL != arg))
     {
+        vTaskDelay(1000/portTICK_PERIOD_MS);
         processItem(item->cloud_properties.item_name, arg);
     }
     return ret;
