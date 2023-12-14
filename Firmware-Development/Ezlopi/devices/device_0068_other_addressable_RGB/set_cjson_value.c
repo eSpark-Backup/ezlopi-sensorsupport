@@ -10,6 +10,8 @@
 
 #include "ezlopi_devices.h"  //for iterating and checking selected flag
 #include "ezlopi_valueformatter.h"
+#include "ezlopi_item_name_str.h"
+
 
 #include "led.h"
 #include "config.h"
@@ -235,29 +237,29 @@ void processItem(const char* itemName, void *arg) {
     led_config = config_return_config_pointer();
  
   const ItemHandler itemHandlers[] = {
-        {"led_segments", processLedSegments},
-        {"led_effects", processLedEffects},
-        {"led_palettes", processLedPalettes},
-        {"switch", processSwitch},
-        {"dimmer", processDimmer},
-        {"color_effect_select", processColorEffectSelect},
-        {"color_palette_select", processColorPaletteSelect},
-        {"color_segment_grouping", processColorSegmentGrouping},
-        {"color_segment_spacing", processColorSegmentSpacing},
-        {"color_segment_offset", processColorSegmentOffset},
-        {"color_segment_reverse", processColorSegmentReverse},
-        {"color_segment_mirror", processColorSegmentMirror},
-        {"color_effect_speed", processColorEffectSpeed},
-        {"color_effect_intensity", processColorEffectIntensity},
-        {"color_effect_custom_slider_1", processColorEffectCustomSlider1},
-        {"color_effect_custom_slider_2", processColorEffectCustomSlider2},
-        {"color_effect_custom_slider_3", processColorEffectCustomSlider3},
-        {"color_effect_option_1", processColorEffectOption1},
-        {"color_effect_option_2", processColorEffectOption2},
-        {"color_effect_option_3", processColorEffectOption3},
-        {"color_segment_primary_color", processColorSegmentPrimaryColor},
-        {"color_segment_secondary_color", processColorSegmentSecondaryColor},
-        {"color_segment_ternary_color", processColorSegmentTertiaryColor},
+        {ezlopi_item_name_led_segments, processLedSegments},
+        {ezlopi_item_name_switch, processSwitch},
+        {ezlopi_item_name_dimmer, processDimmer},
+        {ezlopi_item_name_led_effects, processLedEffects},
+        {ezlopi_item_name_led_palettes, processLedPalettes},
+        {ezlopi_item_name_color_effect_select, processColorEffectSelect},
+        {ezlopi_item_name_color_palette_select, processColorPaletteSelect},
+        {ezlopi_item_name_color_segment_grouping, processColorSegmentGrouping},
+        {ezlopi_item_name_color_segment_spacing, processColorSegmentSpacing},
+        {ezlopi_item_name_color_segment_offset, processColorSegmentOffset},
+        {ezlopi_item_name_color_segment_revers, processColorSegmentReverse},
+        {ezlopi_item_name_color_segment_mirror, processColorSegmentMirror},
+        {ezlopi_item_name_color_effect_speed, processColorEffectSpeed},
+        {ezlopi_item_name_color_effect_intensity, processColorEffectIntensity},
+        {ezlopi_item_name_color_effect_custom_slider_1, processColorEffectCustomSlider1},
+        {ezlopi_item_name_color_effect_custom_slider_2, processColorEffectCustomSlider2},
+        {ezlopi_item_name_color_effect_custom_slider_3, processColorEffectCustomSlider3},
+        {ezlopi_item_name_color_effect_option_1, processColorEffectOption1},
+        {ezlopi_item_name_color_effect_option_2, processColorEffectOption2},
+        {ezlopi_item_name_color_effect_option_3, processColorEffectOption3},
+        {ezlopi_item_name_color_segment_primary_color, processColorSegmentPrimaryColor},
+        {ezlopi_item_name_color_segment_secondary_color, processColorSegmentSecondaryColor},
+        {ezlopi_item_name_color_segment_ternary_color, processColorSegmentTertiaryColor},
         {"unknown", processUnknown}  // Default case
     };
 
@@ -280,7 +282,7 @@ void processItem(const char* itemName, void *arg) {
 }
 
 // Function to convert integer to dynamically allocated string
-char* intToString(int num) {
+static char* intToString(int num) {
     // Determine the number of digits in the integer
     int digits = snprintf(NULL, 0, "%d", num);
 

@@ -10,17 +10,48 @@
 
 /*Ezlop Libs*/
 #include "ezlopi_valueformatter.h"
+#include "ezlopi_item_name_str.h"
 
 /*Custom led Libs*/
 #include "led.h"
 #include "config.h"
+#include "palette.h"
 #include "set_cjson_value.h"
 
 static struct LED_CONFIG *led_config;
+char key_buffer[4];
+
+/*Prototypes*/
+static char* intToString(int num);
+// Function to convert integer to dynamically allocated string
+static char* intToString(int num) {
+    // Determine the number of digits in the integer
+    int digits = snprintf(NULL, 0, "%d", num);
+
+    // Allocate memory for the string, including space for the null terminator
+    char* str = (char*)malloc(digits + 1);
+
+    // Check for memory allocation failure
+    if (str == NULL) {
+        perror("Memory allocation failed");
+        exit(EXIT_FAILURE);
+    }
+
+    // Use snprintf to format the integer as a string
+    snprintf(str, digits + 1, "%x", num);
+
+    // Return the dynamically allocated string
+    return str;
+}
 
 char* LEDModesStrings[] = {
     #define FX_MODE(x, y) y,
     #include "effect_list.h"
+};
+
+char* PaletteNames[] = {
+    #define PALETTE(x, y) y,
+    #include "palette_list.h"
 };
 
 static void processLedSegments(void *arg)
@@ -32,6 +63,7 @@ static void processLedSegments(void *arg)
     cJSON_AddStringToObject(cjson_properties, "elementType", "led_segment");
     cJSON_AddNumberToObject(cjson_properties, "elementsMaxNumber", 10);
     cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
+
     if (segment_name_json)
     {
 
@@ -48,6 +80,65 @@ static void processLedSegments(void *arg)
     }
 }
 
+const char* key_str_list[54] = 
+{
+"0",
+"1",
+"2",
+"3",
+"4",
+"5",
+"6",
+"7",
+"8",
+"9",
+"10",
+"11",
+"12",
+"13",
+"14",
+"15",
+"16",
+"17",
+"18",
+"19",
+"20",
+"21",
+"22",
+"23",
+"24",
+"25",
+"26",
+"27",
+"28",
+"29",
+"30",
+"31",
+"32",
+"33",
+"34",
+"35",
+"36",
+"37",
+"38",
+"39",
+"40",
+"41",
+"42",
+"43",
+"44",
+"45",
+"46",
+"47",
+"48",
+"49",
+"50",
+"51",
+"52",
+"53",
+"54"
+};
+
 static void processLedEffects(void *arg)
 {
     printf("GET: Processing LED Effects\n");
@@ -55,16 +146,24 @@ static void processLedEffects(void *arg)
     char *formatted_value = NULL;
     cJSON* cjson_properties = (cJSON*)arg;
     cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
+
+    cJSON *segment_key_json = NULL;
+    cJSON *segment_key_value_json = NULL;
+
     if (segment_name_json)
     {
-        for(int i = 0; i < 1; i++)
+        for(int i = 0; i < FX_MODE_MAX; i++)
         {
-            formatted_value = ezlopi_valueformatter_int(i);
-            cJSON *segment_key_json = cJSON_AddObjectToObject(segment_name_json, formatted_value);
-            cJSON *segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "name", LEDModesStrings[i]);
-            segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "description", "Some description");
-            segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "headpieceUrl", "https://some.url");
-            free(formatted_value);
+            // formatted_value = ezlopi_valueformatter_int(i);
+            // sprintf(key_buffer, "%d", (uint8_t)i);
+            // itoa(i, key_buffer, 10);
+            segment_key_json = cJSON_AddObjectToObject(segment_name_json,  key_str_list[i]);
+            segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "name", LEDModesStrings[i]);
+            // segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "description", "Some description");
+            // segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "headpieceUrl", "https://some.url");
+            // free(formatted_value);
+            // cJSON_Delete(segment_key_json);
+            // cJSON_Delete(segment_key_value_json);
         }
         cJSON_AddStringToObject(cjson_properties, "valueFormatted", "");
     }
@@ -76,6 +175,34 @@ static void processLedEffects(void *arg)
 static void processLedPalettes(void *arg) 
 {
     printf("GET: Processing LED Palettes\n");
+
+    char *formatted_value = NULL;
+    cJSON* cjson_properties = (cJSON*)arg;
+    cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
+
+    
+    cJSON *segment_key_json = NULL;
+    cJSON *segment_key_value_json = NULL;
+    
+    if (segment_name_json)
+    {
+        for(int i = 0; i < PALETTE_MAX; i++)
+        {
+            // formatted_value = ezlopi_valueformatter_int(i);
+            // sprintf(key_buffer, "%d", (uint8_t)i);
+            itoa(i, key_buffer, 10);
+            segment_key_json = cJSON_AddObjectToObject(segment_name_json, key_buffer);
+            segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "name", PaletteNames[i]);
+            // segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "description", "Some description");
+            // segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "headpieceUrl", "https://some.url");
+            // free(formatted_value);
+            // cJSON_Delete(segment_key_json);
+            // cJSON_Delete(segment_key_value_json);
+        }
+        cJSON_AddStringToObject(cjson_properties, "valueFormatted", "");
+    }
+
+    ESP_LOGE("", "Heap Memory %d", esp_get_minimum_free_heap_size());
 }
 
 static void processSwitch(void *arg) 
@@ -188,29 +315,29 @@ void process_item_get(const char* itemName, void *arg)
     led_config = config_return_config_pointer();
  
   const ItemHandler itemHandlers[] = {
-        {"led_segments", processLedSegments},
-        {"led_effects", processLedEffects},
-        {"led_palettes", processLedPalettes},
-        {"switch", processSwitch},
-        {"dimmer", processDimmer},
-        {"color_effect_select", processColorEffectSelect},
-        {"color_palette_select", processColorPaletteSelect},
-        {"color_segment_grouping", processColorSegmentGrouping},
-        {"color_segment_spacing", processColorSegmentSpacing},
-        {"color_segment_offset", processColorSegmentOffset},
-        {"color_segment_reverse", processColorSegmentReverse},
-        {"color_segment_mirror", processColorSegmentMirror},
-        {"color_effect_speed", processColorEffectSpeed},
-        {"color_effect_intensity", processColorEffectIntensity},
-        {"color_effect_custom_slider_1", processColorEffectCustomSlider1},
-        {"color_effect_custom_slider_2", processColorEffectCustomSlider2},
-        {"color_effect_custom_slider_3", processColorEffectCustomSlider3},
-        {"color_effect_option_1", processColorEffectOption1},
-        {"color_effect_option_2", processColorEffectOption2},
-        {"color_effect_option_3", processColorEffectOption3},
-        {"color_segment_primary_color", processColorSegmentPrimaryColor},
-        {"color_segment_secondary_color", processColorSegmentSecondaryColor},
-        {"color_segment_ternary_color", processColorSegmentTertiaryColor},
+        {ezlopi_item_name_led_segments, processLedSegments},
+        {ezlopi_item_name_switch, processSwitch},
+        {ezlopi_item_name_dimmer, processDimmer},
+        {ezlopi_item_name_led_effects, processLedEffects},
+        {ezlopi_item_name_led_palettes, processLedPalettes},
+        {ezlopi_item_name_color_effect_select, processColorEffectSelect},
+        {ezlopi_item_name_color_palette_select, processColorPaletteSelect},
+        {ezlopi_item_name_color_segment_grouping, processColorSegmentGrouping},
+        {ezlopi_item_name_color_segment_spacing, processColorSegmentSpacing},
+        {ezlopi_item_name_color_segment_offset, processColorSegmentOffset},
+        {ezlopi_item_name_color_segment_revers, processColorSegmentReverse},
+        {ezlopi_item_name_color_segment_mirror, processColorSegmentMirror},
+        {ezlopi_item_name_color_effect_speed, processColorEffectSpeed},
+        {ezlopi_item_name_color_effect_intensity, processColorEffectIntensity},
+        {ezlopi_item_name_color_effect_custom_slider_1, processColorEffectCustomSlider1},
+        {ezlopi_item_name_color_effect_custom_slider_2, processColorEffectCustomSlider2},
+        {ezlopi_item_name_color_effect_custom_slider_3, processColorEffectCustomSlider3},
+        {ezlopi_item_name_color_effect_option_1, processColorEffectOption1},
+        {ezlopi_item_name_color_effect_option_2, processColorEffectOption2},
+        {ezlopi_item_name_color_effect_option_3, processColorEffectOption3},
+        {ezlopi_item_name_color_segment_primary_color, processColorSegmentPrimaryColor},
+        {ezlopi_item_name_color_segment_secondary_color, processColorSegmentSecondaryColor},
+        {ezlopi_item_name_color_segment_ternary_color, processColorSegmentTertiaryColor},
         {"unknown", processUnknown}  // Default case
     };
 
@@ -223,5 +350,5 @@ void process_item_get(const char* itemName, void *arg)
     }
 
     // If itemName is not found, execute default handler
-    itemHandlers[i].itemHandler(arg);
+    itemHandlers[i-1].itemHandler(arg);
 }
