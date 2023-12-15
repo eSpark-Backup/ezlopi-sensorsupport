@@ -17,13 +17,12 @@
 #include "dht22.h"
 #include "dht21.h" //include header files
 #include "utils.h" //include header files
-float temp_in_float; //for float
-float humidity_in_float; //for humidity
-
+// float temp_in_float;     // for float
+// float humidity_in_float; // for humidity
 
 #include "sensor_0067_oneWire_DHT21.h"
 
-struct dht21 sensor_data;//@
+// struct dht21 sensor_data;//@
 
 static int dht21_sensor_prepare_v3(void *arg);
 static int dht22_sensor_init_v3(l_ezlopi_item_t *item);
@@ -79,10 +78,13 @@ static int dht22_sensor_init_v3(l_ezlopi_item_t *item)
 
     return ret;
 }
-
 static int __notify(l_ezlopi_item_t *item)
 {
     int ret = 0;
+    float temp_in_float = 0;     // for float
+    static float humidity_in_float = 0; // for humidity
+
+    s_ezlopi_dht21_data_t *dht22_sensor_data = (s_ezlopi_dht21_data_t *)malloc(sizeof(s_ezlopi_dht21_data_t));
     if (item)
     {
         s_ezlopi_dht21_data_t *dht22_data = (s_ezlopi_dht21_data_t *)item->user_arg;
@@ -91,29 +93,30 @@ static int __notify(l_ezlopi_item_t *item)
 
             if (ezlopi_item_name_temp == item->cloud_properties.item_name)
             {
-            //@ my code
-            dht21_poll_data(item->interface.onewire_master.onewire_pin, &sensor_data);
-            if (dht21_checksum_ok(&sensor_data)) {
-			temp_in_float = (float)dht21_temperature(&sensor_data)/10;
-			humidity_in_float = (float)dht21_humidity(&sensor_data)/10;
-			LOG("temp = %.2f, hum = %.2f", temp_in_float, humidity_in_float);
-            
-		    }
-		    memset(&sensor_data, 0, sizeof(sensor_data));
-            //@ end my code
-                
+                //@ my code
+                dht21_poll_data(item->interface.onewire_master.onewire_pin, &(dht22_sensor_data->sensor_data));
+                if (dht21_checksum_ok(&(dht22_sensor_data->sensor_data)))
+                {
+                    temp_in_float = (float)dht21_temperature(&(dht22_sensor_data->sensor_data)) / 10;
+                    humidity_in_float = (float)dht21_humidity(&(dht22_sensor_data->sensor_data)) / 10;
+                    LOG("temp = %.2f, hum = %.2f", temp_in_float, humidity_in_float);
+                }
+                memset(&(dht22_sensor_data->sensor_data), 0, sizeof(dht22_sensor_data->sensor_data));
+                //@ end my code
+
                 float temperature = temp_in_float;
+                LOG("temp = %.2f", temperature); // print temperature on LOG
                 // TRACE_E("Temperature: %.2f", temperature);
                 if (fabs(dht22_data->temperature - temperature) > 0.5)
                 {
                     dht22_data->temperature = temperature;
                     ezlopi_device_value_updated_from_device_v3(item);
                 }
-                
             }
             else if (ezlopi_item_name_humidity == item->cloud_properties.item_name)
             {
                 float humidity = humidity_in_float;
+                LOG("humidity = %.2f", humidity); // print humidity on LOG
                 // TRACE_E("Humidity: %.2f", humidity);
                 if (fabs(dht22_data->humidity - humidity) > 0.5)
                 {
@@ -128,6 +131,7 @@ static int __notify(l_ezlopi_item_t *item)
     }
     return ret;
 }
+
 static int dht22_sensor_get_sensor_value_v3(l_ezlopi_item_t *item, void *args)
 {
     int ret = 0;
@@ -140,7 +144,7 @@ static int dht22_sensor_get_sensor_value_v3(l_ezlopi_item_t *item, void *args)
         if (ezlopi_item_name_temp == item->cloud_properties.item_name)
         {
 
-            cJSON_AddNumberToObject(cj_properties, "value", dht22_data->temperature); 
+            cJSON_AddNumberToObject(cj_properties, "value", dht22_data->temperature);
             char *valueFormatted = ezlopi_valueformatter_float(dht22_data->temperature);
             cJSON_AddStringToObject(cj_properties, "valueFormatted", valueFormatted);
             free(valueFormatted);
@@ -149,7 +153,7 @@ static int dht22_sensor_get_sensor_value_v3(l_ezlopi_item_t *item, void *args)
 
         if (ezlopi_item_name_humidity == item->cloud_properties.item_name)
         {
-            cJSON_AddNumberToObject(cj_properties, "value", dht22_data->humidity); 
+            cJSON_AddNumberToObject(cj_properties, "value", dht22_data->humidity);
             char *valueFormatted = ezlopi_valueformatter_float(dht22_data->humidity);
             cJSON_AddStringToObject(cj_properties, "valueFormatted", valueFormatted);
             free(valueFormatted);
