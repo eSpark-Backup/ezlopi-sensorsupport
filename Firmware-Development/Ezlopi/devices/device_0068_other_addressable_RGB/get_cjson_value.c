@@ -205,14 +205,29 @@ static void processLedPalettes(void *arg)
     ESP_LOGE("", "Heap Memory %d", esp_get_minimum_free_heap_size());
 }
 
+
 static void processSwitch(void *arg) 
 {
     printf("GET: Processing Switch\n");
+
+    cJSON *param = (cJSON *)arg;
+
+    cJSON_AddBoolToObject(param, "value", (led_config->channel[segment_index]->brightness) ? true : false);
+    char *formatted_val = ezlopi_valueformatter_int(50);
+    cJSON_AddStringToObject(param, "valueFormatted", formatted_val);
+    free(formatted_val);
 }
 
 static void processDimmer(void *arg) 
 {
     printf("GET: Processing Dimmer\n");
+
+    cJSON *param = (cJSON *)arg;
+
+    cJSON_AddNumberToObject(param, "value", (int)(led_config->channel[segment_index]->brightness * 100));
+    char *formatted_val = ezlopi_valueformatter_int((int)(led_config->channel[segment_index]->brightness * 100));
+    cJSON_AddStringToObject(param, "valueFormatted", formatted_val);
+    free(formatted_val);
 }
 
 static void processColorEffectSelect(void *arg) 
@@ -344,6 +359,7 @@ void process_item_get(const char* itemName, void *arg)
     size_t i;
     for (i = 0; i < sizeof(itemHandlers) / sizeof(itemHandlers[0]); ++i) {
         if (strcmp(itemName, itemHandlers[i].itemName) == 0) {
+            vTaskDelay(10/portTICK_PERIOD_MS);
             itemHandlers[i].itemHandler(arg);
             return;
         }

@@ -149,6 +149,12 @@ static void setDefaults() {
 		led_config.channel[i]->color[1] = 0x00FF00;
 		led_config.channel[i]->color[2] = 0x0000FF;
 
+		led_config.channel[i]->color_buffer[0] = led_config.channel[i]->color[0];
+		led_config.channel[i]->color_buffer[1] = led_config.channel[i]->color[1];
+		led_config.channel[i]->color_buffer[2] = led_config.channel[i]->color[2];
+
+		led_config.channel[i]->brightness = 1;
+
 		led_config.channel[i]->palette = DEFAULT_PALETTE;
 
 		led_config.channel[i]->sx = 10;
@@ -227,10 +233,46 @@ void config_setColor(uint32_t* client_color) {
 				ESP_LOGI(TAG, "COLOR RECIEVED : %x", client_color[j]);
 				// led_config.config_color[j] = *(client_color+j);
 				led_config.channel[i]->color[j] = *(client_color+j);
+				led_config.channel[i]->color_buffer[j] = led_config.channel[i]->color[j];
 			}
 		}
 	}
 	led_set_config(&led_config);
+}
+
+void config_set_segment_brightness(uint8_t brightness)
+{
+
+	float brightness_float = ((float)(brightness)/(100.f));
+	
+	for (int i = 0; i < config_get_channels(); i++) {
+		if(led_config.channel[i] != NULL && led_config.channel[i]->selected){
+			for(int j = 0; j<3; j++){
+				ESP_LOGI(TAG, "BRIGHTNESS SET TO : %f", brightness_float);
+				// original_color[j] = led_config.channel[i]->color[j];
+
+				// led_config.channel[i]->color[j] = (brightness_float)*(led_config.channel[i]->color_buffer[j]);
+			
+				led_config.channel[i]->brightness = brightness_float;
+			}
+		}
+	}
+	led_set_config(&led_config);
+}
+
+void config_switch(bool flag) //TODO:
+{
+	uint8_t old_brightness = 0;
+	int i;
+	for (i = 0; i < config_get_channels(); i++) {
+		if(led_config.channel[i] != NULL && led_config.channel[i]->selected){
+				old_brightness = led_config.channel[i]->brightness;		
+				led_config.channel[i]->brightness = flag ? led_config.channel[i]->brightness : 0;
+				break;
+		}
+	}
+	led_set_config(&led_config);
+	led_config.channel[i]->brightness = old_brightness;
 }
 
 void config_set_brightness(uint8_t bri){
@@ -886,6 +928,12 @@ void config_set_channels(uint8_t seg_id) {
 	led_config.channel[led_config.channels]->color[0] = 0xFF0000;
 	led_config.channel[led_config.channels]->color[1] = 0x00FF00;
 	led_config.channel[led_config.channels]->color[2] = 0x0000FF;
+
+	led_config.channel[led_config.channels]->color_buffer[0] = led_config.channel[led_config.channels]->color[0];
+	led_config.channel[led_config.channels]->color_buffer[1] = led_config.channel[led_config.channels]->color[1];
+	led_config.channel[led_config.channels]->color_buffer[2] = led_config.channel[led_config.channels]->color[2];
+
+	led_config.channel[led_config.channels]->brightness = 1;
 
 	led_config.channel[led_config.channels]->palette = DEFAULT_PALETTE; 
 	led_config.channels++;

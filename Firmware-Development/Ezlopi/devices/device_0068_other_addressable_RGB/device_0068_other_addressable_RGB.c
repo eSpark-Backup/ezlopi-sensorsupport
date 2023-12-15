@@ -55,8 +55,8 @@ enum ItemNames unique_parent_device_item_to_prepare[] =
 //Child Device Items to prepare
 enum ItemNames common_child_device_item_to_prepare[] =
 {
-    // SWITCH,
-    // DIMMER,
+    SWITCH,
+    DIMMER,
     COLOR_EFFECT_SELECT,
     // COLOR_PALETTE_SELECT,
     // COLOR_SEGMENT_GROUPING,
@@ -261,14 +261,15 @@ static void __prepare_ADDRESSABLE_LED_dimmer_item(l_ezlopi_item_t *item, cJSON *
     // item->cloud_properties.value_type = value_type_int;
     // item->interface_type = EZLOPI_DEVICE_INTERFACE_PWM; 
 
+    item->interface_type = EZLOPI_DEVICE_INTERFACE_PWM;
     item->cloud_properties.has_getter = true;
     item->cloud_properties.has_setter = true;
-    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
-    item->cloud_properties.item_name = ezlopi_item_name_dimmer,
     item->cloud_properties.show = true;
-    item->cloud_properties.scale = NULL;
+    item->cloud_properties.item_name = ezlopi_item_name_dimmer,
     item->cloud_properties.value_type = value_type_int;
-    item->interface_type = EZLOPI_DEVICE_INTERFACE_PWM;
+    item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
+    item->cloud_properties.scale = NULL;
+    
     item->interface.pwm.channel = 0;
     item->interface.pwm.value = 0;
     CJSON_GET_VALUE_INT(cj_device, "gpio", item->interface.pwm.gpio_num);
@@ -502,16 +503,16 @@ static int __prepare(void *arg)
             {
                 current_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
                 add_item_to_device_struct(current_item, return_prep_fcn_ptr(unique_parent_device_item_to_prepare[i]));
+                ESP_LOGW("", "Added Unique Item");
                 current_item = current_item->next;
-                ESP_LOGW("", "Adding Unique Items");
             }
             /*add common items to parent device*/
             for(int i = 0; i < sizeof(common_child_device_item_to_prepare) / sizeof(common_child_device_item_to_prepare[0]); i++)
             {
                 current_item = ezlopi_device_add_item_to_device(device, device_0068_other_addressable_RGB);
                 add_item_to_device_struct(current_item, return_prep_fcn_ptr(common_child_device_item_to_prepare[i]));
+                ESP_LOGW("", "Added Common Item");
                 current_item = current_item->next;
-                ESP_LOGW("", "Adding Common Items");
             }
             /*now prepare all items which are added*/
             prepare_all_items(prep_arg->cjson_device);
@@ -667,7 +668,19 @@ static int __remove_cjson_value(l_ezlopi_item_t *item, void *arg)
         if (ezlopi_item_name_led_segments == item->cloud_properties.item_name)
         {
             CJSON_GET_VALUE_STRING(cjson_params, "key", key);
-            config_delete_segment(atoi(key));
+
+            l_ezlopi_device_t *current_device = ezlopi_device_get_head();
+
+            for(int i = 0; i < config_get_channels(); i++)
+            {
+                if(i == atoi(key))
+                {
+                    ezlopi_device_free_device(current_device);
+                    config_delete_segment(atoi(key));
+                    break;
+                }
+                current_device = current_device->next;
+            } 
         }
     }
 

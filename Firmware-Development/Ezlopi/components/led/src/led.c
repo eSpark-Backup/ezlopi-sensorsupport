@@ -149,13 +149,13 @@ static void hsv(float *r, float *g, float *b) {
 	}
 }
 
-static void contrasts(float *r, float *g, float *b) {
+static void contrasts(uint8_t c, float *r, float *g, float *b) {
 	*r = *r * (led_coloring.contrast * led_coloring.red_contrast)
-			* (led_coloring.brightness * led_coloring.red_brightness);
+			* ( led_config.channel[c]->brightness * led_coloring.red_brightness);
 	*g = *g * (led_coloring.contrast * led_coloring.green_contrast)
-			* (led_coloring.brightness * led_coloring.green_brightness);
+			* ( led_config.channel[c]->brightness * led_coloring.green_brightness);
 	*b = *b * (led_coloring.contrast * led_coloring.blue_contrast)
-			* (led_coloring.brightness * led_coloring.blue_brightness);
+			* ( led_config.channel[c]->brightness * led_coloring.blue_brightness);
 }
 
 void led_set_color(uint8_t c, uint16_t p, uint8_t r, uint8_t g, uint8_t b) {
@@ -166,11 +166,16 @@ void led_set_color(uint8_t c, uint16_t p, uint8_t r, uint8_t g, uint8_t b) {
 
 	// hsv(&fr, &fg, &fb);
 
-	contrasts(&fr, &fg, &fb);
+	contrasts(c, &fr, &fg, &fb);
+	
+	// fr = led_config.channel[c]->color[0] * led_config.channel[c]->brightness;  
+	// fg = led_config.channel[c]->color[1] * led_config.channel[c]->brightness;  
+	// fb = led_config.channel[c]->color[2] * led_config.channel[c]->brightness;  
 
 	r = FLOATtoBYTE(fr);
 	g = FLOATtoBYTE(fg);
 	b = FLOATtoBYTE(fb);
+
 
 
 	if (p == led_config.channel[c]->black[0]
@@ -341,10 +346,10 @@ void fill(int line, uint8_t r, uint8_t g, uint8_t b) {
 	// }
 	for(int i = ((led_config.channel[line]->start)); i<=(led_config.channel[line]->stop); i++){
 		if((i<=led_config.channel[line]->stop) & (i>=led_config.channel[line]->start)){
-			led_set_color(0, i, r, g, b);
+			led_set_color(line, i, r, g, b);
 		}
 		else{
-			led_set_color(0, i, 0, 0, 0);
+			led_set_color(line, i, 0, 0, 0);
 		}
 	}
 }

@@ -59,10 +59,37 @@ static void processLedPalettes(void* arg) {
 
 static void processSwitch(void* arg) {
     printf("SET: Processing Switch\n");
+
+    int value_recieved = 0;
+    uint8_t new_brightness = 0;
+    cJSON *cjson_params = (cJSON *)arg;
+
+    char *jsonString = cJSON_Print(cjson_params);
+    printf("JSON String: %s\n", jsonString);
+    free(jsonString);
+
+    CJSON_GET_VALUE_INT(cjson_params, "value", value_recieved);
+
+
+    // new_brightness = value_recieved ? (led_config->channel[segment_index]->brightness = ((led_config->channel[segment_index]->color[1]) / (led_config->channel[segment_index]->color_buffer[1]))) : 0;
+    new_brightness = value_recieved ? 50 : 0;
+    config_set_segment_brightness((uint8_t)new_brightness);
+    // config_switch(value_recieved);
 }
 
 static void processDimmer(void* arg) {
     printf("SET: Processing Dimmer\n");
+
+    int value_recieved = 0;
+    cJSON *cjson_params = (cJSON *)arg;
+
+    char *jsonString = cJSON_Print(cjson_params);
+    printf("JSON String: %s\n", jsonString);
+    free(jsonString);
+
+    CJSON_GET_VALUE_INT(cjson_params, "value", value_recieved);
+    config_set_segment_brightness(value_recieved);
+
 }
 
 static void processColorEffectSelect(void* arg) {
@@ -306,12 +333,14 @@ static char* intToString(int num) {
     return str;
 }
 
+
+
 uint8_t get_segment_number(void *arg)
 {
     l_ezlopi_device_t *device = ezlopi_device_get_head();
     uint8_t found_item = 0;
+    segment_index = 0;
 
-    uint8_t segment_index = 0;
     char *item_id_rx = 0, *formatted_item_id = 0;
 
     cJSON* params = (cJSON*)arg;

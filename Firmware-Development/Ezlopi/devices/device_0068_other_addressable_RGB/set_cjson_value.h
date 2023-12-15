@@ -28,7 +28,7 @@ enum ItemNames {
     ITEM_UNKNOWN_MAX = 23
 };
 
-
+uint8_t segment_index;
 
 typedef struct {
     const char* itemName;

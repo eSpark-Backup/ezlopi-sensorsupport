@@ -28,6 +28,7 @@ void config_coloring_write();
 void config_update_channels();
 void config_setMode(uint8_t mode);
 void config_setColor(uint32_t* client_color);
+void config_set_segment_brightness(uint8_t brightness);
 void config_set_brightness(uint8_t bri);
 void config_set_selected_flag(int id, bool select_flag);
 void config_set_segment_start_stop(int seg_id, int seg_start, int seg_stop);
@@ -37,6 +38,7 @@ void config_set_reverse_option(int id, bool rev_flag);
 void config_set_option(int id, bool flag, uint8_t bit_mask);
 void config_delete_segment(int id);
 void config_apply_palette(uint8_t palette);
+void config_switch(bool flag);
 
 const struct LED_CONFIG* config_return_config_pointer();
 // const char *config_get_wifi_sta_ssid();
