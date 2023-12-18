@@ -19,30 +19,18 @@
 #include "set_cjson_value.h"
 
 static struct LED_CONFIG *led_config;
+
 char key_buffer[4];
+
+/*Defines*/
+#define RED     0xFF0000
+#define GREEN   0x00FF00
+#define BLUE    0x0000FF
 
 /*Prototypes*/
 static char* intToString(int num);
-// Function to convert integer to dynamically allocated string
-static char* intToString(int num) {
-    // Determine the number of digits in the integer
-    int digits = snprintf(NULL, 0, "%d", num);
+uint8_t get_segment_number(void *arg);
 
-    // Allocate memory for the string, including space for the null terminator
-    char* str = (char*)malloc(digits + 1);
-
-    // Check for memory allocation failure
-    if (str == NULL) {
-        perror("Memory allocation failed");
-        exit(EXIT_FAILURE);
-    }
-
-    // Use snprintf to format the integer as a string
-    snprintf(str, digits + 1, "%x", num);
-
-    // Return the dynamically allocated string
-    return str;
-}
 
 char* LEDModesStrings[] = {
     #define FX_MODE(x, y) y,
@@ -63,6 +51,9 @@ static void processLedSegments(void *arg)
     cJSON_AddStringToObject(cjson_properties, "elementType", "led_segment");
     cJSON_AddNumberToObject(cjson_properties, "elementsMaxNumber", 10);
     cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
+    
+    cJSON *segment_key_json = NULL;
+    cJSON *segment_key_value_json = NULL;
 
     if (segment_name_json)
     {
@@ -70,8 +61,8 @@ static void processLedSegments(void *arg)
         for(int i = 0; i < config_get_channels(); i++)
         {
             formatted_key = ezlopi_valueformatter_int(led_config->channel[i]->segment_id);
-            cJSON *segment_key_json = cJSON_AddObjectToObject(segment_name_json, formatted_key);
-            cJSON *segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "name", led_config->channel[i]->segment_name);
+            segment_key_json = cJSON_AddObjectToObject(segment_name_json, formatted_key);
+            segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "name", led_config->channel[i]->segment_name);
             segment_key_value_json = cJSON_AddNumberToObject(segment_key_json, "start", led_config->channel[i]->start);
             segment_key_value_json = cJSON_AddNumberToObject(segment_key_json, "end", led_config->channel[i]->stop);
             free(formatted_key);
@@ -305,22 +296,43 @@ static void processColorEffectOption3(void *arg)
     printf("GET: Processing Color Effect Option 3\n");
 }
 
-static void processColorSegmentPrimaryColor(void) 
+static void processColorSegmentPrimaryColor(void *arg) 
 {
     printf("GET: Processing Color Segment Primary Color\n");
+
+    cJSON *param = (cJSON *)arg;
+    cJSON *value_obj = cJSON_AddObjectToObject(param, "value");
+    cJSON_AddNumberToObject(value_obj, "wwhite", 0);
+    cJSON_AddNumberToObject(value_obj, "red",   (led_config->channel[segment_index]->color[0] & RED)   >> 16   );
+    cJSON_AddNumberToObject(value_obj, "green", (led_config->channel[segment_index]->color[0] & GREEN) >> 8    );
+    cJSON_AddNumberToObject(value_obj, "blue",  (led_config->channel[segment_index]->color[0] & BLUE)          );
 }
 
-static void processColorSegmentSecondaryColor(void) 
+static void processColorSegmentSecondaryColor(void *arg) 
 {
     printf("GET: Processing Color Segment Secondary Color\n");
+    
+    cJSON *param = (cJSON *)arg;
+    cJSON *value_obj = cJSON_AddObjectToObject(param, "value");
+    cJSON_AddNumberToObject(value_obj, "wwhite", 0);
+    cJSON_AddNumberToObject(value_obj, "red",   (led_config->channel[segment_index]->color[1] & RED)   >> 16   );
+    cJSON_AddNumberToObject(value_obj, "green", (led_config->channel[segment_index]->color[1] & GREEN) >> 8    );
+    cJSON_AddNumberToObject(value_obj, "blue",  (led_config->channel[segment_index]->color[1] & BLUE)          );
 }
 
-static void processColorSegmentTertiaryColor(void) 
+static void processColorSegmentTertiaryColor(void *arg) 
 {
     printf("GET: Processing Color Segment Tertiary Color\n");
+
+    cJSON *param = (cJSON *)arg;
+    cJSON *value_obj = cJSON_AddObjectToObject(param, "value");
+    cJSON_AddNumberToObject(value_obj, "wwhite", 0);
+    cJSON_AddNumberToObject(value_obj, "red",   (led_config->channel[segment_index]->color[2] & RED)   >> 16   );
+    cJSON_AddNumberToObject(value_obj, "green", (led_config->channel[segment_index]->color[2] & GREEN) >> 8    );
+    cJSON_AddNumberToObject(value_obj, "blue",  (led_config->channel[segment_index]->color[2] & BLUE)          );
 }
 
-static void processUnknown(void) 
+static void processUnknown(void *arg) 
 {
     printf("Unknown item name\n");
 }
@@ -359,7 +371,10 @@ void process_item_get(const char* itemName, void *arg)
     size_t i;
     for (i = 0; i < sizeof(itemHandlers) / sizeof(itemHandlers[0]); ++i) {
         if (strcmp(itemName, itemHandlers[i].itemName) == 0) {
+            get_segment_number(arg);
+
             vTaskDelay(10/portTICK_PERIOD_MS);
+
             itemHandlers[i].itemHandler(arg);
             return;
         }

@@ -163,6 +163,7 @@ struct LED_CONFIG_CHANNEL {
   char *segment_name;
   uint32_t color_buffer[3];
   float brightness;
+  float prev_brightness;
 };
 
 struct LED_CONFIG {

@@ -71,10 +71,8 @@ static void processSwitch(void* arg) {
     CJSON_GET_VALUE_INT(cjson_params, "value", value_recieved);
 
 
-    // new_brightness = value_recieved ? (led_config->channel[segment_index]->brightness = ((led_config->channel[segment_index]->color[1]) / (led_config->channel[segment_index]->color_buffer[1]))) : 0;
-    new_brightness = value_recieved ? 50 : 0;
+    new_brightness = value_recieved ? (uint8_t)((led_config->channel[segment_index]->prev_brightness)*(100)) : 0;
     config_set_segment_brightness((uint8_t)new_brightness);
-    // config_switch(value_recieved);
 }
 
 static void processDimmer(void* arg) {
@@ -295,13 +293,13 @@ void processItem(const char* itemName, void *arg) {
     
     for (i = 0; i < sizeof(itemHandlers) / sizeof(itemHandlers[0]); ++i) {
         if (strcmp(itemName, itemHandlers[i].itemName) == 0) {
-            int active_segment = get_segment_number(arg);
+            get_segment_number(arg);
 
-            config_set_selected_flag(active_segment, true);
+            config_set_selected_flag(segment_index, true);
             vTaskDelay(200/portTICK_PERIOD_MS); //delays so that queue has time
             itemHandlers[i].itemHandler(arg);
             vTaskDelay(200/portTICK_PERIOD_MS);
-            config_set_selected_flag(active_segment, false);
+            config_set_selected_flag(segment_index, false);
 
             return;
         }
@@ -353,14 +351,13 @@ uint8_t get_segment_number(void *arg)
         l_ezlopi_item_t *item = device->items;
         while(item)
         {
-            ESP_LOGW("", "segment Index %d", segment_index);
+            // ESP_LOGW("", "segment Index %d", segment_index);
             formatted_item_id = intToString(item->cloud_properties.item_id);
 
-            ESP_LOGW("item_id_recieved : ", "%s",item_id_rx);
-            ESP_LOGW("item_id : ", "%s" ,formatted_item_id);
+            // ESP_LOGW("item_id_recieved : ", "%s",item_id_rx);
+            // ESP_LOGW("item_id : ", "%s" ,formatted_item_id);
             if(!strcmp(formatted_item_id, item_id_rx))
             {
-                return segment_index;
                 found_item = 1;
                 break;
             }

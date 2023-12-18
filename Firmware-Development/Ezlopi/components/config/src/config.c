@@ -242,19 +242,14 @@ void config_setColor(uint32_t* client_color) {
 
 void config_set_segment_brightness(uint8_t brightness)
 {
-
 	float brightness_float = ((float)(brightness)/(100.f));
 	
 	for (int i = 0; i < config_get_channels(); i++) {
 		if(led_config.channel[i] != NULL && led_config.channel[i]->selected){
-			for(int j = 0; j<3; j++){
 				ESP_LOGI(TAG, "BRIGHTNESS SET TO : %f", brightness_float);
-				// original_color[j] = led_config.channel[i]->color[j];
-
-				// led_config.channel[i]->color[j] = (brightness_float)*(led_config.channel[i]->color_buffer[j]);
-			
+				led_config.channel[i]->prev_brightness = led_config.channel[i]->brightness;
 				led_config.channel[i]->brightness = brightness_float;
-			}
+				ESP_LOGI(TAG, "PREVIOUS BRIGHTNESS SET TO : %f", led_config.channel[i]->prev_brightness);
 		}
 	}
 	led_set_config(&led_config);
