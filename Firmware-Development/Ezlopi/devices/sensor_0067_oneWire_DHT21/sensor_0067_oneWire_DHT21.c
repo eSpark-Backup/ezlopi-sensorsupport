@@ -99,13 +99,12 @@ static int __notify(l_ezlopi_item_t *item)
                 {
                     temp_in_float = (float)dht21_temperature(&(dht22_sensor_data->sensor_data)) / 10;
                     humidity_in_float = (float)dht21_humidity(&(dht22_sensor_data->sensor_data)) / 10;
-                    LOG("temp = %.2f, hum = %.2f", temp_in_float, humidity_in_float);
+                    //LOG("temp = %.2f, hum = %.2f", temp_in_float, humidity_in_float); 
                 }
                 memset(&(dht22_sensor_data->sensor_data), 0, sizeof(dht22_sensor_data->sensor_data));
                 //@ end my code
 
                 float temperature = temp_in_float;
-                LOG("temp = %.2f", temperature); // print temperature on LOG
                 // TRACE_E("Temperature: %.2f", temperature);
                 if (fabs(dht22_data->temperature - temperature) > 0.5)
                 {
@@ -116,7 +115,6 @@ static int __notify(l_ezlopi_item_t *item)
             else if (ezlopi_item_name_humidity == item->cloud_properties.item_name)
             {
                 float humidity = humidity_in_float;
-                LOG("humidity = %.2f", humidity); // print humidity on LOG
                 // TRACE_E("Humidity: %.2f", humidity);
                 if (fabs(dht22_data->humidity - humidity) > 0.5)
                 {

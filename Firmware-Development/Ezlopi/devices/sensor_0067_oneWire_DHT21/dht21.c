@@ -102,7 +102,7 @@ i16 dht21_temperature(struct dht21 *data)
 		(((TEMP_LOW(data) & 0xF0)>>1) >> 4) * 16 +    // 0x00F0 * 16
 		((TEMP_LOW(data)>>1) & 0x0F);                 // 0x000F * 1
 
-	print_bits((char *) data->byte + 2, 2);
+	//print_bits((char *) data->byte + 2, 2);
 
 	return negate ? -temperature : temperature;
 }

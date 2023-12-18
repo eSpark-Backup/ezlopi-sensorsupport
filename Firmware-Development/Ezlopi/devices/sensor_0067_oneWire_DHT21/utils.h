@@ -13,7 +13,7 @@
 
 #define CHECK(code) if (code != ESP_OK) { LOG("ESP_ERR: %s", #code); }
 
-#define CLOCK_RATE_MHZ (240)
+#define CLOCK_RATE_MHZ (160)
 #define CLOCK_RATE_HZ (CLOCK_RATE_MHZ * 1000000)
 
 /**
