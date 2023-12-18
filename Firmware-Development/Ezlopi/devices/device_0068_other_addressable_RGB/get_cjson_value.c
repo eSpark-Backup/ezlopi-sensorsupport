@@ -27,6 +27,8 @@ char key_buffer[4];
 #define GREEN   0x00FF00
 #define BLUE    0x0000FF
 
+#define REVERSE (uint8_t)0x80
+
 /*Prototypes*/
 static char* intToString(int num);
 uint8_t get_segment_number(void *arg);
@@ -200,13 +202,13 @@ static void processLedPalettes(void *arg)
 static void processSwitch(void *arg) 
 {
     printf("GET: Processing Switch\n");
+    bool switch_state = (led_config->channel[segment_index]->brightness) ? true : false;
 
     cJSON *param = (cJSON *)arg;
 
-    cJSON_AddBoolToObject(param, "value", (led_config->channel[segment_index]->brightness) ? true : false);
-    char *formatted_val = ezlopi_valueformatter_int(50);
+    cJSON_AddBoolToObject(param, "value", switch_state);
+    char *formatted_val = ezlopi_valueformatter_bool(switch_state);
     cJSON_AddStringToObject(param, "valueFormatted", formatted_val);
-    free(formatted_val);
 }
 
 static void processDimmer(void *arg) 
@@ -224,11 +226,25 @@ static void processDimmer(void *arg)
 static void processColorEffectSelect(void *arg) 
 {
     printf("GET: Processing Color Effect Select\n");
+
+    cJSON *param = (cJSON *)arg;
+
+    cJSON_AddNumberToObject(param, "value", (int)(led_config->channel[segment_index]->mode));
+    char *formatted_val = ezlopi_valueformatter_int((int)(led_config->channel[segment_index]->mode));
+    cJSON_AddStringToObject(param, "valueFormatted", formatted_val);
+    free(formatted_val);
 }
 
 static void processColorPaletteSelect(void *arg) 
 {
     printf("GET: Processing Color Palette Select\n");
+
+    cJSON *param = (cJSON *)arg;
+
+    cJSON_AddNumberToObject(param, "value", (int)(led_config->channel[segment_index]->palette));
+    char *formatted_val = ezlopi_valueformatter_int((int)(led_config->channel[segment_index]->palette));
+    cJSON_AddStringToObject(param, "valueFormatted", formatted_val);
+    free(formatted_val);
 }
 
 static void processColorSegmentGrouping(void *arg) 
@@ -249,6 +265,14 @@ static void processColorSegmentOffset(void *arg)
 static void processColorSegmentReverse(void *arg) 
 {
     printf("GET: Processing Color Segment Reverse\n");
+
+    bool reverse_state = (led_config->channel[segment_index]->options & REVERSE) == REVERSE;
+
+    cJSON *param = (cJSON *)arg;
+
+    cJSON_AddBoolToObject(param, "value", reverse_state);
+    char *formatted_val = ezlopi_valueformatter_bool(reverse_state);
+    cJSON_AddStringToObject(param, "valueFormatted", formatted_val);
 }
 
 static void processColorSegmentMirror(void *arg) 
@@ -259,11 +283,27 @@ static void processColorSegmentMirror(void *arg)
 static void processColorEffectSpeed(void *arg) 
 {
     printf("GET: Processing Color Effect Speed\n");
+
+    int effect_speed_int = ((float)(led_config->channel[segment_index]->speed)/ 2000.f)*255.f;
+
+    cJSON *param = (cJSON *)arg;
+
+    cJSON_AddNumberToObject(param, "value", effect_speed_int);
+    char *formatted_val = ezlopi_valueformatter_int(effect_speed_int);
+    cJSON_AddStringToObject(param, "valueFormatted", formatted_val);
+    free(formatted_val);
 }
 
 static void processColorEffectIntensity(void *arg) 
 {
     printf("GET: Processing Color Effect Intensity\n");
+
+    cJSON *param = (cJSON *)arg;
+
+    cJSON_AddNumberToObject(param, "value", (int)(led_config->channel[segment_index]->intensity));
+    char *formatted_val = ezlopi_valueformatter_int((int)(led_config->channel[segment_index]->intensity));
+    cJSON_AddStringToObject(param, "valueFormatted", formatted_val);
+    free(formatted_val);
 }
 
 static void processColorEffectCustomSlider1(void *arg) 

@@ -344,7 +344,7 @@ uint8_t get_segment_number(void *arg)
     cJSON* params = (cJSON*)arg;
     CJSON_GET_VALUE_STRING(params, "_id", item_id_rx);
 
-    ESP_LOGW("", "ID RX %s", item_id_rx);
+    ESP_LOGW("", "ITEM ID %s", item_id_rx);
 
     while(device)
     {

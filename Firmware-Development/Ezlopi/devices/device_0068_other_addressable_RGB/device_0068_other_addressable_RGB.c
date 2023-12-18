@@ -55,26 +55,29 @@ enum ItemNames unique_parent_device_item_to_prepare[] =
 //Child Device Items to prepare
 enum ItemNames common_child_device_item_to_prepare[] =
 {
+    /*Implemented Items*/
     SWITCH,
     DIMMER,
-    COLOR_EFFECT_SELECT,
+    // COLOR_EFFECT_SELECT,
     // COLOR_PALETTE_SELECT,
+    COLOR_SEGMENT_REVERSE,
+    COLOR_EFFECT_SPEED,
+    COLOR_EFFECT_INTENSITY,
+    COLOR_SEGMENT_PRIMARY_COLOR,
+    COLOR_SEGMENT_SECONDARY_COLOR,
+    COLOR_SEGMENT_TERNARY_COLOR,
+
+    /*Un-implemented Items*/
     // COLOR_SEGMENT_GROUPING,
     // COLOR_SEGMENT_SPACING,
     // COLOR_SEGMENT_OFFSET,
-    // COLOR_SEGMENT_REVERSE,
     // COLOR_SEGMENT_MIRROR,
-    // COLOR_EFFECT_SPEED,
-    // COLOR_EFFECT_INTENSITY,
     // COLOR_EFFECT_CUSTOM_SLIDER_1,
     // COLOR_EFFECT_CUSTOM_SLIDER_2,
     // COLOR_EFFECT_CUSTOM_SLIDER_3,
     // COLOR_EFFECT_OPTION_1,
     // COLOR_EFFECT_OPTION_2,
     // COLOR_EFFECT_OPTION_3,
-    COLOR_SEGMENT_PRIMARY_COLOR,
-    COLOR_SEGMENT_SECONDARY_COLOR,
-    COLOR_SEGMENT_TERNARY_COLOR,
 };
 
 static l_ezlopi_device_t *device = NULL;
