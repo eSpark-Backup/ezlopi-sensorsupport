@@ -52,26 +52,35 @@ static void processLedSegments(void *arg)
     
     cJSON_AddStringToObject(cjson_properties, "elementType", "led_segment");
     cJSON_AddNumberToObject(cjson_properties, "elementsMaxNumber", 10);
-    cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
     
-    cJSON *segment_key_json = NULL;
-    cJSON *segment_key_value_json = NULL;
+    cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
 
     if (segment_name_json)
     {
+        cJSON *segment_key_json = NULL;
+        cJSON *segment_key_value_json = NULL;
 
-        for(int i = 0; i < config_get_channels(); i++)
+        for (int i = 0; i < config_get_channels(); i++)
         {
             formatted_key = ezlopi_valueformatter_int(led_config->channel[i]->segment_id);
+            
             segment_key_json = cJSON_AddObjectToObject(segment_name_json, formatted_key);
-            segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "name", led_config->channel[i]->segment_name);
-            segment_key_value_json = cJSON_AddNumberToObject(segment_key_json, "start", led_config->channel[i]->start);
-            segment_key_value_json = cJSON_AddNumberToObject(segment_key_json, "end", led_config->channel[i]->stop);
+            
+            if (segment_key_json)
+            {
+                cJSON_AddStringToObject(segment_key_json, "name", led_config->channel[i]->segment_name);
+                cJSON_AddNumberToObject(segment_key_json, "start", led_config->channel[i]->start);
+                cJSON_AddNumberToObject(segment_key_json, "end", led_config->channel[i]->stop);
+            }
+
             free(formatted_key);
+            formatted_key = NULL;
         }
+
         cJSON_AddStringToObject(cjson_properties, "valueFormatted", "");
     }
 }
+
 
 const char* key_str_list[54] = 
 {
@@ -136,67 +145,72 @@ static void processLedEffects(void *arg)
 {
     printf("GET: Processing LED Effects\n");
 
-    char *formatted_value = NULL;
-    cJSON* cjson_properties = (cJSON*)arg;
+    cJSON *cjson_properties = (cJSON *)arg;
     cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
 
     cJSON *segment_key_json = NULL;
     cJSON *segment_key_value_json = NULL;
 
+    const char *commonDescription = "Some description";
+    const char *commonHeadpieceUrl = "https://some.url";
+
     if (segment_name_json)
     {
-        for(int i = 0; i < FX_MODE_MAX; i++)
+        for (int i = 0; i < FX_MODE_MAX; i++)
         {
-            // formatted_value = ezlopi_valueformatter_int(i);
-            // sprintf(key_buffer, "%d", (uint8_t)i);
-            // itoa(i, key_buffer, 10);
-            segment_key_json = cJSON_AddObjectToObject(segment_name_json,  key_str_list[i]);
-            segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "name", LEDModesStrings[i]);
-            // segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "description", "Some description");
-            // segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "headpieceUrl", "https://some.url");
-            // free(formatted_value);
-            // cJSON_Delete(segment_key_json);
-            // cJSON_Delete(segment_key_value_json);
+            segment_key_json = cJSON_AddObjectToObject(segment_name_json, key_str_list[i]);
+
+            if (segment_key_json)
+            {
+                cJSON_AddStringToObject(segment_key_json, "name", LEDModesStrings[i]);
+                cJSON_AddStringToObject(segment_key_json, "description", commonDescription);
+                cJSON_AddStringToObject(segment_key_json, "headpieceUrl", commonHeadpieceUrl);
+            }
         }
+
         cJSON_AddStringToObject(cjson_properties, "valueFormatted", "");
     }
 
     ESP_LOGE("", "Heap Memory %d", esp_get_minimum_free_heap_size());
-
+    ESP_LOGE("", "Largest Block Heap Memory %d", heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT));
 }
 
-static void processLedPalettes(void *arg) 
+static void processLedPalettes(void *arg)
 {
     printf("GET: Processing LED Palettes\n");
 
-    char *formatted_value = NULL;
-    cJSON* cjson_properties = (cJSON*)arg;
+    cJSON *cjson_properties = (cJSON *)arg;
     cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
 
-    
     cJSON *segment_key_json = NULL;
     cJSON *segment_key_value_json = NULL;
-    
+
+    const char *commonDescription = "Some description";
+    const char *commonHeadpieceUrl = "https://some.url";
+
     if (segment_name_json)
     {
-        for(int i = 0; i < PALETTE_MAX; i++)
+        for (int i = 0; i < PALETTE_MAX; i++)
         {
-            // formatted_value = ezlopi_valueformatter_int(i);
-            // sprintf(key_buffer, "%d", (uint8_t)i);
-            itoa(i, key_buffer, 10);
+            snprintf(key_buffer, sizeof(key_buffer), "%d", (uint8_t)i);
+
             segment_key_json = cJSON_AddObjectToObject(segment_name_json, key_buffer);
-            segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "name", PaletteNames[i]);
-            // segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "description", "Some description");
-            // segment_key_value_json = cJSON_AddStringToObject(segment_key_json, "headpieceUrl", "https://some.url");
-            // free(formatted_value);
-            // cJSON_Delete(segment_key_json);
-            // cJSON_Delete(segment_key_value_json);
+
+            if (segment_key_json)
+            {
+                cJSON_AddStringToObject(segment_key_json, "name", PaletteNames[i]);
+                cJSON_AddStringToObject(segment_key_json, "description", commonDescription);
+                cJSON_AddStringToObject(segment_key_json, "headpieceUrl", commonHeadpieceUrl);
+            }
         }
+
         cJSON_AddStringToObject(cjson_properties, "valueFormatted", "");
     }
 
     ESP_LOGE("", "Heap Memory %d", esp_get_minimum_free_heap_size());
+    ESP_LOGE("", "Largest Block Heap Memory %d", heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT));
 }
+
 
 
 static void processSwitch(void *arg) 
@@ -221,6 +235,7 @@ static void processDimmer(void *arg)
     char *formatted_val = ezlopi_valueformatter_int((int)(led_config->channel[segment_index]->brightness * 100));
     cJSON_AddStringToObject(param, "valueFormatted", formatted_val);
     free(formatted_val);
+    formatted_val = NULL;
 }
 
 static void processColorEffectSelect(void *arg) 
@@ -408,10 +423,12 @@ void process_item_get(const char* itemName, void *arg)
         {"unknown", processUnknown}  // Default case
     };
 
+
+    get_segment_number(arg);
+
     size_t i;
     for (i = 0; i < sizeof(itemHandlers) / sizeof(itemHandlers[0]); ++i) {
         if (strcmp(itemName, itemHandlers[i].itemName) == 0) {
-            get_segment_number(arg);
 
             vTaskDelay(10/portTICK_PERIOD_MS);
 

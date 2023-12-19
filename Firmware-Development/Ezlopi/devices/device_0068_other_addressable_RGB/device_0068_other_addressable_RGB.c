@@ -48,7 +48,7 @@ int itemCount = 0;
 enum ItemNames unique_parent_device_item_to_prepare[] =
 {
     LED_SEGMENTS,
-    // LED_EFFECTS,
+    LED_EFFECTS,
     // LED_PALETTES,
 };
 
@@ -58,14 +58,14 @@ enum ItemNames common_child_device_item_to_prepare[] =
     /*Implemented Items*/
     SWITCH,
     DIMMER,
-    // COLOR_EFFECT_SELECT,
-    // COLOR_PALETTE_SELECT,
+    COLOR_EFFECT_SELECT,
+    COLOR_PALETTE_SELECT,
     COLOR_SEGMENT_REVERSE,
     COLOR_EFFECT_SPEED,
     COLOR_EFFECT_INTENSITY,
-    COLOR_SEGMENT_PRIMARY_COLOR,
-    COLOR_SEGMENT_SECONDARY_COLOR,
-    COLOR_SEGMENT_TERNARY_COLOR,
+    // COLOR_SEGMENT_PRIMARY_COLOR,
+    // COLOR_SEGMENT_SECONDARY_COLOR,
+    // COLOR_SEGMENT_TERNARY_COLOR,
 
     /*Un-implemented Items*/
     // COLOR_SEGMENT_GROUPING,

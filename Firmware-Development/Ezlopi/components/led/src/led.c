@@ -871,7 +871,7 @@ void led_on() {
 	q = xQueueCreate(1, sizeof(struct LED_CONFIG));
 	ESP_ERROR_CHECK(q != NULL ? ESP_OK : ESP_FAIL);
 	ESP_ERROR_CHECK(
-			xTaskCreate(task, "led_task", 4096, NULL, tskIDLE_PRIORITY, &taskHandle) == pdPASS ? ESP_OK : ESP_FAIL);
+			xTaskCreate(task, "led_task", 4 * 1024, NULL, tskIDLE_PRIORITY, &taskHandle) == pdPASS ? ESP_OK : ESP_FAIL);
 }
 
 /**

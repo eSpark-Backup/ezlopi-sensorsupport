@@ -290,10 +290,11 @@ void processItem(const char* itemName, void *arg) {
 
     size_t i;
     char *key_recieved_int = 0;
+
+    get_segment_number(arg);
     
     for (i = 0; i < sizeof(itemHandlers) / sizeof(itemHandlers[0]); ++i) {
         if (strcmp(itemName, itemHandlers[i].itemName) == 0) {
-            get_segment_number(arg);
 
             config_set_selected_flag(segment_index, true);
             vTaskDelay(200/portTICK_PERIOD_MS); //delays so that queue has time
