@@ -146,6 +146,7 @@ static void processLedEffects(void *arg)
     printf("GET: Processing LED Effects\n");
 
     cJSON *cjson_properties = (cJSON *)arg;
+    cJSON_AddStringToObject(cjson_properties, "elementType", "led_effect");
     cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
 
     cJSON *segment_key_json = NULL;
@@ -158,13 +159,14 @@ static void processLedEffects(void *arg)
     {
         for (int i = 0; i < FX_MODE_MAX; i++)
         {
-            segment_key_json = cJSON_AddObjectToObject(segment_name_json, key_str_list[i]);
+            snprintf(key_buffer, sizeof(key_buffer), "%d", (uint8_t)i);
+            segment_key_json = cJSON_AddObjectToObject(segment_name_json, key_buffer);
 
             if (segment_key_json)
             {
                 cJSON_AddStringToObject(segment_key_json, "name", LEDModesStrings[i]);
-                cJSON_AddStringToObject(segment_key_json, "description", commonDescription);
-                cJSON_AddStringToObject(segment_key_json, "headpieceUrl", commonHeadpieceUrl);
+                // cJSON_AddStringToObject(segment_key_json, "description", commonDescription);
+                // cJSON_AddStringToObject(segment_key_json, "headpieceUrl", commonHeadpieceUrl);
             }
         }
 
@@ -180,6 +182,7 @@ static void processLedPalettes(void *arg)
     printf("GET: Processing LED Palettes\n");
 
     cJSON *cjson_properties = (cJSON *)arg;
+    cJSON_AddStringToObject(cjson_properties, "elementType", "string");
     cJSON *segment_name_json = cJSON_AddObjectToObject(cjson_properties, "value");
 
     cJSON *segment_key_json = NULL;
@@ -199,8 +202,8 @@ static void processLedPalettes(void *arg)
             if (segment_key_json)
             {
                 cJSON_AddStringToObject(segment_key_json, "name", PaletteNames[i]);
-                cJSON_AddStringToObject(segment_key_json, "description", commonDescription);
-                cJSON_AddStringToObject(segment_key_json, "headpieceUrl", commonHeadpieceUrl);
+                // cJSON_AddStringToObject(segment_key_json, "description", commonDescription);
+                // cJSON_AddStringToObject(segment_key_json, "headpieceUrl", commonHeadpieceUrl);
             }
         }
 
@@ -396,7 +399,7 @@ void process_item_get(const char* itemName, void *arg)
 {
     led_config = config_return_config_pointer();
  
-  const ItemHandler itemHandlers[] = {
+    const ItemHandler itemHandlers[] = {
         {ezlopi_item_name_led_segments, processLedSegments},
         {ezlopi_item_name_switch, processSwitch},
         {ezlopi_item_name_dimmer, processDimmer},
@@ -422,7 +425,6 @@ void process_item_get(const char* itemName, void *arg)
         {ezlopi_item_name_color_segment_ternary_color, processColorSegmentTertiaryColor},
         {"unknown", processUnknown}  // Default case
     };
-
 
     get_segment_number(arg);
 

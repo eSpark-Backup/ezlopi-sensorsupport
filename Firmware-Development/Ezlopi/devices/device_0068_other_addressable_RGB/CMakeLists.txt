@@ -1,6 +1,6 @@
 
 
-idf_component_register(SRCS "get_cjson_value.c" "device_0068_other_addressable_RGB.c"
+idf_component_register(SRCS "item_prepare.c" "get_cjson_value.c" "device_0068_other_addressable_RGB.c"
                             "set_cjson_value.c"
                         INCLUDE_DIRS "."
                         REQUIRES trace 
