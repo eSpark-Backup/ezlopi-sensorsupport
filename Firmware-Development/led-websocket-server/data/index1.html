@@ -1,0 +1,197 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title>ESP32 LED Controller</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="data:,">
+    <style>
+        /* Add some basic styling for demonstration purposes */
+        .segment-tile {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px;
+        }
+
+        /* Add styling for the input and select elements */
+        input, select {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="topnav">
+        <h1>ESP32 LED Controller</h1>
+    </div>
+
+    <!-- Button to add a new segment -->
+    <button id="addSegmentButton">Add Segment</button>
+
+    <div class="content">
+        <div class="card">
+            <h2>LED Control</h2>
+            <label for="primaryColorPicker">Primary Color:</label>
+            <input type="color" id="primaryColorPicker" value="#ff0000"><br>
+
+            <label for="secondaryColorPicker">Secondary Color:</label>
+            <input type="color" id="secondaryColorPicker" value="#00ff00"><br>
+
+            <label for="ternaryColorPicker">Ternary Color:</label>
+            <input type="color" id="ternaryColorPicker" value="#0000ff"><br>
+
+            <button id="applyColors" class="button">Apply Colors</button>
+        </div>
+    </div>
+    <script>
+        var gateway = `ws://${window.location.hostname}/ws`;
+        var websocket;
+        var segmentCounter = -1; // Counter for segment IDs
+
+        window.addEventListener('load', onLoad);
+
+        function initWebSocket() {
+            console.log('Trying to open a WebSocket connection...');
+            websocket = new WebSocket(gateway);
+            websocket.onopen = onOpen;
+            websocket.onclose = onClose;
+            websocket.onmessage = onMessage;
+        }
+
+        function onOpen(event) {
+            console.log('Connection opened');
+        }
+
+        function onClose(event) {
+            console.log('Connection closed');
+            setTimeout(initWebSocket, 2000);
+        }
+
+        function onMessage(event) {
+            // Handle incoming messages from ESP32
+            console.log(event.data);
+            // You can customize the handling of messages based on your needs
+        }
+
+        function onLoad(event) {
+            initWebSocket();
+            initColorPickers();
+        }
+
+        function initColorPickers() {
+            var primaryColorPicker = document.getElementById('primaryColorPicker');
+            var secondaryColorPicker = document.getElementById('secondaryColorPicker');
+            var ternaryColorPicker = document.getElementById('ternaryColorPicker');
+            var applyColorsButton = document.getElementById('applyColors');
+
+            applyColorsButton.addEventListener('click', function () {
+                var primaryColor = primaryColorPicker.value;
+                var secondaryColor = secondaryColorPicker.value;
+                var ternaryColor = ternaryColorPicker.value;
+
+                sendColors(primaryColor, secondaryColor, ternaryColor);
+            });
+        }
+
+        function sendColors(primary, secondary, ternary) {
+            var colorsData = {
+                "seg": {
+                    "col": [
+                        hexToRgb(primary),
+                        hexToRgb(secondary),
+                        hexToRgb(ternary)
+                    ]
+                },
+                "v": true,
+                "time": Date.now()
+            };
+
+            var colorsJSON = JSON.stringify(colorsData);
+            websocket.send(colorsJSON);
+        }
+
+        function hexToRgb(hex) {
+            // Convert a hex color to an RGB array
+            var bigint = parseInt(hex.slice(1), 16);
+            var r = (bigint >> 16) & 255;
+            var g = (bigint >> 8) & 255;
+            var b = bigint & 255;
+            return [r, g, b, 0];
+        }
+
+        // Function to create a new segment tile with start and stop options
+        function createSegmentTile() {
+            // Increment the segment counter to get a unique ID
+            segmentCounter++;
+
+            // Create a new div element for the tile
+            var segmentTile = document.createElement('div');
+            segmentTile.className = 'segment-tile';
+
+            // Create input element for segment name
+            var nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.placeholder = 'Segment Name';
+
+            // Create input elements for start and stop values
+            var startInput = document.createElement('input');
+            startInput.type = 'number';
+            startInput.placeholder = 'Start';
+
+            // Create a checkbox for selecting the segment
+            var selectCheckbox = document.createElement('input');
+            selectCheckbox.type = 'checkbox';
+            selectCheckbox.checked = false; // Initially not selected
+
+            var stopInput = document.createElement('input');
+            stopInput.type = 'number';
+            stopInput.placeholder = 'Stop';
+
+            // Create a "Create Segment" button
+            var createSegmentButton = document.createElement('button');
+            createSegmentButton.textContent = 'Create Segment';
+
+            // Add an event listener to the button to handle segment creation
+            createSegmentButton.addEventListener('click', function() {
+                // Extract values from the inputs
+                var segmentName = nameInput.value;
+                var startValue = parseInt(startInput.value, 10);
+                var stopValue = parseInt(stopInput.value, 10);
+
+                // Create the JSON object
+                var segmentData = {
+                    "seg": {
+                        "id": segmentCounter, // Use the unique segment ID
+                        "n": segmentName,
+                        "start": startValue,
+                        "stop": stopValue
+                    },
+                    "v": true,
+                    "time": Date.now()
+                };
+
+                // Log or send the JSON object as needed
+                // console.log(segmentJson);
+                var segmentJSON = JSON.stringify(segmentData);
+                websocket.send(segmentJSON);
+            });
+
+            // Append the input elements and button to the tile
+            segmentTile.appendChild(nameInput);
+            segmentTile.appendChild(startInput);
+            segmentTile.appendChild(stopInput);
+            segmentTile.appendChild(createSegmentButton);
+
+            // Append the tile to the body or any other parent element
+            document.body.appendChild(segmentTile);
+        }
+
+        // Add an event listener to the "Add Segment" button
+        document.getElementById('addSegmentButton').addEventListener('click', function() {
+            // Call the function to create a new segment tile
+            createSegmentTile();
+        });
+    </script>
+</body>
+
+</html>
