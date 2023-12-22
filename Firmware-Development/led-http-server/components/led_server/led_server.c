@@ -13,16 +13,23 @@
 #include <esp_event.h>
 #include <esp_system.h>
 #include <esp_https_server.h>
-
+#include "esp_spiffs.h"
 
 #include "credentials.h"
 
 #include "led_server.h"
 #include "uart_reader.h"
 
+#define INDEX_HTML_PATH "/spiffs/index.htm"
+#define INDEX_CSS_PATH "/spiffs/index.css"
+#define INDEX_JS_PATH "/spiffs/index.js"
+char index_html[4096*18];
+char index_css[4096*8];
+
 static const char *TAG = "HTTPS";
 
 /* Prototypes */
+void initi_web_page_buffer(void);
 static httpd_handle_t start_webserver(void);
 
 static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
@@ -40,6 +47,7 @@ static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_b
         break;
     case IP_EVENT_STA_GOT_IP:
         printf("WiFi got IP ... \n\n");
+        initi_web_page_buffer();
         start_webserver();
         printf("http server was initiated ...........\n\n");
         break;
@@ -72,13 +80,78 @@ void wifi_connection()
     // 4- Wi-Fi Connect Phase
     esp_wifi_connect();
 }
+void initi_web_page_buffer(void)
+{
+    esp_vfs_spiffs_conf_t conf = {
+        .base_path = "/spiffs",
+        .partition_label = NULL,
+        .max_files = 5,
+        .format_if_mount_failed = true};
+
+    ESP_ERROR_CHECK(esp_vfs_spiffs_register(&conf));
+
+    memset((void *)index_html, 0, sizeof(index_html));
+    struct stat st;
+    if (stat(INDEX_HTML_PATH, &st))
+    {
+        ESP_LOGE(TAG, "index.html not found");
+        return;
+    }
+
+    FILE *fp = fopen(INDEX_CSS_PATH, "r");
+    if (fread(index_css, st.st_size, 1, fp) == 0)
+    {
+        ESP_LOGE(TAG, "fread failed");
+    }
+    fclose(fp);
+
+    fp = fopen(INDEX_HTML_PATH, "r");
+    if (fread(index_html, st.st_size, 1, fp) == 0)
+    {
+        ESP_LOGE(TAG, "fread failed");
+    }
+    fclose(fp);
+}
 
 static esp_err_t get_handler(httpd_req_t *req)
 {
-    const char resp[] = "GET Response .................";
+    // const char resp[4096 *6] = "GET Response .................";
     httpd_resp_set_type(req, "text/html");
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
+    httpd_resp_send(req, index_html, HTTPD_RESP_USE_STRLEN);
+    return ESP_OK;
+}
+
+static esp_err_t get_index_css_handler(httpd_req_t *req)
+{
+    // const char resp[4096 *6] = "GET Response .................";
+    httpd_resp_set_type(req, "text/css");
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_send(req, index_css, HTTPD_RESP_USE_STRLEN);
+    return ESP_OK;
+}
+
+static esp_err_t get_index_js_handler(httpd_req_t *req)
+{
+    struct stat st;
+    if (stat(INDEX_JS_PATH, &st))
+    {
+        ESP_LOGE(TAG, "index.html not found");
+        return;
+        }
+
+    FILE *fp = fopen(INDEX_JS_PATH, "r");
+    if (fread(index_html, st.st_size, 1, fp) == 0)
+    {
+        ESP_LOGE(TAG, "fread failed");
+    }
+    fclose(fp);
+    // const char resp[4096 *6] = "GET Response .................";
+    ESP_LOGE(TAG, "Sending /js Response");
+
+    httpd_resp_set_type(req, "text/css");
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_send(req, index_html, HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
 
@@ -119,6 +192,18 @@ static const httpd_uri_t uri_get = {
     .handler = get_handler
 };
 
+static const httpd_uri_t uri_get_index_css = {
+    .uri = "/index.css",
+    .method = HTTP_GET,
+    .handler = get_index_css_handler
+};
+
+// static const httpd_uri_t uri_get_index_js = {
+//     .uri = "/index.js",
+//     .method = HTTP_GET,
+//     .handler = get_index_js_handler
+// };
+
 static const httpd_uri_t uri_post = {
     .uri = "/",
     .method = HTTP_POST,
@@ -144,5 +229,7 @@ static httpd_handle_t start_webserver(void)
     ESP_LOGI(TAG, "Registering URI handlers");
     httpd_register_uri_handler(server, &uri_get);
     httpd_register_uri_handler(server, &uri_post);
+    httpd_register_uri_handler(server, &uri_get_index_css);
+    // httpd_register_uri_handler(server, &uri_get_index_js);
     return server;
 }

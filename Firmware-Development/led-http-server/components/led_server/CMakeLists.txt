@@ -10,4 +10,5 @@ idf_component_register(	SRCS ${srcs}
                             esp_wifi
 
                             uart_reader
+                            spiffs
 						)
