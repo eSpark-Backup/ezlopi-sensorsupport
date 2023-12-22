@@ -1,0 +1,80 @@
+menu "CONTROLLER Configuration"
+
+    config CONTROLLER_LED_LINES
+        int "number of LED lines supported"
+        range 1 8
+        default 2
+        help
+            Number of LED lines supported
+
+    config CONTROLLER_LED_LINE0
+        int "LED line 0 GPIO number"
+        default 16
+        range 0 33
+        help
+            Set the GPIO number used to send the serial data for the LED line 0
+
+    if CONTROLLER_LED_LINES >= 2
+        config CONTROLLER_LED_LINE1
+            int "LED line 1 GPIO number"
+            default 32
+            range 0 33
+            help
+                Set the GPIO number used to send the serial data for the LED line 1
+    endif
+    
+    if CONTROLLER_LED_LINES >= 3
+        config CONTROLLER_LED_LINE2
+            int "LED line 2 GPIO number"
+            default 4
+            range 0 33
+            help
+                Set the GPIO number used to send the serial data for the LED line 2
+    endif
+    
+    if CONTROLLER_LED_LINES >= 4
+        config CONTROLLER_LED_LINE3
+            int "LED line 3 GPIO number"
+            default 12
+            range 0 33
+            help
+                Set the GPIO number used to send the serial data for the LED line 3
+    endif
+    
+    if CONTROLLER_LED_LINES >= 5
+        config CONTROLLER_LED_LINE4
+            int "LED line 4 GPIO number"
+            default 13
+            range 0 33
+            help
+                Set the GPIO number used to send the serial data for the LED line 4
+    endif
+    
+    if CONTROLLER_LED_LINES >= 6
+        config CONTROLLER_LED_LINE5
+            int "LED line 5 GPIO number"
+            default 14
+            range 0 33
+            help
+                Set the GPIO number used to send the serial data for the LED line 5
+    endif
+    
+    if CONTROLLER_LED_LINES >= 7
+        config CONTROLLER_LED_LINE6
+            int "LED line 6 GPIO number"
+            default 15
+            range 0 33
+            help
+                Set the GPIO number used to send the serial data for the LED line 6
+    endif
+    
+    if CONTROLLER_LED_LINES >= 8
+        config CONTROLLER_LED_LINE7
+            int "LED line 7 GPIO number"
+            default 17
+            range 0 33
+            help
+                Set the GPIO number used to send the serial data for the LED line 7
+    endif
+    
+endmenu

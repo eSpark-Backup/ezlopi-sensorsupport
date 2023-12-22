@@ -18,6 +18,7 @@
 #include "credentials.h"
 
 #include "led_server.h"
+#include "uart_reader.h"
 
 static const char *TAG = "HTTPS";
 
@@ -90,6 +91,7 @@ esp_err_t post_handler(httpd_req_t *req)
     // If no data is send the error will be:
     // W (88470) httpd_uri: httpd_uri: uri handler execution failed
     printf("\nPOST content: %s\n", content);
+    parse_json(content);
     free(content);
     content = NULL;
 

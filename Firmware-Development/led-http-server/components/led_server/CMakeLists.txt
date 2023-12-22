@@ -8,4 +8,6 @@ idf_component_register(	SRCS ${srcs}
                             esp_https_server
                             esp_netif
                             esp_wifi
+
+                            uart_reader
 						)

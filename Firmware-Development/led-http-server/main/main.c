@@ -15,10 +15,17 @@
 #include <esp_https_server.h>
 
 #include "led_server.h"
+#include "led.h"
+#include "config.h"
+#include "uart_reader.h"
+#include "esp_heap_caps.h"
 
 void app_main(void)
 {
     nvs_flash_init();
     wifi_connection();
 
+    config_init();
+    led_on();
+	config_update_channels(); 	
 }
