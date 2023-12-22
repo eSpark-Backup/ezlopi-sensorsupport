@@ -9,7 +9,15 @@
 #include "nvs_flash.h"
 #include "esp_spiffs.h"
 
+#include "led.h"
+// #include "status.h"
+#include "config.h"
 #include "connect_wifi.h"
+
+#include "uart_reader.h"
+
+static TaskHandle_t network_taskHandle;
+static void newtwork_task(void *args);
 
 #define LED_PIN 2
 httpd_handle_t server = NULL;
@@ -158,6 +166,9 @@ static esp_err_t handle_ws_req(httpd_req_t *req)
         free(buf);
         return trigger_async_send(req->handle, req);
     }
+
+    // vTaskDelay(1000/portTICK_PERIOD_MS);
+    parse_json((char *)ws_pkt.payload);
     return ESP_OK;
 }
 
@@ -199,6 +210,28 @@ void app_main()
     }
     ESP_ERROR_CHECK(ret);
 
+
+    // xTaskCreate(newtwork_task, "network-task", 4096, NULL, 10, &network_taskHandle);
+    newtwork_task(NULL);
+
+    vTaskDelay(3000/portTICK_PERIOD_MS);
+
+    printf("Led Controller Start\n");
+    config_init();
+    led_on();
+	config_update_channels(); 	
+    while (1)
+    {
+        printf("Hello world!\n");
+        heap_caps_print_heap_info(MALLOC_CAP_DEFAULT);
+        vTaskDelay(5000/portTICK_PERIOD_MS);
+        const char* jsonString = "{ \"seg\": { \"col\": [ [180, 180, 0, 0], [0, 180, 255, 0], [180, 0, 255, 0] ] }, \"v\": true, \"time\": 1697181431 }";
+        // parse_json(jsonString);
+    }
+}
+
+static void newtwork_task(void *args)
+{
     connect_wifi();
 
     if (wifi_connect_status)
