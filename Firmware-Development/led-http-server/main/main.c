@@ -28,4 +28,10 @@ void app_main(void)
     config_init();
     led_on();
 	config_update_channels(); 	
+
+    while(1)
+    {
+        vTaskDelay(5000/portTICK_PERIOD_MS);
+        heap_caps_print_heap_info(MALLOC_CAP_DEFAULT);
+    }
 }
