@@ -131,8 +131,8 @@ static void setDefaults() {
 		led_config.channel[i]->black[0] = led_config.channel[i]->black[1] =
 				led_config.channel[i]->black[2] = -1;
 
-		led_config.channel[i]->start = i*100;
-		led_config.channel[i]->stop = led_config.channel[i]->start+100;
+			led_config.channel[i]->start = i*10;
+			led_config.channel[i]->stop = led_config.channel[i]->start+10;
 
 		led_config.channel[i]->segment_id = i;
 

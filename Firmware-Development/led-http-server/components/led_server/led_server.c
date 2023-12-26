@@ -26,7 +26,8 @@
 #define IRO_JS_PATH "/spiffs/iro.js"
 #define RANGETOUCH_JS_PATH "/spiffs/rangetouch.js"
 
-char response_buffer[4096 * 28];
+char *response_buffer;
+// char response_buffer[4096 * 28];
 
 static const char *TAG = "HTTPS";
 
@@ -102,6 +103,8 @@ static esp_err_t get_handler(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     populate_response(INDEX_HTML);
     httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    free(response_buffer);
+    response_buffer = NULL;
     return ESP_OK;
 }
 
@@ -112,6 +115,8 @@ static esp_err_t get_index_css_handler(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     populate_response(INDEX_CSS);
     httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    free(response_buffer);
+    response_buffer = NULL;
     return ESP_OK;
 }
 
@@ -123,8 +128,10 @@ static esp_err_t get_index_js_handler(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     ESP_LOGE(TAG, "Populating Repsonse");
     populate_response(INDEX_JS);
-    ESP_LOGE(TAG, "Sending Repsonse");
+    ESP_LOGE(TAG, "Sending Repsonse indexjs");
     httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    free(response_buffer);
+    response_buffer = NULL;
     return ESP_OK;
 }
 
@@ -136,8 +143,10 @@ static esp_err_t get_iro_js_handler(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     ESP_LOGE(TAG, "Populating Repsonse");
     populate_response(IRO_JS);
-    ESP_LOGE(TAG, "Sending Repsonse");
+    ESP_LOGE(TAG, "Sending Repsonse iro");
     httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    free(response_buffer);
+    response_buffer = NULL;
     return ESP_OK;
 }
 
@@ -149,8 +158,10 @@ static esp_err_t get_rangetouch_js_handler(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     ESP_LOGE(TAG, "Populating Repsonse");
     populate_response(RANGETOUCH_JS);
-    ESP_LOGE(TAG, "Sending Repsonse");
+    ESP_LOGE(TAG, "Sending Repsonse rangetouch");
     httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    free(response_buffer);
+    response_buffer = NULL;
     return ESP_OK;
 }
 
@@ -164,6 +175,8 @@ static esp_err_t get_json_si_js_handler(httpd_req_t *req)
     populate_response(JSON_SI);
     ESP_LOGE(TAG, "Sending Repsonse");
     httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    free(response_buffer);
+    response_buffer = NULL;
     return ESP_OK;
 }
 
@@ -177,6 +190,9 @@ static esp_err_t get_json_effects_js_handler(httpd_req_t *req)
     populate_response(JSON_EFFECTS);
     ESP_LOGE(TAG, "Sending Repsonse");
     httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    free(response_buffer);
+
+    response_buffer = NULL;
     return ESP_OK;
 }
 
@@ -190,6 +206,8 @@ static esp_err_t get_json_palettes_js_handler(httpd_req_t *req)
     populate_response(JSON_PALETTES);
     ESP_LOGE(TAG, "Sending Repsonse");
     httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    free(response_buffer);
+    response_buffer = NULL;
     return ESP_OK;
 }
 
@@ -326,6 +344,8 @@ static esp_err_t handle_ws_req(httpd_req_t *req)
     // }
 
     // vTaskDelay(1000/portTICK_PERIOD_MS);
+    free(response_buffer);
+    response_buffer = NULL;
     parse_json((char *)ws_pkt.payload);
     return ESP_OK;
 }
@@ -375,25 +395,36 @@ static httpd_handle_t start_webserver(void)
 void populate_response(enum webpage_name page)
 {
     char *PATH = NULL;
-
+    ESP_LOGI("POPULAITNG RESP","%d", page);
+    // if(NULL == response_buffer)
+    // {
+    //     ESP_LOGE("ALLOCATION FAILED", "Unable to malloc repsonse buffer");
+    //     return;
+    // }
     switch (page)
     {
     case INDEX_HTML:
         PATH = INDEX_HTML_PATH;
+        response_buffer = (char *)calloc(sizeof(char),  1024 * 19);
         break;
     case INDEX_CSS:
         PATH = INDEX_CSS_PATH;
+        response_buffer = (char *)calloc(sizeof(char),  1024 * 32);
         break;
     case INDEX_JS:
         PATH = INDEX_JS_PATH;
+        response_buffer = (char *)calloc(sizeof(char),  1024 * 103);
         break;    
     case IRO_JS:
         PATH = IRO_JS_PATH;
+        response_buffer = (char *)calloc(sizeof(char),  1024 * 103);
         break;
     case RANGETOUCH_JS:
         PATH = RANGETOUCH_JS_PATH;
+        response_buffer = (char *)calloc(sizeof(char),  1024 * 103);
         break;
     case JSON_SI:
+        response_buffer = (char *)calloc(sizeof(char),  1024 * 10);
         memset((void *)response_buffer, 0, sizeof(response_buffer));
         sprintf(response_buffer, "{\
     \"state\": {\
@@ -470,7 +501,7 @@ void populate_response(enum webpage_name page)
         \"ver\": \"0.14.0\",\
         \"vid\": 2310130,\
         \"leds\": {\
-            \"count\": 30,\
+            \"count\": 100,\
             \"pwr\": 480,\
             \"fps\": 4,\
             \"maxpwr\": 850,\
@@ -526,11 +557,13 @@ void populate_response(enum webpage_name page)
 }");
         return;
     case JSON_EFFECTS:
+        response_buffer = (char *)calloc(sizeof(char),  1024);
         memset((void *)response_buffer, 0, sizeof(response_buffer));
         sprintf(response_buffer, "[\"Solid\", \"Blink\", \"Breathe\", \"Wipe\", \"Wipe Random\", \"Random Colors\", \"Sweep\", \"Dynamic\", \"Colorloop\", \"Rainbow\", \"Scan\", \"Dual Scan\", \"Fade\", \"Chase\", \"Chase Rainbow\", \"Running\", \"Saw\", \"Twinkle\", \"Dissolve\", \"Dissolve Rnd\", \"Sparkle\", \"Dark Sparkle\", \"Sparkle+\", \"Strobe\", \"Strobe Rainbow\", \"Mega Strobe\", \"Blink Rainbow\", \"Android\", \"Chase\", \"Chase Random\", \"Chase Rainbow\", \"Chase Flash\", \"Chase Flash Rnd\", \"Rainbow Runner\", \"Colorful\", \"Traffic Light\", \"Sweep Random\", \"Running 2\", \"Red & Blue\",\"Stream\", \"Scanner\", \"Lighthouse\", \"Fireworks\", \"Rain\", \"Merry Christmas\", \"Fire Flicker\", \"Gradient\", \"Loading\", \"In Out\", \"In In\", \"Out Out\", \"Out In\", \"Circus\", \"Halloween\", \"Tri Chase\", \"Tri Wipe\", \"Tri Fade\", \"Lightning\", \"ICU\", \"Multi Comet\", \"Dual Scanner\", \"Stream 2\", \"Oscillate\", \"Pride 2015\", \"Juggle\", \"Palette\", \"Fire 2012\", \"Colorwaves\", \"BPM\", \"Fill Noise\", \"Noise 1\", \"Noise 2\", \"Noise 3\", \"Noise 4\", \"Colortwinkle\", \"Lake\", \"Meteor\", \"Smooth Meteor\", \"Railway\", \"Ripple\"]");
 
-    return;
+        return;
     case JSON_PALETTES:
+        response_buffer = (char *)calloc(sizeof(char),  1024);
         memset((void *)response_buffer, 0, sizeof(response_buffer));
         sprintf(response_buffer, "[\"Default\", \"Random Cycle\", \"Primary Color\", \"Based on Primary\", \"Set Colors\", \"Based on Set\", \"Party\", \"Cloud\", \"Lava\", \"Ocean\", \"Forest\", \"Rainbow\", \"Rainbow Bands\", \"Sunset\", \"Rivendell\", \"Breeze\", \"Red & Blue\", \"Yellowout\", \"Analogous\", \"Splash\", \"Pastel\", \"Sunset 2\", \"Beech\", \"Vintage\", \"Departure\", \"Landscape\", \"Beach\", \"Sherbet\", \"Hult\", \"Hult 64\", \"Drywet\", \"Jul\", \"Grintage\", \"Rewhi\", \"Tertiary\", \"Fire\", \"Icefire\", \"Cyane\", \"Light Pink\", \"Autumn\", \"Magenta\", \"Magred\", \"Yelmag\", \"Yelblu\", \"Orange & Teal\", \"Tiamat\", \"April Night\"]");
 
