@@ -7,4 +7,4 @@ idf_component_register(SRCS "main.c"
                         config
                         uart_reader
                     )
-spiffs_create_partition_image(storage ../data FLASH_IN_PROJECT)
+# spiffs_create_partition_image(storage ../data FLASH_IN_PROJECT)

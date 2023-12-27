@@ -66,7 +66,7 @@ void parse_json(char* start){
     cJSON* root = cJSON_Parse(start);
     uint32_t rgbcolor[3] = {0};
     if(root != NULL){
-        char *string = cJSON_Print(root);
+        // char *string = cJSON_Print(root);
 
         cJSON* seg = cJSON_GetObjectItemCaseSensitive(root, "seg");
 

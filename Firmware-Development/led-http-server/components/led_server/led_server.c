@@ -26,8 +26,13 @@
 #define IRO_JS_PATH "/spiffs/iro.js"
 #define RANGETOUCH_JS_PATH "/spiffs/rangetouch.js"
 
+// #define USE_MALLOC
+
+#ifdef USE_MALLOC
 char *response_buffer;
-// char response_buffer[4096 * 28];
+#else
+char response_buffer[4096 * 28];
+#endif
 
 static const char *TAG = "HTTPS";
 
@@ -103,8 +108,10 @@ static esp_err_t get_handler(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     populate_response(INDEX_HTML);
     httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    #ifdef USE_MALLOC
     free(response_buffer);
     response_buffer = NULL;
+    #endif
     return ESP_OK;
 }
 
@@ -115,8 +122,10 @@ static esp_err_t get_index_css_handler(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     populate_response(INDEX_CSS);
     httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    #ifdef USE_MALLOC
     free(response_buffer);
     response_buffer = NULL;
+    #endif
     return ESP_OK;
 }
 
@@ -130,8 +139,10 @@ static esp_err_t get_index_js_handler(httpd_req_t *req)
     populate_response(INDEX_JS);
     ESP_LOGE(TAG, "Sending Repsonse indexjs");
     httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    #ifdef USE_MALLOC
     free(response_buffer);
     response_buffer = NULL;
+    #endif
     return ESP_OK;
 }
 
@@ -145,8 +156,10 @@ static esp_err_t get_iro_js_handler(httpd_req_t *req)
     populate_response(IRO_JS);
     ESP_LOGE(TAG, "Sending Repsonse iro");
     httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    #ifdef USE_MALLOC
     free(response_buffer);
     response_buffer = NULL;
+    #endif
     return ESP_OK;
 }
 
@@ -160,8 +173,10 @@ static esp_err_t get_rangetouch_js_handler(httpd_req_t *req)
     populate_response(RANGETOUCH_JS);
     ESP_LOGE(TAG, "Sending Repsonse rangetouch");
     httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    #ifdef USE_MALLOC
     free(response_buffer);
     response_buffer = NULL;
+    #endif
     return ESP_OK;
 }
 
@@ -175,8 +190,10 @@ static esp_err_t get_json_si_js_handler(httpd_req_t *req)
     populate_response(JSON_SI);
     ESP_LOGE(TAG, "Sending Repsonse");
     httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    #ifdef USE_MALLOC
     free(response_buffer);
     response_buffer = NULL;
+    #endif
     return ESP_OK;
 }
 
@@ -190,9 +207,10 @@ static esp_err_t get_json_effects_js_handler(httpd_req_t *req)
     populate_response(JSON_EFFECTS);
     ESP_LOGE(TAG, "Sending Repsonse");
     httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    #ifdef USE_MALLOC
     free(response_buffer);
-
     response_buffer = NULL;
+    #endif
     return ESP_OK;
 }
 
@@ -206,8 +224,10 @@ static esp_err_t get_json_palettes_js_handler(httpd_req_t *req)
     populate_response(JSON_PALETTES);
     ESP_LOGE(TAG, "Sending Repsonse");
     httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    #ifdef USE_MALLOC
     free(response_buffer);
     response_buffer = NULL;
+    #endif
     return ESP_OK;
 }
 
@@ -348,26 +368,39 @@ void populate_response(enum webpage_name page)
     {
     case INDEX_HTML:
         PATH = INDEX_HTML_PATH;
+        #ifdef USE_MALLOC
         response_buffer = (char *)calloc(sizeof(char),  1024 * 19);
+        #endif
         break;
     case INDEX_CSS:
         PATH = INDEX_CSS_PATH;
+        #ifdef USE_MALLOC
         response_buffer = (char *)calloc(sizeof(char),  1024 * 32);
+        #endif
         break;
     case INDEX_JS:
         PATH = INDEX_JS_PATH;
+        #ifdef USE_MALLOC
         response_buffer = (char *)calloc(sizeof(char),  1024 * 103);
+        #endif
         break;    
     case IRO_JS:
         PATH = IRO_JS_PATH;
+        #ifdef USE_MALLOC
         response_buffer = (char *)calloc(sizeof(char),  1024 * 103);
+        #endif
         break;
     case RANGETOUCH_JS:
         PATH = RANGETOUCH_JS_PATH;
+        #ifdef USE_MALLOC
         response_buffer = (char *)calloc(sizeof(char),  1024 * 103);
+        #endif
         break;
     case JSON_SI:
+        #ifdef USE_MALLOC
         response_buffer = (char *)calloc(sizeof(char),  1024 * 10);
+        #endif
+
         memset((void *)response_buffer, 0, sizeof(response_buffer));
         sprintf(response_buffer, "{\
     \"state\": {\
@@ -500,13 +533,17 @@ void populate_response(enum webpage_name page)
 }");
         return;
     case JSON_EFFECTS:
+        #ifdef USE_MALLOC
         response_buffer = (char *)calloc(sizeof(char),  1024);
+        #endif
         memset((void *)response_buffer, 0, sizeof(response_buffer));
         sprintf(response_buffer, "[\"Solid\", \"Blink\", \"Breathe\", \"Wipe\", \"Wipe Random\", \"Random Colors\", \"Sweep\", \"Dynamic\", \"Colorloop\", \"Rainbow\", \"Scan\", \"Dual Scan\", \"Fade\", \"Chase\", \"Chase Rainbow\", \"Running\", \"Saw\", \"Twinkle\", \"Dissolve\", \"Dissolve Rnd\", \"Sparkle\", \"Dark Sparkle\", \"Sparkle+\", \"Strobe\", \"Strobe Rainbow\", \"Mega Strobe\", \"Blink Rainbow\", \"Android\", \"Chase\", \"Chase Random\", \"Chase Rainbow\", \"Chase Flash\", \"Chase Flash Rnd\", \"Rainbow Runner\", \"Colorful\", \"Traffic Light\", \"Sweep Random\", \"Running 2\", \"Red & Blue\",\"Stream\", \"Scanner\", \"Lighthouse\", \"Fireworks\", \"Rain\", \"Merry Christmas\", \"Fire Flicker\", \"Gradient\", \"Loading\", \"In Out\", \"In In\", \"Out Out\", \"Out In\", \"Circus\", \"Halloween\", \"Tri Chase\", \"Tri Wipe\", \"Tri Fade\", \"Lightning\", \"ICU\", \"Multi Comet\", \"Dual Scanner\", \"Stream 2\", \"Oscillate\", \"Pride 2015\", \"Juggle\", \"Palette\", \"Fire 2012\", \"Colorwaves\", \"BPM\", \"Fill Noise\", \"Noise 1\", \"Noise 2\", \"Noise 3\", \"Noise 4\", \"Colortwinkle\", \"Lake\", \"Meteor\", \"Smooth Meteor\", \"Railway\", \"Ripple\"]");
 
         return;
     case JSON_PALETTES:
+        #ifdef USE_MALLOC
         response_buffer = (char *)calloc(sizeof(char),  1024);
+        #endif
         memset((void *)response_buffer, 0, sizeof(response_buffer));
         sprintf(response_buffer, "[\"Default\", \"Random Cycle\", \"Primary Color\", \"Based on Primary\", \"Set Colors\", \"Based on Set\", \"Party\", \"Cloud\", \"Lava\", \"Ocean\", \"Forest\", \"Rainbow\", \"Rainbow Bands\", \"Sunset\", \"Rivendell\", \"Breeze\", \"Red & Blue\", \"Yellowout\", \"Analogous\", \"Splash\", \"Pastel\", \"Sunset 2\", \"Beech\", \"Vintage\", \"Departure\", \"Landscape\", \"Beach\", \"Sherbet\", \"Hult\", \"Hult 64\", \"Drywet\", \"Jul\", \"Grintage\", \"Rewhi\", \"Tertiary\", \"Fire\", \"Icefire\", \"Cyane\", \"Light Pink\", \"Autumn\", \"Magenta\", \"Magred\", \"Yelmag\", \"Yelblu\", \"Orange & Teal\", \"Tiamat\", \"April Night\"]");
 
