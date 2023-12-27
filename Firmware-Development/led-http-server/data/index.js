@@ -1673,7 +1673,7 @@ function requestJson(command=null)
 	if (command && !reqsLegal) return; // stop post requests from chrome onchange event on page restore
 	if (!jsonTimeout) jsonTimeout = setTimeout(()=>{if (ws) ws.close(); ws=null; showErrorToast()}, 3000);
 	var req = null;
-	var useWs = (ws && ws.readyState === WebSocket.OPEN);
+	// var useWs = (ws && ws.readyState === WebSocket.OPEN);
 	var type = command ? 'post':'get';
 	if (command) {
 		command.v = true; // force complete /json/si API response
@@ -1688,10 +1688,10 @@ function requestJson(command=null)
 		if (req.length >  500 && lastinfo && lastinfo.arch == "esp8266") useWs = false; // esp8266 can only handle 500 bytes
 	};
 
-	if (useWs) {
-		ws.send(req?req:'{"v":true}');
-		return;
-	}
+	// if (useWs) {
+	// 	ws.send(req?req:'{"v":true}');
+	// 	return;
+	// }
 
 	fetch(getURL('/json/si'), {
 		method: type,

@@ -296,69 +296,12 @@ static const httpd_uri_t uri_post = {
     .handler = post_handler
 };
 
-static esp_err_t handle_ws_req(httpd_req_t *req)
-{
-    if (req->method == HTTP_GET)
-    {
-        ESP_LOGI(TAG, "Handshake done, the new connection was opened");
-        return ESP_OK;
-    }
-
-    httpd_ws_frame_t ws_pkt;
-    uint8_t *buf = NULL;
-    memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
-    ws_pkt.type = HTTPD_WS_TYPE_TEXT;
-    esp_err_t ret = httpd_ws_recv_frame(req, &ws_pkt, 0);
-    if (ret != ESP_OK)
-    {
-        ESP_LOGE(TAG, "httpd_ws_recv_frame failed to get frame len with %d", ret);
-        return ret;
-    }
-
-    if (ws_pkt.len)
-    {
-        buf = calloc(1, ws_pkt.len + 1);
-        if (buf == NULL)
-        {
-            ESP_LOGE(TAG, "Failed to calloc memory for buf");
-            return ESP_ERR_NO_MEM;
-        }
-        ws_pkt.payload = buf;
-        ret = httpd_ws_recv_frame(req, &ws_pkt, ws_pkt.len);
-        if (ret != ESP_OK)
-        {
-            ESP_LOGE(TAG, "httpd_ws_recv_frame failed with %d", ret);
-            free(buf);
-            return ret;
-        }
-        ESP_LOGI(TAG, "Got packet with message: %s", ws_pkt.payload);
-    }
-
-    // ESP_LOGI(TAG, "frame len is %d", ws_pkt.len);
-
-    // if (ws_pkt.type == HTTPD_WS_TYPE_TEXT &&
-    //     strcmp((char *)ws_pkt.payload, "toggle") == 0)
-    // {
-    //     free(buf);
-    //     return trigger_async_send(req->handle, req);
-    // }
-
-    // vTaskDelay(1000/portTICK_PERIOD_MS);
-    free(response_buffer);
-    response_buffer = NULL;
-    parse_json((char *)ws_pkt.payload);
-    return ESP_OK;
-}
-
-/* WEBSOCKET */
-httpd_uri_t uri_ws = {
-        .uri = "/ws",
-        .method = HTTP_GET,
-        .handler = handle_ws_req,
-        .user_ctx = NULL,
-        .is_websocket = true
+/* JSON API*/
+static const httpd_uri_t uri_post_json_si = {
+        .uri = "/json/si",
+        .method = HTTP_POST,
+        .handler = post_handler,
 };
-
 
 static httpd_handle_t start_webserver(void)
 {
@@ -387,7 +330,7 @@ static httpd_handle_t start_webserver(void)
     httpd_register_uri_handler(server, &uri_get_json_si_js);
     httpd_register_uri_handler(server, &uri_get_json_effects_js);
     httpd_register_uri_handler(server, &uri_get_json_palettes_js);
-    httpd_register_uri_handler(server, &uri_ws);
+    httpd_register_uri_handler(server, &uri_post_json_si);
     return server;
 }
 
