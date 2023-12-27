@@ -20,6 +20,7 @@
 #include "led_server.h"
 #include "uart_reader.h"
 
+
 #define INDEX_HTML_PATH "/spiffs/index.htm"
 #define INDEX_CSS_PATH "/spiffs/index.css"
 #define INDEX_JS_PATH "/spiffs/index.js"
@@ -31,7 +32,7 @@
 #ifdef USE_MALLOC
 char *response_buffer;
 #else
-char response_buffer[4096 * 28];
+char response_buffer[2048 * 2];
 #endif
 
 static const char *TAG = "HTTPS";
@@ -49,7 +50,7 @@ enum webpage_name {
 
 /* Prototypes */
 static httpd_handle_t start_webserver(void);
-void populate_response(enum webpage_name);
+void populate_response(enum webpage_name, httpd_req_t *re);
 void configure_spiffs(void);
 
 static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
@@ -106,7 +107,7 @@ static esp_err_t get_handler(httpd_req_t *req)
     // const char resp[4096 *6] = "GET Response .................";
     httpd_resp_set_type(req, "text/html");
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    populate_response(INDEX_HTML);
+    populate_response(INDEX_HTML, req);
     httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
     #ifdef USE_MALLOC
     free(response_buffer);
@@ -120,8 +121,8 @@ static esp_err_t get_index_css_handler(httpd_req_t *req)
     // const char resp[4096 *6] = "GET Response .................";
     httpd_resp_set_type(req, "text/css");
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    populate_response(INDEX_CSS);
-    httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    populate_response(INDEX_CSS, req);
+    // httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
     #ifdef USE_MALLOC
     free(response_buffer);
     response_buffer = NULL;
@@ -136,9 +137,9 @@ static esp_err_t get_index_js_handler(httpd_req_t *req)
     httpd_resp_set_type(req, "text/javascript");
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     ESP_LOGE(TAG, "Populating Repsonse");
-    populate_response(INDEX_JS);
+    populate_response(INDEX_JS, req);
     ESP_LOGE(TAG, "Sending Repsonse indexjs");
-    httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    // httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
     #ifdef USE_MALLOC
     free(response_buffer);
     response_buffer = NULL;
@@ -153,9 +154,9 @@ static esp_err_t get_iro_js_handler(httpd_req_t *req)
     httpd_resp_set_type(req, "text/javascript");
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     ESP_LOGE(TAG, "Populating Repsonse");
-    populate_response(IRO_JS);
+    populate_response(IRO_JS, req);
     ESP_LOGE(TAG, "Sending Repsonse iro");
-    httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    // httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
     #ifdef USE_MALLOC
     free(response_buffer);
     response_buffer = NULL;
@@ -170,9 +171,9 @@ static esp_err_t get_rangetouch_js_handler(httpd_req_t *req)
     httpd_resp_set_type(req, "text/javascript");
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     ESP_LOGE(TAG, "Populating Repsonse");
-    populate_response(RANGETOUCH_JS);
+    populate_response(RANGETOUCH_JS, req);
     ESP_LOGE(TAG, "Sending Repsonse rangetouch");
-    httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    // httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
     #ifdef USE_MALLOC
     free(response_buffer);
     response_buffer = NULL;
@@ -187,7 +188,7 @@ static esp_err_t get_json_si_js_handler(httpd_req_t *req)
     httpd_resp_set_type(req, "application/json");
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     ESP_LOGE(TAG, "Populating Repsonse");
-    populate_response(JSON_SI);
+    populate_response(JSON_SI, req);
     ESP_LOGE(TAG, "Sending Repsonse");
     httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
     #ifdef USE_MALLOC
@@ -204,7 +205,7 @@ static esp_err_t get_json_effects_js_handler(httpd_req_t *req)
     httpd_resp_set_type(req, "application/json");
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     ESP_LOGE(TAG, "Populating Repsonse");
-    populate_response(JSON_EFFECTS);
+    populate_response(JSON_EFFECTS, req);
     ESP_LOGE(TAG, "Sending Repsonse");
     httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
     #ifdef USE_MALLOC
@@ -221,7 +222,7 @@ static esp_err_t get_json_palettes_js_handler(httpd_req_t *req)
     httpd_resp_set_type(req, "application/json");
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     ESP_LOGE(TAG, "Populating Repsonse");
-    populate_response(JSON_PALETTES);
+    populate_response(JSON_PALETTES, req);
     ESP_LOGE(TAG, "Sending Repsonse");
     httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
     #ifdef USE_MALLOC
@@ -355,7 +356,7 @@ static httpd_handle_t start_webserver(void)
 }
 
 
-void populate_response(enum webpage_name page)
+void populate_response(enum webpage_name page, httpd_req_t *req)
 {
     char *PATH = NULL;
     ESP_LOGI("POPULAITNG RESP","%d", page);
@@ -368,35 +369,41 @@ void populate_response(enum webpage_name page)
     {
     case INDEX_HTML:
         PATH = INDEX_HTML_PATH;
+        httpd_resp_set_type(req, "text/html");
         #ifdef USE_MALLOC
         response_buffer = (char *)calloc(sizeof(char),  1024 * 19);
         #endif
         break;
     case INDEX_CSS:
         PATH = INDEX_CSS_PATH;
+        httpd_resp_set_type(req, "text/css");
         #ifdef USE_MALLOC
         response_buffer = (char *)calloc(sizeof(char),  1024 * 32);
         #endif
         break;
     case INDEX_JS:
         PATH = INDEX_JS_PATH;
+        httpd_resp_set_type(req, "text/javascript");
         #ifdef USE_MALLOC
         response_buffer = (char *)calloc(sizeof(char),  1024 * 103);
         #endif
         break;    
     case IRO_JS:
         PATH = IRO_JS_PATH;
+        httpd_resp_set_type(req, "text/javascript");
         #ifdef USE_MALLOC
         response_buffer = (char *)calloc(sizeof(char),  1024 * 103);
         #endif
         break;
     case RANGETOUCH_JS:
+        httpd_resp_set_type(req, "text/javascript");
         PATH = RANGETOUCH_JS_PATH;
         #ifdef USE_MALLOC
         response_buffer = (char *)calloc(sizeof(char),  1024 * 103);
         #endif
         break;
     case JSON_SI:
+        httpd_resp_set_type(req, "application/json");
         #ifdef USE_MALLOC
         response_buffer = (char *)calloc(sizeof(char),  1024 * 10);
         #endif
@@ -533,6 +540,7 @@ void populate_response(enum webpage_name page)
 }");
         return;
     case JSON_EFFECTS:
+        httpd_resp_set_type(req, "application/json");
         #ifdef USE_MALLOC
         response_buffer = (char *)calloc(sizeof(char),  1024);
         #endif
@@ -541,6 +549,7 @@ void populate_response(enum webpage_name page)
 
         return;
     case JSON_PALETTES:
+        httpd_resp_set_type(req, "application/json");
         #ifdef USE_MALLOC
         response_buffer = (char *)calloc(sizeof(char),  1024);
         #endif
@@ -554,18 +563,54 @@ void populate_response(enum webpage_name page)
 
     memset((void *)response_buffer, 0, sizeof(response_buffer));
     struct stat st;
-    if (stat(PATH, &st))
+    if (stat(PATH, &st) != 0)
     {
-        ESP_LOGE(TAG, "index.html not found");
+        ESP_LOGE(TAG, "%s not found", PATH);
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "File not found");
         return;
     }
 
     FILE *fp = fopen(PATH, "r");
-    if (fread(response_buffer, st.st_size, 1, fp) == 0)
+    if (fp == NULL)
     {
-        ESP_LOGE(TAG, "fread failed");
+        ESP_LOGE(TAG, "Failed to open file: %s", PATH);
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to open file");
+        return;
     }
+
+
+    // Convert file size to string using snprintf
+    char content_length_str[16];
+    snprintf(content_length_str, sizeof(content_length_str), "%ld", st.st_size);
+    httpd_resp_set_hdr(req, "Content-Length", content_length_str);
+
+    size_t bytes_left = st.st_size;
+    size_t bytes_read;
+
+    while (bytes_left > 0)
+    {
+        size_t chunk_size = (bytes_left > sizeof(response_buffer)) ? sizeof(response_buffer) : bytes_left;
+
+        bytes_read = fread(response_buffer, 1, chunk_size, fp);
+
+        if (bytes_read <= 0)
+        {
+            ESP_LOGE(TAG, "Error reading file: %s", PATH);
+            break;
+        }
+
+        if (httpd_resp_send_chunk(req, response_buffer, bytes_read) != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Error sending file chunk");
+            break;
+        }
+
+        bytes_left -= bytes_read;
+    }
+
     fclose(fp);
+    // End the response after sending all chunks
+    httpd_resp_send_chunk(req, NULL, 0);
 }
 
 void configure_spiffs(void)
