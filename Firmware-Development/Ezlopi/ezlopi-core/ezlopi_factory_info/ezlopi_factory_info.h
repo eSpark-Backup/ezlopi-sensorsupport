@@ -424,27 +424,14 @@ static const char *test_device_constant_config =
 #endif
     "{\
     \"cmd\":3,\
-    \"dev_detail\":[    {\
-      \"dev_type\": 7,\
-      \"dev_name\": \"DHT 22 Office \",\
-      \"id_room\": \"\",\
-      \"id_item\": 16,\
-      \"gpio\": 18\
-    },\
-                {\
-                \"dev_name\": \"LED Office\",\
-                \"dev_type\": 1,\
-                \"gpio_in\": -1,\
-                \"gpio_out\": 2,\
-                \"id_item\": 1,\
+    \"dev_detail\":[{\
+                \"dev_type\": 10,\
+                \"dev_name\": \"Addressable LED Controller\",\
                 \"id_room\": \"\",\
-                \"ip_inv\": true,\
-                \"is_ip\": false,\
-                \"op_inv\": false,\
-                \"pullup_ip\": true,\
-                \"pullup_op\": true,\
-                \"val_ip\": true,\
-                \"val_op\": false\
+                \"id_item\": 68,\
+                \"gpio\": 17,\
+                \"gpio2\": 16,\
+                \"gpio3\": 25\
             }\
     ],\
     \"dev_total\":2\
