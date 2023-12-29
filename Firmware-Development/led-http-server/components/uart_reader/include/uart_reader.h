@@ -12,3 +12,4 @@
 
 void uart_task(void *arg);
 void parse_json(char* start);
+char* updated_config_json();
