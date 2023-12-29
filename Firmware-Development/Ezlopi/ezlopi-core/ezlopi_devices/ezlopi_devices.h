@@ -13,8 +13,6 @@
 #include "ezlopi_adc.h"
 #include "ezlopi_uart.h"
 #include "ezlopi_actions.h"
-#include "ezlopi_settings.h"
-
 
 #define CJSON_GET_VALUE_DOUBLE(root, item_name, item_val)     \
     {                                                         \
@@ -146,18 +144,9 @@ typedef struct l_ezlopi_item
     struct l_ezlopi_item *next;
 } l_ezlopi_item_t;
 
-typedef struct l_ezlopi_device_settings_v3
-{
-    s_ezlopi_cloud_device_settings_t cloud_properties;
-    void *user_arg;
-    int (*func)(e_ezlopi_settings_action_t action, struct l_ezlopi_device_settings_v3 *setting, void *arg, void *user_arg);
-    struct l_ezlopi_device_settings_v3 *next;
-
-} l_ezlopi_device_settings_v3_t;
 typedef struct l_ezlopi_device
 {
     l_ezlopi_item_t *items;
-    l_ezlopi_device_settings_v3_t *settings;
     s_ezlopi_cloud_device_t cloud_properties;
     struct l_ezlopi_device *next;
 } l_ezlopi_device_t;

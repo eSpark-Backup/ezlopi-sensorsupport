@@ -26,5 +26,5 @@ idf_component_register(SRCS "web_provisioning.c" "${provisioning_src}"
                 ezlopi_wifi      
                 
                 dictionary
-                settings 
+                # settings 
 )

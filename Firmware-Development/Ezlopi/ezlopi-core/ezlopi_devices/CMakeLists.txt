@@ -2,7 +2,7 @@
 
 file(GLOB_RECURSE config_src "*.c")
 
-idf_component_register(SRCS "ezlopi_controller.c" "ezlopi_devices.c" "ezlopi_device_value_updated.c" "ezlopi_devices_list.c" "${config_src}"
+idf_component_register(SRCS "ezlopi_devices.c" "ezlopi_device_value_updated.c" "ezlopi_devices_list.c" "${config_src}"
                         INCLUDE_DIRS "."
                         REQUIRES 
                                 trace 
@@ -10,8 +10,7 @@ idf_component_register(SRCS "ezlopi_controller.c" "ezlopi_devices.c" "ezlopi_dev
                                 ezlopi_nvs 
                                 ezlopi_hal 
                                 ezlopi_cloud 
-                                ezlopi_actions     
-                                ezlopi_settings                         
+                                ezlopi_actions                              
                                 
                                 device_0001_digitalOut_generic
                                 device_0002_digitalOut_relay
