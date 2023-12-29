@@ -26,6 +26,8 @@ static int dht11_sensor_setup_item_properties_humidity(l_ezlopi_item_t *item, cJ
 // static int dht22_sensor_setup_device_cloud_properties_humidity(l_ezlopi_device_t *device, cJSON *cj_device);
 static int dht22_sensor_setup_device_cloud_properties_temperature(l_ezlopi_device_t *device, cJSON *cj_device);
 
+int sensor_0016_oneWire_DHT22_settings(e_ezlopi_settings_action_t action, l_ezlopi_device_settings_v3_t *setting, void *arg, void *user_arg);
+
 static int __notify(l_ezlopi_item_t *item);
 
 int sensor_0016_oneWire_DHT22(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void *user_arg)
@@ -192,6 +194,13 @@ static int dht22_sensor_setup_device_cloud_properties_temperature(l_ezlopi_devic
         device->cloud_properties.subcategory = subcategory_not_defined;
         device->cloud_properties.device_type = dev_type_sensor;
         device->cloud_properties.device_id = ezlopi_cloud_generate_device_id();
+
+        l_ezlopi_device_settings_v3_t *device_setting = (l_ezlopi_device_settings_v3_t *)malloc(sizeof(l_ezlopi_device_settings_v3_t));
+        device_setting->cloud_properties.setting_id = ezlopi_cloud_generate_settings_id();
+        device_setting->func =  sensor_0016_oneWire_DHT22_settings;
+        device_setting->next = NULL;
+        device->settings = device_setting;
+        // device->settings->cloud_properties->device_id = device->cloud_properties.device_id;
     }
     return ret;
 }
@@ -241,5 +250,45 @@ static int dht11_sensor_setup_item_properties_humidity(l_ezlopi_item_t *item, cJ
         CJSON_GET_VALUE_INT(cj_device, "gpio", item->interface.onewire_master.onewire_pin);
     }
 
+    return ret;
+}
+
+
+/* Setting Handling */
+int sensor_0016_oneWire_DHT22_settings(e_ezlopi_settings_action_t action, l_ezlopi_device_settings_v3_t *setting, void *arg, void *user_arg)
+{
+    int ret = 0;
+    switch (action)
+    {
+    case EZLOPI_SETTINGS_ACTION_GET_SETTING:
+    {
+        cJSON* params = (cJSON*)arg;
+
+        cJSON *label = cJSON_CreateObject();
+        cJSON_AddItemToObject(params, "label", label);
+
+        // Add properties to "label" object
+        cJSON_AddStringToObject(label, "text", "IP Address");
+        cJSON_AddStringToObject(label, "lang_tag", "addressable_led_ip_address_label");
+
+        cJSON *desc = cJSON_CreateObject();
+        cJSON_AddItemToObject(params, "description", desc);
+
+        // Add properties to "label" object
+        cJSON_AddStringToObject(desc, "text", "The IP address of this instance.");
+        cJSON_AddStringToObject(desc, "lang_tag", "addressable_led_ip_address_label");
+
+        cJSON_AddBoolToObject(params, "hasSetter", false);
+        cJSON_AddStringToObject(params, "valueType", "string");
+        cJSON_AddStringToObject(params, "value", "192.168.1.1");
+    
+        
+        break;
+    }
+    default:
+    {
+        break;
+    }
+    }
     return ret;
 }
