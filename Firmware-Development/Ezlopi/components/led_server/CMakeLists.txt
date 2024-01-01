@@ -1,7 +1,7 @@
 set(srcs "led_server.c" )
 
 idf_component_register(	SRCS ${srcs}
-						INCLUDE_DIRS "."
+						INCLUDE_DIRS "." "./compressed_webpage_files"
                         REQUIRES
                             nvs_flash
                             esp_http_client

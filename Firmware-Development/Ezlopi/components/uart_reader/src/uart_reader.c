@@ -154,6 +154,7 @@ void parse_json(char* start){
 
         cJSON* bri = cJSON_GetObjectItemCaseSensitive(root, "bri");
         if(bri != NULL){
+            ESP_LOGW(TAG, "Setting Brightness : %d", bri->valueint);
             config_set_brightness(bri->valueint);
         }
 
@@ -317,12 +318,10 @@ char* updated_config_json()
 
     // Print the generated JSON
     char *json_string = cJSON_Print(root);
-    printf("%s\n", json_string);
+    cJSON_Minify(json_string);
 
-    // Free the cJSON object and the JSON string
+    // Free the cJSON object
     cJSON_Delete(root);
-    // free(json_string);
     return json_string;
 
-    // return "hello world";
 }

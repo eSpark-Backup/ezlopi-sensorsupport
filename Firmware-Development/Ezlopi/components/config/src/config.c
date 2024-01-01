@@ -166,7 +166,7 @@ static void setDefaults() {
 
 	config_coloring_defaults();
 	ownled_setColorOrder(OWNLED_GRB);
-	config_set_brightness(50);
+	// config_set_brightness(50);
 
 	led_config.artnet_universe_offset = 0;
 	led_config.artnet_width = 512 / 3;
@@ -276,6 +276,13 @@ void config_set_brightness(uint8_t bri){
 	fBri = (bri/255.f);
 	
 	led_coloring.brightness = fBri;
+	for(int i = 0; i < led_config.channels; i++){
+		if((NULL != led_config.channel[i])){
+			led_config.channel[i]->brightness = fBri;
+			break;
+		}
+	}
+	led_set_config(&led_config);
 }
 
 void config_set_selected_flag(int id, bool select_flag){

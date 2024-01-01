@@ -19,7 +19,11 @@
 
 #include "led_server.h"
 #include "uart_reader.h"
-
+#include "./compressed_webpage_files/compressed_index_html.h"
+#include "./compressed_webpage_files/compressed_index_css.h"
+#include "./compressed_webpage_files/compressed_index_js.h"
+#include "./compressed_webpage_files/compressed_iro_js.h"
+#include "./compressed_webpage_files/compressed_rangetouch_js.h"
 
 #define INDEX_HTML_PATH "/spiffs/index.htm"
 #define INDEX_CSS_PATH "/spiffs/index.css"
@@ -105,8 +109,9 @@ static esp_err_t get_handler(httpd_req_t *req)
     // const char resp[4096 *6] = "GET Response .................";
     httpd_resp_set_type(req, "text/html");
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    populate_response(INDEX_HTML, req);
-    // httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    httpd_resp_set_hdr(req, "Content-Encoding", "Gzip");
+    // populate_response(INDEX_HTML, req);
+    httpd_resp_send(req, (const char*)index_html_gz, sizeof(index_html_gz));
     #ifdef USE_MALLOC
     free(response_buffer);
     response_buffer = NULL;
@@ -119,8 +124,9 @@ static esp_err_t get_index_css_handler(httpd_req_t *req)
     // const char resp[4096 *6] = "GET Response .................";
     httpd_resp_set_type(req, "text/css");
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    populate_response(INDEX_CSS, req);
-    // httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    httpd_resp_set_hdr(req, "Content-Encoding", "Gzip");
+    // populate_response(INDEX_CSS, req);
+    httpd_resp_send(req, (const char*)index_css_gz, sizeof(index_css_gz));
     #ifdef USE_MALLOC
     free(response_buffer);
     response_buffer = NULL;
@@ -134,10 +140,11 @@ static esp_err_t get_index_js_handler(httpd_req_t *req)
     ESP_LOGE(TAG, "Sending /js Response");
     httpd_resp_set_type(req, "text/javascript");
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    ESP_LOGE(TAG, "Populating Repsonse");
-    populate_response(INDEX_JS, req);
+    httpd_resp_set_hdr(req, "Content-Encoding", "Gzip");
+    // ESP_LOGE(TAG, "Populating Repsonse");
+    // populate_response(INDEX_JS, req);
     ESP_LOGE(TAG, "Sending Repsonse indexjs");
-    // httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    httpd_resp_send(req, (const char*)index_js_gz, sizeof(index_js_gz));
     #ifdef USE_MALLOC
     free(response_buffer);
     response_buffer = NULL;
@@ -151,10 +158,11 @@ static esp_err_t get_iro_js_handler(httpd_req_t *req)
     ESP_LOGE(TAG, "Sending /iro.js Response");
     httpd_resp_set_type(req, "text/javascript");
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    ESP_LOGE(TAG, "Populating Repsonse");
-    populate_response(IRO_JS, req);
+    httpd_resp_set_hdr(req, "Content-Encoding", "Gzip");
+    // ESP_LOGE(TAG, "Populating Repsonse");
+    // populate_response(IRO_JS, req);
     ESP_LOGE(TAG, "Sending Repsonse iro");
-    // httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    httpd_resp_send(req, (const char*)iro_js_gz, sizeof(iro_js_gz));
     #ifdef USE_MALLOC
     free(response_buffer);
     response_buffer = NULL;
@@ -168,10 +176,11 @@ static esp_err_t get_rangetouch_js_handler(httpd_req_t *req)
     ESP_LOGE(TAG, "Sending /rangetouch.js Response");
     httpd_resp_set_type(req, "text/javascript");
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    ESP_LOGE(TAG, "Populating Repsonse");
-    populate_response(RANGETOUCH_JS, req);
+    httpd_resp_set_hdr(req, "Content-Encoding", "Gzip");
+    // ESP_LOGE(TAG, "Populating Repsonse");
+    // populate_response(RANGETOUCH_JS, req);
     ESP_LOGE(TAG, "Sending Repsonse rangetouch");
-    // httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+    httpd_resp_send(req, (const char*)rangetouch_js_gz, sizeof(rangetouch_js_gz));
     #ifdef USE_MALLOC
     free(response_buffer);
     response_buffer = NULL;
