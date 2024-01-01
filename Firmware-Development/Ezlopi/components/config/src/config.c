@@ -279,7 +279,6 @@ void config_set_brightness(uint8_t bri){
 	for(int i = 0; i < led_config.channels; i++){
 		if((NULL != led_config.channel[i])){
 			led_config.channel[i]->brightness = fBri;
-			break;
 		}
 	}
 	led_set_config(&led_config);

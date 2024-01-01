@@ -92,10 +92,13 @@ void parse_json(char* start){
                     cJSON* subitem = cJSON_GetArrayItem(col, i);
 
                     for(int j = 0; j < cJSON_GetArraySize(subitem)-1; j++ ){ //FIXME: Array size is 4 RGBW not RGB
-                        cJSON* subsubitem = cJSON_GetArrayItem(subitem, j);
-                        ESP_LOGI(TAG, "JSON COL %d : %u",j, subsubitem->valueint);
-                        uint8_t color = subsubitem->valueint;
-                        rgbcolor[i] += (color << ((2-j)*8));
+                        if(cJSON_GetArraySize(subitem) != 0)
+                        {
+                            cJSON* subsubitem = cJSON_GetArrayItem(subitem, j);
+                            ESP_LOGI(TAG, "JSON COL %d : %u",j, subsubitem->valueint);
+                            uint8_t color = subsubitem->valueint;
+                            rgbcolor[i] += (color << ((2-j)*8));
+                        }
                     }
             }
         	config_setColor(rgbcolor);
@@ -250,7 +253,7 @@ char* updated_config_json()
     cJSON_AddItemToObject(info, "leds", leds);
 
     // Add properties to "leds" object
-    cJSON_AddNumberToObject(leds, "count", 30);
+    cJSON_AddNumberToObject(leds, "count", 100);
     cJSON_AddNumberToObject(leds, "pwr", 480);
     cJSON_AddNumberToObject(leds, "fps", 4);
     cJSON_AddNumberToObject(leds, "maxpwr", 850);
