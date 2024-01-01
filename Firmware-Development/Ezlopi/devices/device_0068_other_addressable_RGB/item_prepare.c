@@ -1,5 +1,7 @@
 #include "trace.h"
+#include "esp_netif.h"
 
+#include "ezlopi_wifi.h"
 #include "ezlopi_devices_list.h"
 #include "ezlopi_devices.h"
 #include "ezlopi_device_value_updated.h"
@@ -147,7 +149,12 @@ int device_0068_other_addressable_RGB_settings(e_ezlopi_settings_action_t action
 
         cJSON_AddBoolToObject(params, "hasSetter", false);
         cJSON_AddStringToObject(params, "valueType", "string");
-        cJSON_AddStringToObject(params, "value", "192.168.1.1");
+        
+        char tmp_string[64];
+        esp_netif_ip_info_t *ip_info = ezlopi_wifi_get_ip_infos();
+        snprintf(tmp_string, sizeof(tmp_string), IPSTR, IP2STR(&ip_info->ip));
+
+        cJSON_AddStringToObject(params, "value", tmp_string);
     
         
         break;

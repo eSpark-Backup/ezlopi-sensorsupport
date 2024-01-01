@@ -12,6 +12,9 @@ idf_component_register(SRCS "item_prepare.c" "get_cjson_value.c" "device_0068_ot
                         ezlopi_cloud_constants 
                         ezlopi_valueformatter
                         gpio_isr_service
+                        ezlopi_wifi
+
+                        esp_netif
 
                         led
                         config
