@@ -72,7 +72,7 @@ static void processSwitch(void* arg) {
 
 
     new_brightness = value_recieved ? (uint8_t)((led_config->channel[segment_index]->prev_brightness)*(100)) : 0;
-    config_set_segment_brightness((uint8_t)new_brightness);
+    config_set_segment_brightness((uint8_t)new_brightness, segment_index);
 }
 
 static void processDimmer(void* arg) {
@@ -86,7 +86,7 @@ static void processDimmer(void* arg) {
     free(jsonString);
 
     CJSON_GET_VALUE_INT(cjson_params, "value", value_recieved);
-    config_set_segment_brightness(value_recieved);
+    config_set_segment_brightness(value_recieved, segment_index);
 
 }
 

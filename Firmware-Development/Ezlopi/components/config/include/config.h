@@ -15,6 +15,8 @@
 #include "led.h"
 #include <stdint.h>
 
+#define REVERSE (uint8_t)0x80
+
 typedef uint8_t byte;
 
 void config_init();
@@ -28,7 +30,8 @@ void config_coloring_write();
 void config_update_channels();
 void config_setMode(uint8_t mode);
 void config_setColor(uint32_t* client_color);
-void config_set_segment_brightness(uint8_t brightness);
+uint32_t *config_read_color(uint8_t id);
+void config_set_segment_brightness(uint8_t brightness, uint8_t segment_index);
 void config_set_brightness(uint8_t bri);
 void config_set_selected_flag(int id, bool select_flag);
 void config_set_segment_start_stop(int seg_id, int seg_start, int seg_stop);
@@ -39,6 +42,8 @@ void config_set_option(int id, bool flag, uint8_t bit_mask);
 void config_delete_segment(int id);
 void config_apply_palette(uint8_t palette);
 void config_switch(bool flag);
+
+char* json_update_config();
 
 const struct LED_CONFIG* config_return_config_pointer();
 // const char *config_get_wifi_sta_ssid();

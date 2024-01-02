@@ -74,7 +74,6 @@ void add_item_to_device_struct(l_ezlopi_item_t *newItem, void* prepareFunction) 
 
 // Function to prepare all device items
 void prepare_all_items(void* prep_arg) {
-    ESP_LOGW("", "Preparing Items");
     cJSON* cj_device = (cJSON*)prep_arg;
     for (size_t i = 0; i < itemCount; ++i) {
         deviceItems[i].prepareFunction(deviceItems[i].item, cj_device);

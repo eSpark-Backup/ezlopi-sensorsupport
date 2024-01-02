@@ -24,6 +24,7 @@
 #include "nvs_flash.h"
 #include "ownled.h"
 #include "palette.h"
+#include "cJSON.h"
 
 static const char *TAG = "#config";
 
@@ -240,12 +241,17 @@ void config_setColor(uint32_t* client_color) {
 	led_set_config(&led_config);
 }
 
-void config_set_segment_brightness(uint8_t brightness)
+uint32_t *config_read_color(uint8_t id)
 {
-	float brightness_float = ((float)(brightness)/(100.f));
+	return led_config.channel[id]->color;
+}
+
+void config_set_segment_brightness(uint8_t brightness, uint8_t segment_index)
+{
+	float brightness_float = ((float)(brightness)/(255.f));
 	
 	for (int i = 0; i < config_get_channels(); i++) {
-		if(led_config.channel[i] != NULL && led_config.channel[i]->selected){
+		if(led_config.channel[i] != NULL && led_config.channel[i]->segment_id == segment_index){
 				ESP_LOGI(TAG, "BRIGHTNESS SET TO : %f", brightness_float);
 				led_config.channel[i]->prev_brightness = led_config.channel[i]->brightness;
 				led_config.channel[i]->brightness = brightness_float;
@@ -988,4 +994,168 @@ void config_set_partition_name(const char *pn)
 const struct LED_CONFIG* config_return_config_pointer()
 {
 	return &led_config;
+}
+
+char* json_update_config()
+{
+	//#define
+	#define MYLED led_config.channel[seg_index]
+	#define MYCOLOR(x) MYLED->color[x]
+	// Create the outer cJSON object
+    cJSON *root = cJSON_CreateObject();
+
+    // Create and add "state" object
+    cJSON *state = cJSON_CreateObject();
+    cJSON_AddItemToObject(root, "state", state);
+
+    // Add properties to "state" object
+    cJSON_AddBoolToObject(state, "on", true);
+    cJSON_AddNumberToObject(state, "bri", (led_config.channel[0]->brightness)* 255);
+    cJSON_AddNumberToObject(state, "transition", 7);
+
+    // Create and add "nl" object
+    cJSON *nl = cJSON_CreateObject();
+    cJSON_AddItemToObject(state, "nl", nl);
+
+    // Add properties to "nl" object
+    cJSON_AddBoolToObject(nl, "on", false);
+    cJSON_AddNumberToObject(nl, "dur", 60);
+    cJSON_AddNumberToObject(nl, "mode", 1);
+    cJSON_AddNumberToObject(nl, "tbri", 0);
+    cJSON_AddNumberToObject(nl, "rem", -1);
+
+    // Create and add "udpn" object
+    cJSON *udpn = cJSON_CreateObject();
+    cJSON_AddItemToObject(state, "udpn", udpn);
+
+    // Add properties to "udpn" object
+    cJSON_AddBoolToObject(udpn, "send", false);
+    cJSON_AddBoolToObject(udpn, "recv", true);
+    cJSON_AddNumberToObject(udpn, "sgrp", 1);
+    cJSON_AddNumberToObject(udpn, "rgrp", 1);
+
+    // Create and add "seg" array
+    cJSON *seg_array = cJSON_CreateArray();
+    cJSON_AddItemToObject(state, "seg", seg_array);
+
+	for(size_t seg_index = 0; seg_index < led_config.channels; seg_index++)
+	{
+		// Create and add a "seg" object within the array
+		cJSON *seg_object = cJSON_CreateObject();
+		cJSON_AddItemToArray(seg_array, seg_object);
+
+		// Add properties to the "seg" object
+		cJSON_AddNumberToObject(seg_object, "id", MYLED->segment_id);
+		cJSON_AddNumberToObject(seg_object, "start", MYLED->start);
+		cJSON_AddNumberToObject(seg_object, "stop", MYLED->stop);
+
+		// Create and add "col" array to "seg" object
+		cJSON *col_array = cJSON_CreateArray();
+		cJSON_AddItemToObject(seg_object, "col", col_array);
+
+		// Add individual arrays to "col" array
+		cJSON *col_element_1 = cJSON_CreateIntArray((int[]){(MYCOLOR(0) & 0xFF0000) >> 16, (MYCOLOR(0) & 0x00FF00) >> 8, (MYCOLOR(0) & 0x0000FF) >> 0}, 3);
+		cJSON *col_element_2 = cJSON_CreateIntArray((int[]){(MYCOLOR(1) & 0xFF0000) >> 16, (MYCOLOR(1) & 0x00FF00) >> 8, (MYCOLOR(1) & 0x0000FF) >> 0}, 3);
+		cJSON *col_element_3 = cJSON_CreateIntArray((int[]){(MYCOLOR(2) & 0xFF0000) >> 16, (MYCOLOR(2) & 0x00FF00) >> 8, (MYCOLOR(2) & 0x0000FF) >> 0}, 3);
+
+		cJSON_AddItemToArray(col_array, col_element_1);
+		cJSON_AddItemToArray(col_array, col_element_2);
+		cJSON_AddItemToArray(col_array, col_element_3);
+
+		cJSON_AddNumberToObject(seg_object, "fx", MYLED->mode);
+		cJSON_AddNumberToObject(seg_object, "sx", MYLED->speed);
+		cJSON_AddNumberToObject(seg_object, "ix", MYLED->intensity);
+		cJSON_AddNumberToObject(seg_object, "pal", MYLED->palette);
+		cJSON_AddNumberToObject(seg_object, "bri", (MYLED->brightness)* 255);
+		cJSON_AddBoolToObject(seg_object, "sel", MYLED->selected);
+		cJSON_AddBoolToObject(seg_object, "rev", MYLED->options && REVERSE);
+		cJSON_AddBoolToObject(seg_object, "mi", false);
+	}
+    
+    // Create and add "info" object
+    cJSON *info = cJSON_CreateObject();
+    cJSON_AddItemToObject(root, "info", info);
+
+    // Add properties to "info" object
+    cJSON_AddStringToObject(info, "ver", "0.14.0");
+    cJSON_AddNumberToObject(info, "vid", 2310130);
+
+    // Create and add "leds" object to "info" object
+    cJSON *leds = cJSON_CreateObject();
+    cJSON_AddItemToObject(info, "leds", leds);
+
+    // Add properties to "leds" object
+    cJSON_AddNumberToObject(leds, "count", 100);
+    cJSON_AddNumberToObject(leds, "pwr", 480);
+    cJSON_AddNumberToObject(leds, "fps", 4);
+    cJSON_AddNumberToObject(leds, "maxpwr", 850);
+    // Create and add "seglc" array to "leds" object
+    cJSON *seglc_array = cJSON_CreateArray();
+    cJSON_AddItemToObject(leds, "seglc", seglc_array);
+
+    // Add a single element to "seglc" array
+    cJSON_AddNumberToObject(seglc_array, "", 1);
+    // ... add other properties to "leds" object ...
+
+    cJSON_AddFalseToObject(info, "str"); // Example for boolean value
+    cJSON_AddStringToObject(info, "name", "WLED");
+    cJSON_AddNumberToObject(info, "udpport", 21324);
+    cJSON_AddFalseToObject(info, "live"); // Example for boolean value
+    cJSON_AddNumberToObject(info, "liveseg", -1);
+    cJSON_AddStringToObject(info, "lm", "");
+    cJSON_AddStringToObject(info, "lip", "");
+    cJSON_AddNumberToObject(info, "ws", 0);
+    cJSON_AddNumberToObject(info, "fxcount", 187);
+    cJSON_AddNumberToObject(info, "palcount", 71);
+    cJSON_AddNumberToObject(info, "cpalcount", 0);
+
+    // Create and add "maps" array to "info" object
+    cJSON *maps_array = cJSON_CreateArray();
+    cJSON_AddItemToObject(info, "maps", maps_array);
+
+    // Create and add a "maps" object within the array
+    cJSON *maps_object = cJSON_CreateObject();
+    cJSON_AddItemToArray(maps_array, maps_object);
+
+    cJSON_AddNumberToObject(maps_object, "id", 0);
+
+    // Create and add "wifi" object to "info" object
+    cJSON *wifi = cJSON_CreateObject();
+    cJSON_AddItemToObject(info, "wifi", wifi);
+
+    // Add properties to "wifi" object
+    cJSON_AddStringToObject(wifi, "bssid", "6C:44:2A:D4:03:C4");
+    cJSON_AddNumberToObject(wifi, "rssi", -67);
+    cJSON_AddNumberToObject(wifi, "signal", 66);
+    cJSON_AddNumberToObject(wifi, "channel", 5);
+
+    // Create and add "fs" object to "info" object
+    cJSON *fs = cJSON_CreateObject();
+    cJSON_AddItemToObject(info, "fs", fs);
+
+    // Add properties to "fs" object
+    cJSON_AddNumberToObject(fs, "u", 12);
+    cJSON_AddNumberToObject(fs, "t", 983);
+    cJSON_AddNumberToObject(fs, "pmt", 0);
+
+    cJSON_AddNumberToObject(info, "ndc", 0);
+    cJSON_AddStringToObject(info, "arch", "esp32");
+    cJSON_AddStringToObject(info, "core", "v3.3.6-16-gcc5440f6a2");
+    cJSON_AddNumberToObject(info, "lwip", 0);
+    cJSON_AddNumberToObject(info, "freeheap", 198056);
+    cJSON_AddNumberToObject(info, "uptime", 85);
+    cJSON_AddStringToObject(info, "time", "1970-1-1, 00:01:25");
+    cJSON_AddNumberToObject(info, "opt", 79);
+    cJSON_AddStringToObject(info, "brand", "WLED");
+    cJSON_AddStringToObject(info, "product", "FOSS");
+    cJSON_AddStringToObject(info, "mac", "94e68604985c");
+    cJSON_AddStringToObject(info, "ip", "192.168.18.151");
+
+    // Print the generated JSON
+    char *json_string = cJSON_Print(root);
+    cJSON_Minify(json_string);
+
+    // Free the cJSON object
+    cJSON_Delete(root);
+    return json_string;
 }

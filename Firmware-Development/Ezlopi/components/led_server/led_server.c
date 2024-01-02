@@ -19,20 +19,14 @@
 
 #include "led_server.h"
 #include "uart_reader.h"
+
 #include "./compressed_webpage_files/compressed_index_html.h"
 #include "./compressed_webpage_files/compressed_index_css.h"
 #include "./compressed_webpage_files/compressed_index_js.h"
 #include "./compressed_webpage_files/compressed_iro_js.h"
 #include "./compressed_webpage_files/compressed_rangetouch_js.h"
 
-#define INDEX_HTML_PATH "/spiffs/index.htm"
-#define INDEX_CSS_PATH "/spiffs/index.css"
-#define INDEX_JS_PATH "/spiffs/index.js"
-#define IRO_JS_PATH "/spiffs/iro.js"
-#define RANGETOUCH_JS_PATH "/spiffs/rangetouch.js"
-
 // #define USE_MALLOC
-
 #ifdef USE_MALLOC
 char *response_buffer;
 #else
@@ -190,67 +184,30 @@ esp_err_t post_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
+typedef struct {
+    const char *uri;
+    httpd_method_t method;
+    httpd_handle_t handler;
+} Route;
 
-static const httpd_uri_t uri_get = {
-    .uri = "/",
-    .method = HTTP_GET,
-    .handler = get_handler
+// Define the routes
+static const Route routes[] = {
+    /*GET ROUTES*/
+    {"/", HTTP_GET, get_handler},
+    {"/index.css", HTTP_GET, get_index_css_handler},
+    {"/index.js", HTTP_GET, get_index_js_handler},
+    {"/iro.js", HTTP_GET, get_iro_js_handler},
+    {"/rangetouch.js", HTTP_GET, get_rangetouch_js_handler},
+    {"/json/si", HTTP_GET, get_json_si_js_handler},
+    {"/json/effects", HTTP_GET, get_json_effects_js_handler},
+    {"/json/palettes", HTTP_GET, get_json_palettes_js_handler},
+
+    /* POST ROUTES */
+    {"/", HTTP_POST, post_handler},
+    {"/json/si", HTTP_POST, post_handler},
 };
 
-static const httpd_uri_t uri_get_index_css = {
-    .uri = "/index.css",
-    .method = HTTP_GET,
-    .handler = get_index_css_handler
-};
-
-static const httpd_uri_t uri_get_index_js = {
-    .uri = "/index.js",
-    .method = HTTP_GET,
-    .handler = get_index_js_handler
-};
-
-static const httpd_uri_t uri_get_iro_js = {
-    .uri = "/iro.js",
-    .method = HTTP_GET,
-    .handler = get_iro_js_handler
-};
-
-static const httpd_uri_t uri_get_rangetouch_js = {
-    .uri = "/rangetouch.js",
-    .method = HTTP_GET,
-    .handler = get_rangetouch_js_handler
-};
-
-static const httpd_uri_t uri_get_json_si_js = {
-    .uri = "/json/si",
-    .method = HTTP_GET,
-    .handler = get_json_si_js_handler
-};
-
-static const httpd_uri_t uri_get_json_effects_js = {
-    .uri = "/json/effects",
-    .method = HTTP_GET,
-    .handler = get_json_effects_js_handler
-};
-
-static const httpd_uri_t uri_get_json_palettes_js = {
-    .uri = "/json/palettes",
-    .method = HTTP_GET,
-    .handler = get_json_palettes_js_handler
-};
-
-static const httpd_uri_t uri_post = {
-    .uri = "/",
-    .method = HTTP_POST,
-    .handler = post_handler
-};
-
-/* JSON API*/
-static const httpd_uri_t uri_post_json_si = {
-        .uri = "/json/si",
-        .method = HTTP_POST,
-        .handler = post_handler,
-};
+#define NUM_LED_ROUTES (sizeof(routes) / sizeof(Route))
 
 httpd_handle_t start_webserver(void)
 {
@@ -268,18 +225,11 @@ httpd_handle_t start_webserver(void)
         return NULL;
     }
 
-    // Set URI handlers
-    ESP_LOGI(TAG, "Registering URI handlers");
-    httpd_register_uri_handler(server, &uri_get);
-    httpd_register_uri_handler(server, &uri_post);
-    httpd_register_uri_handler(server, &uri_get_index_css);
-    httpd_register_uri_handler(server, &uri_get_index_js);
-    httpd_register_uri_handler(server, &uri_get_iro_js);
-    httpd_register_uri_handler(server, &uri_get_rangetouch_js);
-    httpd_register_uri_handler(server, &uri_get_json_si_js);
-    httpd_register_uri_handler(server, &uri_get_json_effects_js);
-    httpd_register_uri_handler(server, &uri_get_json_palettes_js);
-    httpd_register_uri_handler(server, &uri_post_json_si);
+    // Register the routes in the HTTP server
+    ESP_LOGI(TAG, "Registering URI handlers");    
+    for (int i = 0; i < NUM_LED_ROUTES; i++) {
+        httpd_register_uri_handler(server, &routes[i]);
+    }
     return server;
 }
 
@@ -349,7 +299,7 @@ void populate_response(enum webpage_name page, httpd_req_t *req)
         #endif
 
         memset((void *)response_buffer, 0, sizeof(response_buffer));
-        char *json = updated_config_json();
+        char *json = json_update_config();
         sprintf(response_buffer, json);
         httpd_resp_send(req, response_buffer, strlen(json));
         free(json);
@@ -382,8 +332,8 @@ void populate_response(enum webpage_name page, httpd_req_t *req)
     memset((void *)response_buffer, 0, sizeof(response_buffer));
 
     // Convert file size to string using snprintf
-    char content_length_str[16];
-    snprintf(content_length_str, sizeof(content_length_str), "%d", content_size_int);
+    // char content_length_str[16];
+    // snprintf(content_length_str, sizeof(content_length_str), "%d", content_size_int);
     // httpd_resp_set_hdr(req, "Content-Length", content_length_str);
 
     size_t chunk_size = 4096;
