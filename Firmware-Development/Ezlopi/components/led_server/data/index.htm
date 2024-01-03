@@ -15,7 +15,7 @@
 <noscript><div class="overlay" style="opacity:1;">Sorry, WLED UI needs JavaScript!</div></noscript>
 <div id="bg"></div>
 
-<div class="wrapper" id="top">
+<div class="" id="top">
 	<div class="">
 		<div class="">
 			<p id="buttonPower" onclick="togglePower()" class=""></p>
@@ -27,23 +27,24 @@
 			<p onclick="window.location.href=getURL('/settings');"></p>
 			<p id="buttonPcm" onclick="togglePcMode(true)"></p>
 		</div>
-		<div id="briwrap">
-			<p class="hd">Brightness</p>
-			<div class="slider">
-				<i class="icons slider-icon" onclick="tglTheme()" style="transform: translateY(2px);">&#xe2a6;</i>
-				<div class="sliderwrap il">
-					<input id="sliderBri" onchange="setBri()" oninput="updateTrail(this)" max="255" min="1" type="range" value="128" />
-					<div class="sliderdisplay"></div>
-				</div>
-				<output class="sliderbubble"></output>
-			</div>
-		</div>
 		<iframe id="liveview" src="about:blank"></iframe>
 	</div>
 </div>
 
 <div class ="container">
 	<div id="Colors" class="tabcontent">
+		<div id="briwrap">
+			<p style="color: black;" class="hd">Brightness</p>
+			<div class="slider">
+				<!-- <i class="icons slider-icon" onclick="tglTheme()" style="transform: translateY(2px);">&#xe2a6;</i> -->
+				<div style="border: 1px solid black; border-radius: 12px; background-color: #3e46ae;" class="sliderwrap il">
+					<input id="sliderBri" onchange="setBri()" oninput="updateTrail(this)" max="255" min="1" type="range" value="128" />
+					<div class="sliderdisplay"></div>
+				</div>
+				<output class="sliderbubble"></output>
+			</div>
+		</div>
+		<p class="labels hd" id="modeLabel">Colors</p>
 		<div id="picker" class="noslide"></div>
 		<div id="hwrap" class="slider">
 			<div tooltip="Hue" class="sliderwrap il">
@@ -256,6 +257,7 @@
 	</div>
 
 	<div id="Segments" class="tabcontent">
+		<p class="labels hd" id="modeLabel">Segments</p>
 		<div id="segcont">
 			Loading...
 		</div>
@@ -264,11 +266,11 @@
 		<div id="segutil2">
 			<button class="btn btn-s" id="rsbtn" onclick="rSegs()">Reset segments</button>
 		</div>
-		<p>Transition: <input id="tt" type="number" min="0" max="65.5" step="0.1" value="0.7">&nbsp;s</p>
+		<p>Transition: <input id="tt" type="number" style="background-color: white; color:black; border: 1px solid black"; min="0" max="65.5" step="0.1" value="0.7">&nbsp;s</p>
 		<p id="ledmap" class="hide"></p>
 	</div>
 
-	<div id="Presets" class="tabcontent">
+	<div id="Presets" class="">
 		<div id="pql">
 		</div>
 		<!-- <p class="labels hd">Presets</p> -->

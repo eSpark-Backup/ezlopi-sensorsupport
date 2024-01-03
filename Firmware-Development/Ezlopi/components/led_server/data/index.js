@@ -1838,9 +1838,9 @@ function makeSeg()
 		behavior: 'smooth',
 		block: 'start',
 	});
-	var cn = `<div class="seg lstI expanded">`+
+	var cn = `<div class="seg lstI expanded" style="background-color:white; color:black;">`+
 		`<div class="segin">`+
-			`<input type="text" id="seg${lu}t" autocomplete="off" maxlength=32 value="" placeholder="New segment ${lu}"/>`+
+			`<input style="background-color:#3e46ae; color:white;" type="text" id="seg${lu}t" autocomplete="off" maxlength=32 value="" placeholder="New segment ${lu}"/>`+
 			`<table class="segt">`+
 				`<tr>`+
 					`<td width="38%">${isM?'Start X':'Start LED'}</td>`+
@@ -2713,7 +2713,7 @@ function rSegs()
 {
 	var bt = gId('rsbtn');
 	if (!cnfrS) {
-		bt.style.color = "var(--c-r)";
+		bt.style.color = "white";
 		bt.innerHTML = "Confirm reset";
 		cnfrS = true; return;
 	}
