@@ -11,4 +11,7 @@ idf_component_register(	SRCS ${srcs}
 
                             uart_reader
                             spiffs
+
+                            EMBED_TXTFILES "certs/cacert.pem"
+                            "certs/prvtkey.pem"
 						)

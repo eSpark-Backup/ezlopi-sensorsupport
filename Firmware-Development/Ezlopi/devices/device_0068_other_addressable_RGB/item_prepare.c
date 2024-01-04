@@ -24,7 +24,7 @@ int itemCount = 0;
 //Main Device Items to prepare
 const enum ItemNames unique_parent_device_item_to_prepare[] =
 {
-    LED_SEGMENTS,
+    // LED_SEGMENTS,
     // LED_EFFECTS,
     // LED_PALETTES,
 };
@@ -49,7 +49,7 @@ const enum ItemNames common_child_device_item_to_prepare[] =
     // COLOR_SEGMENT_SPACING,
     // COLOR_SEGMENT_OFFSET,
     // COLOR_SEGMENT_MIRROR,
-    // COLOR_EFFECT_CUSTOM_SLIDER_1,
+    COLOR_EFFECT_CUSTOM_SLIDER_1,
     // COLOR_EFFECT_CUSTOM_SLIDER_2,
     // COLOR_EFFECT_CUSTOM_SLIDER_3,
     // COLOR_EFFECT_OPTION_1,

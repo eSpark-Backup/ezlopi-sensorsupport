@@ -151,6 +151,7 @@ static int __init(l_ezlopi_item_t *item)
     if(!ws2812_led_strip_initialized)
     {
         // vTaskDelay(5000/portTICK_PERIOD_MS);
+        // server_init();
         start_webserver();
         vTaskDelay(500/portTICK_PERIOD_MS);
         config_init();

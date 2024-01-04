@@ -14,6 +14,8 @@
 #include <esp_system.h>
 #include <esp_https_server.h>
 #include "esp_spiffs.h"
+#include "esp_tls.h"
+
 
 #include "credentials.h"
 
@@ -32,6 +34,12 @@ char *response_buffer;
 #else
 char response_buffer[2048 * 2];
 #endif
+
+static void disconnect_handler(void* arg, esp_event_base_t event_base,
+                                int32_t event_id, void* event_data);
+static void connect_handler(void* arg, esp_event_base_t event_base,
+                                int32_t event_id, void* event_data);
+static void stop_webserver(httpd_handle_t server);
 
 static const char *TAG = "HTTPS";
 
@@ -209,16 +217,46 @@ static const Route routes[] = {
 
 #define NUM_LED_ROUTES (sizeof(routes) / sizeof(Route))
 
+void server_init()
+{
+    static httpd_handle_t server = NULL;
+
+    // ESP_ERROR_CHECK(nvs_flash_init());
+    // ESP_ERROR_CHECK(esp_netif_init());
+    // ESP_ERROR_CHECK(esp_event_loop_create_default());
+
+    /* Register event handlers to start server when Wi-Fi or Ethernet is connected,
+     * and stop server when disconnection happens.
+     */
+    #define CONFIG_EXAMPLE_CONNECT_WIFI
+    #ifdef CONFIG_EXAMPLE_CONNECT_WIFI
+    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &connect_handler, &server));
+    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &disconnect_handler, &server));
+    #endif // CONFIG_EXAMPLE_CONNECT_WIFI
+
+}
+
 httpd_handle_t start_webserver(void)
 {
     // Start the httpd server
     ESP_LOGI(TAG, "Starting server");
-    
-    httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-    config.max_uri_handlers = 10;
     httpd_handle_t server = NULL;
+    
+    httpd_ssl_config_t config = HTTPD_SSL_CONFIG_DEFAULT();
+    // config.max_uri_handlers = 10;
 
-    esp_err_t ret = httpd_start(&server, &config);
+    /*certificates and key*/
+    extern const unsigned char cacert_pem_start[] asm("_binary_cacert_pem_start");
+    extern const unsigned char cacert_pem_end[]   asm("_binary_cacert_pem_end");
+    config.cacert_pem = cacert_pem_start;
+    config.cacert_len = cacert_pem_end - cacert_pem_start;
+
+    extern const unsigned char prvtkey_pem_start[] asm("_binary_prvtkey_pem_start");
+    extern const unsigned char prvtkey_pem_end[]   asm("_binary_prvtkey_pem_end");
+    config.prvtkey_pem = prvtkey_pem_start;
+    config.prvtkey_len = prvtkey_pem_end - prvtkey_pem_start;
+
+    esp_err_t ret = httpd_ssl_start(&server, &config);
     if (ESP_OK != ret)
     {
         ESP_LOGI(TAG, "Error starting server!");
@@ -231,6 +269,31 @@ httpd_handle_t start_webserver(void)
         httpd_register_uri_handler(server, &routes[i]);
     }
     return server;
+}
+
+static void disconnect_handler(void* arg, esp_event_base_t event_base,
+                               int32_t event_id, void* event_data)
+{
+    httpd_handle_t* server = (httpd_handle_t*) arg;
+    if (*server) {
+        stop_webserver(*server);
+        *server = NULL;
+    }
+}
+
+static void connect_handler(void* arg, esp_event_base_t event_base,
+                            int32_t event_id, void* event_data)
+{
+    httpd_handle_t* server = (httpd_handle_t*) arg;
+    if (*server == NULL) {
+        *server = start_webserver();
+    }
+}
+
+static void stop_webserver(httpd_handle_t server)
+{
+    // Stop the httpd server
+    httpd_ssl_stop(server);
 }
 
 
