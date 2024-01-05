@@ -51,7 +51,7 @@ html {
 
 body {
 	margin: 0;
-	background-color: var(--c-1);
+	background-color: white;
 	font-family: 'Ezlo Sans', sans-serif;
 	font-size: 17px;
 	color: var(--c-f);
@@ -283,7 +283,8 @@ button {
 }
 
 .tab {
-	background-color: transparent;
+	/* background-color: transparent; */
+	background-color: #3e46ae !important;
 	color: var(--c-d);
 }
 
@@ -317,12 +318,12 @@ button {
 }
 
 .tab button:hover {
-	background-color: var(--c-tbh);
+	background-color: #6975d0;
 	color: var(--c-e);
 }
 
 .tab button.active {
-	background-color: var(--c-tba) !important;
+	background-color: #6975d0 !important;
 	color: var(--c-f);
 }
 
@@ -406,6 +407,7 @@ button {
 	margin: 0 0 -5px 0;
 	padding-bottom: 4px;
 	display: var(--bhd);
+	color: white;
 }
 
 .overlay {
@@ -1256,7 +1258,7 @@ TD .checkmark, TD .radiomark {
 
 /* segment & preset wrapper */
 .seg, .pres {
-	background-color: var(--c-2);
+	/* background-color: var(--c-2); */
 	/*color: var(--c-f);*/ /* seems to affect only the Add segment button, which should be same color as reset segments */
 	border: 0 solid var(--c-f);
 	text-align: left;

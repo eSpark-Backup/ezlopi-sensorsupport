@@ -3008,9 +3008,11 @@ function move(e)
 		f > 0.12 &&
 		gEBCN("tabcontent")[iSlide].scrollTop == scrollS)
 	{
-		_C.style.setProperty('--i', iSlide -= s);
-		f = 1 - f;
-		updateTablinks(iSlide);
+		if(iSlide < 2){
+			_C.style.setProperty('--i', iSlide -= s);
+			f = 1 - f;
+			updateTablinks(iSlide);
+		}
 	}
 	_C.style.setProperty('--f', f);
 	_C.classList.toggle('smooth', !(locked = false));
