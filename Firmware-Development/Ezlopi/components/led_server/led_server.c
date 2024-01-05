@@ -211,7 +211,7 @@ static const Route routes[] = {
     {"/json/palettes", HTTP_GET, get_json_palettes_js_handler},
 
     /* POST ROUTES */
-    {"/", HTTP_POST, post_handler},
+    // {"/", HTTP_POST, post_handler},
     {"/json/si", HTTP_POST, post_handler},
 };
 
@@ -243,7 +243,7 @@ httpd_handle_t start_webserver(void)
     httpd_handle_t server = NULL;
     
     httpd_ssl_config_t config = HTTPD_SSL_CONFIG_DEFAULT();
-    // config.max_uri_handlers = 10;
+    config.httpd.max_uri_handlers = 10;
 
     /*certificates and key*/
     extern const unsigned char cacert_pem_start[] asm("_binary_cacert_pem_start");
@@ -302,6 +302,7 @@ void populate_response(enum webpage_name page, httpd_req_t *req)
     unsigned int content_size_int = 0;
     const unsigned char *hex_dump = NULL;
     ESP_LOGI("POPULAITNG RESP","%d", page);
+    // vTaskDelay(10000/portTICK_PERIOD_MS);
     switch (page)
     {
     case INDEX_HTML:
