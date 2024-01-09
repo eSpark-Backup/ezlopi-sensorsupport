@@ -252,7 +252,7 @@ function onLoad()
 	applyCfg();
 	if (cfg.comp.hdays) { //load custom holiday list
 		fetch(getURL("/holidays.json"), {	// may be loaded from external source
-			method: 'get'
+			method: 'get', headers:{ 'Connection': 'keep-alive'}
 		})
 		.then((res)=>{
 			//if (!res.ok) showErrorToast();
@@ -487,7 +487,7 @@ function loadPresets(callback = null)
 	if (!callback && pmt == pmtLast) return;
 
 	fetch(getURL('/presets.json'), {
-		method: 'get'
+		method: 'get', headers:{ 'Connection': 'keep-alive'}
 	})
 	.then(res => {
 		if (res.status=="404") return {"0":{}};
@@ -511,7 +511,8 @@ function loadPresets(callback = null)
 function loadPalettes(callback = null)
 {
 	fetch(getURL('/json/palettes'), {
-		method: 'get'
+		method: 'get',
+		headers:{ 'Connection': 'keep-alive'}
 	})
 	.then((res)=>{
 		if (!res.ok) showErrorToast();
@@ -538,7 +539,8 @@ function loadPalettes(callback = null)
 function loadFX(callback = null)
 {
 	fetch(getURL('/json/effects'), {
-		method: 'get'
+		method: 'get',
+		headers:{ 'Connection': 'keep-alive'}
 	})
 	.then((res)=>{
 		if (!res.ok) showErrorToast();
@@ -565,7 +567,8 @@ function loadFX(callback = null)
 function loadFXData(callback = null)
 {
 	fetch(getURL('/json/fxdata'), {
-		method: 'get'
+		method: 'get',
+		headers:{ 'Connection': 'keep-alive'}
 	})
 	.then((res)=>{
 		if (!res.ok) showErrorToast();
@@ -1106,7 +1109,8 @@ function populateNodes(i,n)
 function loadNodes()
 {
 	fetch(getURL('/json/nodes'), {
-		method: 'get'
+		method: 'get',
+		headers:{ 'Connection': 'keep-alive'}
 	})
 	.then((res)=>{
 		if (!res.ok) showToast('Could not load Node list!', true);
@@ -1696,7 +1700,8 @@ function requestJson(command=null)
 	fetch(getURL('/json/si'), {
 		method: type,
 		headers: {
-			"Content-type": "application/json; charset=UTF-8"
+			"Content-type": "application/json; charset=UTF-8",
+			'Connection': 'keep-alive'
 		},
 		body: req
 	})	
@@ -2668,7 +2673,7 @@ function setBalance(b)
 function rmtTgl(ip,i) {
 	event.preventDefault();
 	event.stopPropagation();
-	fetch(`http://${ip}/win&T=2`, {method: 'get'})
+	fetch(`http://${ip}/win&T=2`, {method: 'get', headers: { 'Connection': 'keep-alive'}})
 	.then((r)=>{
 		return r.text();
 	})
@@ -2762,7 +2767,8 @@ function getPalettesData(page, callback)
 	fetch(getURL(`/json/palx?page=${page}`), {
 		method: 'get',
 		headers: {
-			"Content-type": "application/json; charset=UTF-8"
+			"Content-type": "application/json; charset=UTF-8",
+			'Connection': 'keep-alive'
 		}
 	})
 	.then(res => {
