@@ -54,6 +54,7 @@ enum webpage_name {
     JSON_SI,
     JSON_EFFECTS,
     JSON_PALETTES,
+    NOT_FOUND,
 };
 
 /* Prototypes */
@@ -164,6 +165,13 @@ static esp_err_t get_json_palettes_js_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
+static esp_err_t not_found_url_handler(httpd_req_t *req)
+{
+    populate_response(NOT_FOUND, req);
+
+    return ESP_OK;
+}
+
 esp_err_t post_handler(httpd_req_t *req)
 {
     char *content = (char *)malloc(sizeof(char) * req->content_len);
@@ -190,6 +198,7 @@ esp_err_t post_handler(httpd_req_t *req)
     const char resp[] = "POST Request Received!";
     httpd_resp_set_type(req, "text/html");
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_hdr(req, "Connection", "keep-alive");
     httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
@@ -211,6 +220,7 @@ static const Route routes[] = {
     {"/json/si", HTTP_GET, get_json_si_js_handler},
     {"/json/effects", HTTP_GET, get_json_effects_js_handler},
     {"/json/palettes", HTTP_GET, get_json_palettes_js_handler},
+    {"/favicon.ico", HTTP_GET, not_found_url_handler},
 
     /* POST ROUTES */
     {"/", HTTP_POST, post_handler},
@@ -245,7 +255,7 @@ httpd_handle_t start_webserver(void)
     httpd_handle_t server = NULL;
     
     httpd_ssl_config_t config = HTTPD_SSL_CONFIG_DEFAULT();
-    config.httpd.max_uri_handlers = 10;
+    config.httpd.max_uri_handlers = 11;
     // config.transport_mode = HTTPD_SSL_TRANSPORT_INSECURE;
 
     /*certificates and key*/
@@ -312,6 +322,7 @@ void populate_response(enum webpage_name page, httpd_req_t *req)
         req->free_ctx = adder_free_func;
         *(int *)req->sess_ctx = 0;
     }
+    int *ctx_data = (int *)req->sess_ctx;
     unsigned int content_size_int = 0;
     const unsigned char *hex_dump = NULL;
     ESP_LOGI("POPULAITNG RESP","%d", page);
@@ -403,6 +414,13 @@ void populate_response(enum webpage_name page, httpd_req_t *req)
         httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
 
         return;
+    case NOT_FOUND:
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        memset((void *)response_buffer, 0, sizeof(response_buffer));
+        sprintf(response_buffer, "NOT FOUND");
+        httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+        break;
     default:
         break;
     }

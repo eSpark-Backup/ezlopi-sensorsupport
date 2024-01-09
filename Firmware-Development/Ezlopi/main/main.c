@@ -40,7 +40,7 @@ void app_main(void)
     ezlopi_scenes_service_init();
     web_provisioning_init();
     ota_service_init();
-    // ezlopi_ble_service_init();
+    ezlopi_ble_service_init();
     timer_service_init();
     TRACE_B("Boot count: %d", ezlopi_system_info_get_boot_count());
     xTaskCreate(blinky, "blinky", 2 * 2048, NULL, 1, NULL);
