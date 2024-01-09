@@ -27,6 +27,8 @@
 #include "./compressed_webpage_files/compressed_index_js.h"
 #include "./compressed_webpage_files/compressed_iro_js.h"
 #include "./compressed_webpage_files/compressed_rangetouch_js.h"
+// #include "./compressed_webapge_files/compressed_EzloSans-Thin_array.h"
+// #include "./compressed_webapge_files/compressed_EzloSans-Light_array.h"
 
 // #define USE_MALLOC
 #ifdef USE_MALLOC
@@ -211,7 +213,7 @@ static const Route routes[] = {
     {"/json/palettes", HTTP_GET, get_json_palettes_js_handler},
 
     /* POST ROUTES */
-    // {"/", HTTP_POST, post_handler},
+    {"/", HTTP_POST, post_handler},
     {"/json/si", HTTP_POST, post_handler},
 };
 
@@ -244,6 +246,7 @@ httpd_handle_t start_webserver(void)
     
     httpd_ssl_config_t config = HTTPD_SSL_CONFIG_DEFAULT();
     config.httpd.max_uri_handlers = 10;
+    // config.transport_mode = HTTPD_SSL_TRANSPORT_INSECURE;
 
     /*certificates and key*/
     extern const unsigned char cacert_pem_start[] asm("_binary_cacert_pem_start");
@@ -296,13 +299,24 @@ static void stop_webserver(httpd_handle_t server)
     httpd_ssl_stop(server);
 }
 
+void adder_free_func(void *ptr) {
+    free(ptr);
+    ESP_LOGI(TAG, "Session context freed");
+}
 
 void populate_response(enum webpage_name page, httpd_req_t *req)
 {
+    if (!req->sess_ctx) {
+        ESP_LOGI(TAG, "/adder allocating new session");
+        req->sess_ctx = malloc(sizeof(int));
+        req->free_ctx = adder_free_func;
+        *(int *)req->sess_ctx = 0;
+    }
     unsigned int content_size_int = 0;
     const unsigned char *hex_dump = NULL;
     ESP_LOGI("POPULAITNG RESP","%d", page);
     // vTaskDelay(10000/portTICK_PERIOD_MS);
+    httpd_resp_set_hdr(req, "Connection", "keep-alive");
     switch (page)
     {
     case INDEX_HTML:
