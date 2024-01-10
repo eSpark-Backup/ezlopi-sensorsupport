@@ -7,7 +7,7 @@
 	<meta content="yes" name="apple-mobile-web-app-capable">
 	<link rel="shortcut icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAGACGAAAAFgAAAIlQTkcNChoKAAAADUlIRFIAAAAQAAAAEAgGAAAAH/P/YQAAAE1JREFUOI1j/P//PwOxgNGeAUMxE9G6cQCKDWAhpADZ2f8PMjBS3QW08QK20KaZC2gfC9hCnqouoNgARgY7zMxAyNlUdQHlXiAlO2MDAD63EVqNHAe0AAAAAElFTkSuQmCC"/>
 	<title>WLED</title>
-	<link rel="stylesheet" href="index.css">
+	<link id="dynamic-css" rel="stylesheet" href="">
 </head>
 <body onload="onLoad()">
 
@@ -342,8 +342,57 @@
 	If you want to load iro.js and rangetouch.js as consecutive requests, you can do it like it was done in 0.14.0:
 	https://github.com/Aircoookie/WLED/blob/v0.14.0/wled00/data/index.htm
 -->
-<script src="iro.js"></script>
+<div id="loaded-content"></div>
+<script>
+    // Array of CSS and JavaScript resource URLs to load sequentially
+    const resourceUrls = [
+		'iro.js',
+        'rangetouch.js',
+        'index.js',
+        'index.css'
+        // Add more resource URLs as needed
+    ];
+
+    // Function to load resources sequentially
+    function loadResourcesSequentially() {
+        // Get the container element
+        const container = document.getElementById('loaded-content');
+
+        // Function to load a single resource
+        function loadResource(index) {
+            if (index < resourceUrls.length) {
+                const resourceUrl = resourceUrls[index];
+
+                if (resourceUrl.endsWith('.css')) {
+                    // Load CSS file
+                    const linkElement = document.getElementById('dynamic-css');
+                    linkElement.href = resourceUrl;
+                    linkElement.onload = function() {
+                        // Load the next resource recursively
+                        loadResource(index + 1);
+                    };
+                } else if (resourceUrl.endsWith('.js')) {
+                    // Load JavaScript file
+                    const scriptElement = document.createElement('script');
+                    scriptElement.src = resourceUrl;
+                    scriptElement.onload = function() {
+                        // Load the next resource recursively
+                        loadResource(index + 1);
+                    };
+                    document.body.appendChild(scriptElement);
+                }
+            }
+        }
+
+        // Start loading resources from the first one
+        loadResource(0);
+    }
+
+    // Call the function to start loading resources sequentially
+    loadResourcesSequentially();
+</script>
+<!-- <script src="iro.js"></script>
 <script src="rangetouch.js"></script>
-<script src="index.js"></script>
+<script src="index.js"></script> -->
 </body>
 </html>
