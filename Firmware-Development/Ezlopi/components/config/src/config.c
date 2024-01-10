@@ -1063,7 +1063,7 @@ char* json_update_config()
 		cJSON_AddItemToArray(col_array, col_element_3);
 
 		cJSON_AddNumberToObject(seg_object, "fx", MYLED->mode);
-		cJSON_AddNumberToObject(seg_object, "sx", MYLED->speed);
+		cJSON_AddNumberToObject(seg_object, "sx", (uint8_t)((MYLED->speed / 2000.f)*255));
 		cJSON_AddNumberToObject(seg_object, "ix", MYLED->intensity);
 		cJSON_AddNumberToObject(seg_object, "pal", MYLED->palette);
 		cJSON_AddNumberToObject(seg_object, "bri", (MYLED->brightness)* 255);

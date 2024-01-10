@@ -34,7 +34,7 @@
 #ifdef USE_MALLOC
 char *response_buffer;
 #else
-char response_buffer[2048 * 2];
+char response_buffer[2048 * 1];
 #endif
 
 static void disconnect_handler(void* arg, esp_event_base_t event_base,
@@ -42,6 +42,8 @@ static void disconnect_handler(void* arg, esp_event_base_t event_base,
 static void connect_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data);
 static void stop_webserver(httpd_handle_t server);
+
+void adder_free_func(void *ptr);
 
 static const char *TAG = "HTTPS";
 
@@ -174,6 +176,14 @@ static esp_err_t not_found_url_handler(httpd_req_t *req)
 
 esp_err_t post_handler(httpd_req_t *req)
 {
+    // if (!req->sess_ctx) {
+    //     ESP_LOGI(TAG, "/adder allocating new session");
+    //     req->sess_ctx = malloc(sizeof(int));
+    //     req->free_ctx = adder_free_func;
+    //     *(int *)req->sess_ctx = 0;
+    // }
+    // int *ctx_data = (int *)req->sess_ctx;
+
     char *content = (char *)malloc(sizeof(char) * req->content_len);
     size_t recv_size = MIN(req->content_len, 2048);
     int ret = httpd_req_recv(req, content, recv_size);
@@ -220,7 +230,7 @@ static const Route routes[] = {
     {"/json/si", HTTP_GET, get_json_si_js_handler},
     {"/json/effects", HTTP_GET, get_json_effects_js_handler},
     {"/json/palettes", HTTP_GET, get_json_palettes_js_handler},
-    {"/favicon.ico", HTTP_GET, not_found_url_handler},
+    // {"/favicon.ico", HTTP_GET, not_found_url_handler},
 
     /* POST ROUTES */
     {"/", HTTP_POST, post_handler},
@@ -255,7 +265,9 @@ httpd_handle_t start_webserver(void)
     httpd_handle_t server = NULL;
     
     httpd_ssl_config_t config = HTTPD_SSL_CONFIG_DEFAULT();
-    config.httpd.max_uri_handlers = 11;
+    config.httpd.max_uri_handlers = 10;
+    // config.httpd.max_open_sockets = 6;
+    // config.session_tickets = true;
     // config.transport_mode = HTTPD_SSL_TRANSPORT_INSECURE;
 
     /*certificates and key*/
@@ -323,6 +335,7 @@ void populate_response(enum webpage_name page, httpd_req_t *req)
         *(int *)req->sess_ctx = 0;
     }
     int *ctx_data = (int *)req->sess_ctx;
+
     unsigned int content_size_int = 0;
     const unsigned char *hex_dump = NULL;
     ESP_LOGI("POPULAITNG RESP","%d", page);
@@ -432,7 +445,7 @@ void populate_response(enum webpage_name page, httpd_req_t *req)
     // snprintf(content_length_str, sizeof(content_length_str), "%d", content_size_int);
     // httpd_resp_set_hdr(req, "Content-Length", content_length_str);
 
-    size_t chunk_size = 4096;
+    size_t chunk_size = 1024;
     size_t offset = 0, dump_size = content_size_int;
 
     // Send chunks using a while loop

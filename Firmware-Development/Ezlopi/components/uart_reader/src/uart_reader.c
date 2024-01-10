@@ -10,7 +10,7 @@
 
 static const char* TAG = "uart_select_example";
 void parse_json(char* start);
-char c[1024];
+// char c[1024];
 
 #define ECHO_TEST_TXD 1
 #define ECHO_TEST_RXD 3
