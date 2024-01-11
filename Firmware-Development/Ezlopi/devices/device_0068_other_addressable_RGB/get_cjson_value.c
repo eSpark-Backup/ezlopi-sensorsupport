@@ -34,12 +34,12 @@ static char* intToString(int num);
 uint8_t get_segment_number(void *arg);
 
 
-char* LEDModesStrings[] = {
+const char* LEDModesStrings[] = {
     #define FX_MODE(x, y) y,
     #include "effect_list.h"
 };
 
-char* PaletteNames[] = {
+const char* PaletteNames[] = {
     #define PALETTE(x, y) y,
     #include "palette_list.h"
 };
