@@ -172,13 +172,13 @@ void __prepare_device_properties(l_ezlopi_device_t *device, cJSON *cj_device)
     CJSON_GET_VALUE_STRING(cj_device, "dev_name", device_name);
     ASSIGN_DEVICE_NAME_V2(device, device_name);
 
-    // device->cloud_properties.category = category_led_strip;
-    // device->cloud_properties.subcategory = subcategory_addressable_main;
-    // device->cloud_properties.device_type = dev_type_device;
+    device->cloud_properties.category = category_led_strip;
+    device->cloud_properties.subcategory = subcategory_addressable_main;
+    device->cloud_properties.device_type = dev_type_device;
 
-    device->cloud_properties.category = category_dimmable_light;
-    device->cloud_properties.subcategory = subcategory_dimmable_colored;
-    device->cloud_properties.device_type = dev_type_dimmer_outlet;
+    // device->cloud_properties.category = category_dimmable_light;
+    // device->cloud_properties.subcategory = subcategory_dimmable_colored;
+    // device->cloud_properties.device_type = dev_type_dimmer_outlet;
 
     device->cloud_properties.device_id = ezlopi_cloud_generate_device_id();
 

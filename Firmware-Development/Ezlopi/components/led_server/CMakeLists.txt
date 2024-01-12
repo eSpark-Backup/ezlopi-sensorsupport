@@ -10,8 +10,10 @@ idf_component_register(	SRCS ${srcs}
                             esp_wifi
 
                             uart_reader
+                            led
                             spiffs
 
-                            EMBED_TXTFILES "certs/cacert.pem"
+                            EMBED_TXTFILES 
+                            "certs/cacert.pem"
                             "certs/prvtkey.pem"
 						)
