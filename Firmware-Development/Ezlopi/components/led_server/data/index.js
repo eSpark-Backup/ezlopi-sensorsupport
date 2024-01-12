@@ -431,82 +431,82 @@ function cpBck()
 	showToast("Copied to clipboard!");
 }
 
-// function presetError(empty)
-// {
-// 	var hasBackup = false; var bckstr = "";
-// 	try {
-// 		bckstr = localStorage.getItem("wledP");
-// 		if (bckstr.length > 10) hasBackup = true;
-// 	} catch (e) {}
+function presetError(empty)
+{
+	var hasBackup = false; var bckstr = "";
+	try {
+		bckstr = localStorage.getItem("wledP");
+		if (bckstr.length > 10) hasBackup = true;
+	} catch (e) {}
 
-// 	var cn = `<div class="pres c" ${empty?'style="padding:8px;margin-top: 16px;"':'onclick="pmtLast=0;loadPresets();" style="cursor:pointer;padding:8px;margin-top: 16px;"'}>`;
-// 	if (empty)
-// 		cn += `You have no presets yet!`;
-// 	else
-// 		cn += `Sorry, there was an issue loading your presets!`;
+	var cn = `<div class="pres c" ${empty?'style="padding:8px;margin-top: 16px;"':'onclick="pmtLast=0;loadPresets();" style="cursor:pointer;padding:8px;margin-top: 16px;"'}>`;
+	if (empty)
+		cn += `You have no presets yet!`;
+	else
+		cn += `Sorry, there was an issue loading your presets!`;
 
-// 	if (hasBackup) {
-// 		cn += `<br><br>`;
-// 		if (empty)
-// 			cn += `However, there is backup preset data of a previous installation available.<br>(Saving a preset will hide this and overwrite the backup)`;
-// 		else
-// 			cn += `Here is a backup of the last known good state:`;
-// 		cn += `<textarea id="bck"></textarea><br><button class="btn" onclick="cpBck()">Copy to clipboard</button>`;
-// 		cn += `<br><button type="button" class="btn" onclick="restore(gId('bck').value)">Restore</button>`;
-// 	}
-// 	cn += `</div>`;
-// 	gId('pcont').innerHTML = cn;
-// 	if (hasBackup) gId('bck').value = bckstr;
-// }
+	if (hasBackup) {
+		cn += `<br><br>`;
+		if (empty)
+			cn += `However, there is backup preset data of a previous installation available.<br>(Saving a preset will hide this and overwrite the backup)`;
+		else
+			cn += `Here is a backup of the last known good state:`;
+		cn += `<textarea id="bck"></textarea><br><button class="btn" onclick="cpBck()">Copy to clipboard</button>`;
+		cn += `<br><button type="button" class="btn" onclick="restore(gId('bck').value)">Restore</button>`;
+	}
+	cn += `</div>`;
+	gId('pcont').innerHTML = cn;
+	if (hasBackup) gId('bck').value = bckstr;
+}
 
-// function restore(txt) {
-// 	var req = new XMLHttpRequest();
-// 	req.addEventListener('load', function(){showToast(this.responseText,this.status >= 400)});
-// 	req.addEventListener('error', function(e){showToast(e.stack,true);});
-// 	req.open("POST", getURL("/upload"));
-// 	var formData = new FormData();
-// 	var b = new Blob([txt], {type: "application/json"});
-// 	formData.append("data", b, '/presets.json');
-// 	req.send(formData);
-// 	setTimeout(loadPresets, 2000);
-// 	return false;
-// }
+function restore(txt) {
+	var req = new XMLHttpRequest();
+	req.addEventListener('load', function(){showToast(this.responseText,this.status >= 400)});
+	req.addEventListener('error', function(e){showToast(e.stack,true);});
+	req.open("POST", getURL("/upload"));
+	var formData = new FormData();
+	var b = new Blob([txt], {type: "application/json"});
+	formData.append("data", b, '/presets.json');
+	req.send(formData);
+	setTimeout(loadPresets, 2000);
+	return false;
+}
 
-// function loadPresets(callback = null)
-// {
-// 	// 1st boot (because there is a callback)
-// 	if (callback && pmt == pmtLS && pmt > 0) {
-// 		// we have a copy of the presets in local storage and don't need to fetch another one
-// 		// populatePresets(true);
-// 		pmtLast = pmt;
-// 		callback();
-// 		return;
-// 	}
+function loadPresets(callback = null)
+{
+	// 1st boot (because there is a callback)
+	if (callback && pmt == pmtLS && pmt > 0) {
+		// we have a copy of the presets in local storage and don't need to fetch another one
+		populatePresets(true);
+		pmtLast = pmt;
+		callback();
+		return;
+	}
 
-// 	// afterwards
-// 	if (!callback && pmt == pmtLast) return;
+	// afterwards
+	if (!callback && pmt == pmtLast) return;
 
-// 	fetch(getURL('/presets.json'), {
-// 		method: 'get', headers:{ 'Connection': 'keep-alive'}
-// 	})
-// 	.then(res => {
-// 		if (res.status=="404") return {"0":{}};
-// 		//if (!res.ok) showErrorToast();
-// 		return res.json();
-// 	})
-// 	.then(json => {
-// 		pJson = json;
-// 		pmtLast = pmt;
-// 		// populatePresets();
-// 	})
-// 	.catch((e)=>{
-// 		//showToast(e, true);
-// 		presetError(false);
-// 	})
-// 	.finally(()=>{
-// 		if (callback) setTimeout(callback,99);
-// 	});
-// }
+	fetch(getURL('/presets.json'), {
+		method: 'get', headers:{ 'Connection': 'keep-alive'}
+	})
+	.then(res => {
+		if (res.status=="404") return {"0":{}};
+		//if (!res.ok) showErrorToast();
+		return res.json();
+	})
+	.then(json => {
+		pJson = json;
+		pmtLast = pmt;
+		populatePresets();
+	})
+	.catch((e)=>{
+		//showToast(e, true);
+		presetError(false);
+	})
+	.finally(()=>{
+		if (callback) setTimeout(callback,99);
+	});
+}
 
 function loadPalettes(callback = null)
 {
@@ -610,46 +610,46 @@ function populateQL()
 	gId('pql').innerHTML = cn;
 }
 
-// function populatePresets(fromls)
-// {
-// 	if (fromls) pJson = JSON.parse(localStorage.getItem("wledP"));
-// 	if (!pJson) {setTimeout(loadPresets,250); return;}
-// 	delete pJson["0"];
-// 	var cn = "";
-// 	var arr = Object.entries(pJson).sort(cmpP);
-// 	pQL = [];
-// 	var is = [];
-// 	pNum = 0;
-// 	for (var key of (arr||[]))
-// 	{
-// 		if (!isObj(key[1])) continue;
-// 		let i = parseInt(key[0]);
-// 		var qll = key[1].ql;
-// 		if (qll) pQL.push([i, qll, pName(i)]);
-// 		is.push(i);
+function populatePresets(fromls)
+{
+	if (fromls) pJson = JSON.parse(localStorage.getItem("wledP"));
+	if (!pJson) {setTimeout(loadPresets,250); return;}
+	delete pJson["0"];
+	var cn = "";
+	var arr = Object.entries(pJson).sort(cmpP);
+	pQL = [];
+	var is = [];
+	pNum = 0;
+	for (var key of (arr||[]))
+	{
+		if (!isObj(key[1])) continue;
+		let i = parseInt(key[0]);
+		var qll = key[1].ql;
+		if (qll) pQL.push([i, qll, pName(i)]);
+		is.push(i);
 
-// 		cn += `<div class="pres lstI" id="p${i}o">`;
-// 		if (cfg.comp.pid) cn += `<div class="pid">${i}</div>`;
-// 		cn += `<div class="pname lstIname" onclick="setPreset(${i})">${isPlaylist(i)?"<i class='icons btn-icon'>&#xe139;</i>":""}${pName(i)}
-// 	<i class="icons edit-icon flr" id="p${i}nedit" onclick="tglSegn(${i+100})">&#xe2c6;</i></div>
-// 	<i class="icons e-icon flr" id="sege${i+100}" onclick="expand(${i+100})">&#xe395;</i>
-// 	<div class="presin lstIcontent" id="seg${i+100}"></div>
-// </div>`;
-// 		pNum++;
-// 	}
+		cn += `<div class="pres lstI" id="p${i}o">`;
+		if (cfg.comp.pid) cn += `<div class="pid">${i}</div>`;
+		cn += `<div class="pname lstIname" onclick="setPreset(${i})">${isPlaylist(i)?"<i class='icons btn-icon'>&#xe139;</i>":""}${pName(i)}
+	<i class="icons edit-icon flr" id="p${i}nedit" onclick="tglSegn(${i+100})">&#xe2c6;</i></div>
+	<i class="icons e-icon flr" id="sege${i+100}" onclick="expand(${i+100})">&#xe395;</i>
+	<div class="presin lstIcontent" id="seg${i+100}"></div>
+</div>`;
+		pNum++;
+	}
 
-// 	gId('pcont').innerHTML = cn;
-// 	if (pNum > 0) {
-// 		if (pmtLS != pmt && pmt != 0) {
-// 			localStorage.setItem("wledPmt", pmt);
-// 			pJson["0"] = {};
-// 			localStorage.setItem("wledP", JSON.stringify(pJson));
-// 		}
-// 		pmtLS = pmt;
-// 	} else { presetError(true); }
-// 	updatePA();
-// 	populateQL();
-// }
+	gId('pcont').innerHTML = cn;
+	if (pNum > 0) {
+		if (pmtLS != pmt && pmt != 0) {
+			localStorage.setItem("wledPmt", pmt);
+			pJson["0"] = {};
+			localStorage.setItem("wledP", JSON.stringify(pJson));
+		}
+		pmtLS = pmt;
+	} else { presetError(true); }
+	updatePA();
+	populateQL();
+}
 
 function parseInfo(i) {
 	lastinfo = i;
@@ -1697,53 +1697,53 @@ function requestJson(command=null)
 	// 	return;
 	// }
 
-	// fetch(getURL('/json/si'), {
-	// 	method: type,
-	// 	headers: {
-	// 		"Content-type": "application/json; charset=UTF-8",
-	// 		'Connection': 'keep-alive'
-	// 	},
-	// 	body: req
-	// })	
-	// .then(res => {
-	// 	clearTimeout(jsonTimeout);
-	// 	jsonTimeout = null;
-	// 	if (!res.ok) showErrorToast();
-	// 	return res.json();
-	// })
-	// .then(json => {
-	// 	lastUpdate = new Date();
-	// 	clearErrorToast(3000);
-	// 	gId('connind').style.backgroundColor = "var(--c-g)";
-	// 	if (!json) { showToast('Empty response', true); return; }
-	// 	if (json.success) return;
-	// 	if (json.info) {
-	// 		let i = json.info;
-	// 		parseInfo(i);
-	// 		populatePalettes(i);
-	// 		if (isInfo) populateInfo(i);
-	// 		if (simplifiedUI) simplifyUI();
-	// 	}
-	// 	var s = json.state ? json.state : json;
-	// 	readState(s);
+	fetch(getURL('/json/si'), {
+		method: type,
+		headers: {
+			"Content-type": "application/json; charset=UTF-8",
+			'Connection': 'keep-alive'
+		},
+		body: req
+	})	
+	.then(res => {
+		clearTimeout(jsonTimeout);
+		jsonTimeout = null;
+		if (!res.ok) showErrorToast();
+		return res.json();
+	})
+	.then(json => {
+		lastUpdate = new Date();
+		clearErrorToast(3000);
+		gId('connind').style.backgroundColor = "var(--c-g)";
+		if (!json) { showToast('Empty response', true); return; }
+		if (json.success) return;
+		if (json.info) {
+			let i = json.info;
+			parseInfo(i);
+			populatePalettes(i);
+			if (isInfo) populateInfo(i);
+			if (simplifiedUI) simplifyUI();
+		}
+		var s = json.state ? json.state : json;
+		readState(s);
 
-	// 	//load presets and open websocket sequentially
-	// 	if (!pJson || isEmpty(pJson)) setTimeout(()=>{
-	// 		loadPresets(()=>{
-	// 			wsRpt = 0;
-	// 			if (!(ws && ws.readyState === WebSocket.OPEN)) makeWS();
-	// 		});
-	// 	},25);
-	// 	reqsLegal = true;
-	// 	retry = false;
-	// })
-	// .catch((e)=>{
-	// 	if (!retry) {
-	// 		retry = true;
-	// 		setTimeout(requestJson,500);
-	// 	}
-	// 	showToast(e, true);
-	// });
+		//load presets and open websocket sequentially
+		if (!pJson || isEmpty(pJson)) setTimeout(()=>{
+			loadPresets(()=>{
+				wsRpt = 0;
+				if (!(ws && ws.readyState === WebSocket.OPEN)) makeWS();
+			});
+		},25);
+		reqsLegal = true;
+		retry = false;
+	})
+	.catch((e)=>{
+		if (!retry) {
+			retry = true;
+			setTimeout(requestJson,500);
+		}
+		showToast(e, true);
+	});
 }
 
 function togglePower()
@@ -1963,99 +1963,99 @@ function plR(p)
 	}
 }
 
-// function makeP(i,pl)
-// {
-// 	var content = "";
-// 	if (pl) {
-// 		if (i===0) plJson[0] = {
-// 			ps: [1],
-// 			dur: [100],
-// 			transition: [tr],
-// 			repeat: 0,
-// 			r: false,
-// 			end: 0
-// 		};
-// 		var rep = plJson[i].repeat ? plJson[i].repeat : 0;
-// 		content =
-// `<div id="ple${i}" style="margin-top:10px;"></div><label class="check revchkl">Shuffle
-// 	<input type="checkbox" id="pl${i}rtgl" onchange="plR(${i})" ${plJson[i].r||rep<0?"checked":""}>
-// 	<span class="checkmark"></span>
-// </label>
-// <label class="check revchkl">Repeat indefinitely
-// 	<input type="checkbox" id="pl${i}rptgl" onchange="plR(${i})" ${rep>0?"":"checked"}>
-// 	<span class="checkmark"></span>
-// </label>
-// <div id="pl${i}o1" style="display:${rep>0?"block":"none"}">
-// <div class="c">Repeat <input type="number" id="pl${i}rp" oninput="plR(${i})" max=127 min=0 value=${rep>0?rep:1}> times</div>
-// <div class="sel">End preset:<br>
-// <div class="sel-p"><select class="sel-ple" id="pl${i}selEnd" onchange="plR(${i})" data-val=${plJson[i].end?plJson[i].end:0}>
-// <option value="0">None</option>
-// <option value="255">Restore preset</option>
-// ${makePlSel(plJson[i].end?plJson[i].end:0, true)}
-// </select></div></div>
-// </div>
-// <div class="c"><button class="btn btn-p" onclick="testPl(${i}, this)"><i class='icons btn-icon'>&#xe139;</i>Test</button></div>`;
-// 	} else {
-// 		content =
-// `<label class="check revchkl">
-// 	<span class="lstIname">Include brightness</span>
-// 	<input type="checkbox" id="p${i}ibtgl" checked>
-// 	<span class="checkmark"></span>
-// </label>
-// <label class="check revchkl">
-// 	<span class="lstIname">Save segment bounds</span>
-// 	<input type="checkbox" id="p${i}sbtgl" checked>
-// 	<span class="checkmark"></span>
-// </label>
-// <label class="check revchkl">
-// 	<span class="lstIname">Checked segments only</span>
-// 	<input type="checkbox" id="p${i}sbchk">
-// 	<span class="checkmark"></span>
-// </label>`;
-// 		if (Array.isArray(lastinfo.maps) && lastinfo.maps.length>1) {
-// 			content += `<div class="lbl-l">Ledmap:&nbsp;<div class="sel-p"><select class="sel-p" id="p${i}lmp"><option value="">Unchanged</option>`;
-// 			for (const k of (lastinfo.maps||[])) content += `<option value="${k.id}"${(i>0 && pJson[i].ledmap==k.id)?" selected":""}>${k.id==0?'Default':(k.n?k.n:'ledmap'+k.id+'.json')}</option>`;
-// 			content += "</select></div></div>";
-// 		}
-// 	}
+function makeP(i,pl)
+{
+	var content = "";
+	if (pl) {
+		if (i===0) plJson[0] = {
+			ps: [1],
+			dur: [100],
+			transition: [tr],
+			repeat: 0,
+			r: false,
+			end: 0
+		};
+		var rep = plJson[i].repeat ? plJson[i].repeat : 0;
+		content =
+`<div id="ple${i}" style="margin-top:10px;"></div><label class="check revchkl">Shuffle
+	<input type="checkbox" id="pl${i}rtgl" onchange="plR(${i})" ${plJson[i].r||rep<0?"checked":""}>
+	<span class="checkmark"></span>
+</label>
+<label class="check revchkl">Repeat indefinitely
+	<input type="checkbox" id="pl${i}rptgl" onchange="plR(${i})" ${rep>0?"":"checked"}>
+	<span class="checkmark"></span>
+</label>
+<div id="pl${i}o1" style="display:${rep>0?"block":"none"}">
+<div class="c">Repeat <input type="number" id="pl${i}rp" oninput="plR(${i})" max=127 min=0 value=${rep>0?rep:1}> times</div>
+<div class="sel">End preset:<br>
+<div class="sel-p"><select class="sel-ple" id="pl${i}selEnd" onchange="plR(${i})" data-val=${plJson[i].end?plJson[i].end:0}>
+<option value="0">None</option>
+<option value="255">Restore preset</option>
+${makePlSel(plJson[i].end?plJson[i].end:0, true)}
+</select></div></div>
+</div>
+<div class="c"><button class="btn btn-p" onclick="testPl(${i}, this)"><i class='icons btn-icon'>&#xe139;</i>Test</button></div>`;
+	} else {
+		content =
+`<label class="check revchkl">
+	<span class="lstIname">Include brightness</span>
+	<input type="checkbox" id="p${i}ibtgl" checked>
+	<span class="checkmark"></span>
+</label>
+<label class="check revchkl">
+	<span class="lstIname">Save segment bounds</span>
+	<input type="checkbox" id="p${i}sbtgl" checked>
+	<span class="checkmark"></span>
+</label>
+<label class="check revchkl">
+	<span class="lstIname">Checked segments only</span>
+	<input type="checkbox" id="p${i}sbchk">
+	<span class="checkmark"></span>
+</label>`;
+		if (Array.isArray(lastinfo.maps) && lastinfo.maps.length>1) {
+			content += `<div class="lbl-l">Ledmap:&nbsp;<div class="sel-p"><select class="sel-p" id="p${i}lmp"><option value="">Unchanged</option>`;
+			for (const k of (lastinfo.maps||[])) content += `<option value="${k.id}"${(i>0 && pJson[i].ledmap==k.id)?" selected":""}>${k.id==0?'Default':(k.n?k.n:'ledmap'+k.id+'.json')}</option>`;
+			content += "</select></div></div>";
+		}
+	}
 
-// 	return `<input type="text" class="ptxt ${i==0?'show':''}" id="p${i}txt" autocomplete="off" maxlength=32 value="${(i>0)?pName(i):""}" placeholder="Enter name..."/>
-// <div class="c">Quick load label: <input type="text" class="stxt" maxlength=2 value="${qlName(i)}" id="p${i}ql" autocomplete="off"/></div>
-// <div class="h">(leave empty for no Quick load button)</div>
-// <div ${pl&&i==0?"style='display:none'":""}>
-// <label class="check revchkl">
-// 	<span class="lstIname">${pl?"Show playlist editor":(i>0)?"Overwrite with state":"Use current state"}</span>
-// 	<input type="checkbox" id="p${i}cstgl" onchange="tglCs(${i})" ${(i==0||pl)?"checked":""}>
-// 	<span class="checkmark"></span>
-// </label>
-// </div>
-// <div class="po2" id="p${i}o2">API command<br><textarea class="apitxt" id="p${i}api"></textarea></div>
-// <div class="po1" id="p${i}o1">${content}</div>
-// <div class="c m6">Save to ID <input id="p${i}id" type="number" oninput="checkUsed(${i})" max=250 min=1 value=${(i>0)?i:getLowestUnusedP()}></div>
-// <div class="c">
-// 	<button class="btn btn-p" onclick="saveP(${i},${pl})"><i class="icons btn-icon">&#xe390;</i>Save</button>
-// 	${(i>0)?'<button class="btn btn-p" id="p'+i+'del" onclick="delP('+i+')"><i class="icons btn-icon">&#xe037;</i>Delete':'<button class="btn btn-p" onclick="resetPUtil()">Cancel'}</button>
-// </div>
-// <div class="pwarn ${(i>0)?"bp":""} c" id="p${i}warn"></div>
-// ${(i>0)? ('<div class="h">ID ' +i+ '</div>'):""}`;
-// }
+	return `<input type="text" class="ptxt ${i==0?'show':''}" id="p${i}txt" autocomplete="off" maxlength=32 value="${(i>0)?pName(i):""}" placeholder="Enter name..."/>
+<div class="c">Quick load label: <input type="text" class="stxt" maxlength=2 value="${qlName(i)}" id="p${i}ql" autocomplete="off"/></div>
+<div class="h">(leave empty for no Quick load button)</div>
+<div ${pl&&i==0?"style='display:none'":""}>
+<label class="check revchkl">
+	<span class="lstIname">${pl?"Show playlist editor":(i>0)?"Overwrite with state":"Use current state"}</span>
+	<input type="checkbox" id="p${i}cstgl" onchange="tglCs(${i})" ${(i==0||pl)?"checked":""}>
+	<span class="checkmark"></span>
+</label>
+</div>
+<div class="po2" id="p${i}o2">API command<br><textarea class="apitxt" id="p${i}api"></textarea></div>
+<div class="po1" id="p${i}o1">${content}</div>
+<div class="c m6">Save to ID <input id="p${i}id" type="number" oninput="checkUsed(${i})" max=250 min=1 value=${(i>0)?i:getLowestUnusedP()}></div>
+<div class="c">
+	<button class="btn btn-p" onclick="saveP(${i},${pl})"><i class="icons btn-icon">&#xe390;</i>Save</button>
+	${(i>0)?'<button class="btn btn-p" id="p'+i+'del" onclick="delP('+i+')"><i class="icons btn-icon">&#xe037;</i>Delete':'<button class="btn btn-p" onclick="resetPUtil()">Cancel'}</button>
+</div>
+<div class="pwarn ${(i>0)?"bp":""} c" id="p${i}warn"></div>
+${(i>0)? ('<div class="h">ID ' +i+ '</div>'):""}`;
+}
 
-// function makePUtil()
-// {
-// 	let p = gId('putil');
-// 	p.classList.remove('staybot');
-// 	p.classList.add('pres');
-// 	p.innerHTML = `<div class="presin expanded">${makeP(0)}</div>`;
-// 	let pTx = gId('p0txt');
-// 	pTx.focus();
-// 	pTx.value = eJson.find((o)=>{return o.id==selectedFx}).name;
-// 	pTx.select();
-// 	p.scrollIntoView({
-// 		behavior: 'smooth',
-// 		block: 'center'
-// 	});
-// 	gId('psFind').classList.remove('staytop');
-// }
+function makePUtil()
+{
+	let p = gId('putil');
+	p.classList.remove('staybot');
+	p.classList.add('pres');
+	p.innerHTML = `<div class="presin expanded">${makeP(0)}</div>`;
+	let pTx = gId('p0txt');
+	pTx.focus();
+	pTx.value = eJson.find((o)=>{return o.id==selectedFx}).name;
+	pTx.select();
+	p.scrollIntoView({
+		behavior: 'smooth',
+		block: 'center'
+	});
+	gId('psFind').classList.remove('staytop');
+}
 
 function makePlEntry(p,i)
 {
@@ -2413,100 +2413,100 @@ function setPreset(i)
 	requestJson(obj);
 }
 
-// function saveP(i,pl)
-// {
-// 	pI = parseInt(gId(`p${i}id`).value);
-// 	if (!pI || pI < 1) pI = (i>0) ? i : getLowestUnusedP();
-// 	if (pI > 250) {alert("Preset ID must be 250 or less."); return;}
-// 	pN = gId(`p${i}txt`).value;
-// 	if (pN == "") pN = (pl?"Playlist ":"Preset ") + pI;
-// 	var obj = {};
-// 	if (!gId(`p${i}cstgl`).checked) {
-// 		var raw = gId(`p${i}api`).value;
-// 		try {
-// 			obj = JSON.parse(raw);
-// 		} catch (e) {
-// 			obj.win = raw;
-// 			if (raw.length < 2) {
-// 				gId(`p${i}warn`).innerHTML = "&#9888; Please enter your API command first";
-// 				return;
-// 			} else if (raw.indexOf('{') > -1) {
-// 				gId(`p${i}warn`).innerHTML = "&#9888; Syntax error in custom JSON API command";
-// 				return;
-// 			} else if (raw.indexOf("Please") == 0) {
-// 				gId(`p${i}warn`).innerHTML = "&#9888; Please refresh the page before modifying this preset";
-// 				return;
-// 			}
-// 		}
-// 		obj.o = true;
-// 	} else {
-// 		if (pl) {
-// 			obj.playlist = plJson[i];
-// 			obj.on = true;
-// 			obj.o = true;
-// 		} else {
-// 			obj.ib = gId(`p${i}ibtgl`).checked;
-// 			obj.sb = gId(`p${i}sbtgl`).checked;
-// 			obj.sc = gId(`p${i}sbchk`).checked;
-// 			if (gId(`p${i}lmp`) && gId(`p${i}lmp`).value!=="") obj.ledmap = parseInt(gId(`p${i}lmp`).value);
-// 		}
-// 	}
+function saveP(i,pl)
+{
+	pI = parseInt(gId(`p${i}id`).value);
+	if (!pI || pI < 1) pI = (i>0) ? i : getLowestUnusedP();
+	if (pI > 250) {alert("Preset ID must be 250 or less."); return;}
+	pN = gId(`p${i}txt`).value;
+	if (pN == "") pN = (pl?"Playlist ":"Preset ") + pI;
+	var obj = {};
+	if (!gId(`p${i}cstgl`).checked) {
+		var raw = gId(`p${i}api`).value;
+		try {
+			obj = JSON.parse(raw);
+		} catch (e) {
+			obj.win = raw;
+			if (raw.length < 2) {
+				gId(`p${i}warn`).innerHTML = "&#9888; Please enter your API command first";
+				return;
+			} else if (raw.indexOf('{') > -1) {
+				gId(`p${i}warn`).innerHTML = "&#9888; Syntax error in custom JSON API command";
+				return;
+			} else if (raw.indexOf("Please") == 0) {
+				gId(`p${i}warn`).innerHTML = "&#9888; Please refresh the page before modifying this preset";
+				return;
+			}
+		}
+		obj.o = true;
+	} else {
+		if (pl) {
+			obj.playlist = plJson[i];
+			obj.on = true;
+			obj.o = true;
+		} else {
+			obj.ib = gId(`p${i}ibtgl`).checked;
+			obj.sb = gId(`p${i}sbtgl`).checked;
+			obj.sc = gId(`p${i}sbchk`).checked;
+			if (gId(`p${i}lmp`) && gId(`p${i}lmp`).value!=="") obj.ledmap = parseInt(gId(`p${i}lmp`).value);
+		}
+	}
 
-// 	obj.psave = pI; obj.n = pN;
-// 	var pQN = gId(`p${i}ql`).value;
-// 	if (pQN.length > 0) obj.ql = pQN;
+	obj.psave = pI; obj.n = pN;
+	var pQN = gId(`p${i}ql`).value;
+	if (pQN.length > 0) obj.ql = pQN;
 
-// 	showToast("Saving " + pN +" (" + pI + ")");
-// 	requestJson(obj);
-// 	if (obj.o) {
-// 		pJson[pI] = obj;
-// 		delete pJson[pI].psave;
-// 		delete pJson[pI].o;
-// 		delete pJson[pI].v;
-// 		delete pJson[pI].time;
-// 	} else {
-// 		pJson[pI] = {"n":pN, "win":"Please refresh the page to see this newly saved command."};
-// 		if (obj.win) pJson[pI].win = obj.win;
-// 		if (obj.ql)  pJson[pI].ql = obj.ql;
-// 	}
-// 	// populatePresets();
-// 	resetPUtil();
-// 	setTimeout(()=>{pmtLast=0; loadPresets();}, 750); // force reloading of presets
-// }
+	showToast("Saving " + pN +" (" + pI + ")");
+	requestJson(obj);
+	if (obj.o) {
+		pJson[pI] = obj;
+		delete pJson[pI].psave;
+		delete pJson[pI].o;
+		delete pJson[pI].v;
+		delete pJson[pI].time;
+	} else {
+		pJson[pI] = {"n":pN, "win":"Please refresh the page to see this newly saved command."};
+		if (obj.win) pJson[pI].win = obj.win;
+		if (obj.ql)  pJson[pI].ql = obj.ql;
+	}
+	populatePresets();
+	resetPUtil();
+	setTimeout(()=>{pmtLast=0; loadPresets();}, 750); // force reloading of presets
+}
 
-// function testPl(i,bt) {
-// 	if (bt.dataset.test == 1) {
-// 		bt.dataset.test = 0;
-// 		bt.innerHTML = "<i class='icons btn-icon'>&#xe139;</i>Test";
-// 		stopPl();
-// 		return;
-// 	}
-// 	bt.dataset.test = 1;
-// 	bt.innerHTML = "<i class='icons btn-icon'>&#xe38f;</i>Stop";
-// 	var obj = {};
-// 	obj.playlist = plJson[i];
-// 	obj.on = true;
-// 	requestJson(obj);
-// }
+function testPl(i,bt) {
+	if (bt.dataset.test == 1) {
+		bt.dataset.test = 0;
+		bt.innerHTML = "<i class='icons btn-icon'>&#xe139;</i>Test";
+		stopPl();
+		return;
+	}
+	bt.dataset.test = 1;
+	bt.innerHTML = "<i class='icons btn-icon'>&#xe38f;</i>Stop";
+	var obj = {};
+	obj.playlist = plJson[i];
+	obj.on = true;
+	requestJson(obj);
+}
 
-// function stopPl() {
-// 	requestJson({playlist:{}})
-// }
+function stopPl() {
+	requestJson({playlist:{}})
+}
 
-// function delP(i) {
-// 	var bt = gId(`p${i}del`);
-// 	if (bt.dataset.cnf == 1) {
-// 		var obj = {"pdel": i};
-// 		requestJson(obj);
-// 		delete pJson[i];
-// 		// populatePresets();
-// 		gId('putil').classList.add('staybot');
-// 	} else {
-// 		bt.style.color = "var(--c-r)";
-// 		bt.innerHTML = "<i class='icons btn-icon'>&#xe037;</i>Delete!";
-// 		bt.dataset.cnf = 1;
-// 	}
-// }
+function delP(i) {
+	var bt = gId(`p${i}del`);
+	if (bt.dataset.cnf == 1) {
+		var obj = {"pdel": i};
+		requestJson(obj);
+		delete pJson[i];
+		populatePresets();
+		gId('putil').classList.add('staybot');
+	} else {
+		bt.style.color = "var(--c-r)";
+		bt.innerHTML = "<i class='icons btn-icon'>&#xe037;</i>Delete!";
+		bt.dataset.cnf = 1;
+	}
+}
 
 function selectSlot(b)
 {
