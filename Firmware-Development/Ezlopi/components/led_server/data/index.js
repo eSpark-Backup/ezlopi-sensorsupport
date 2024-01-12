@@ -806,7 +806,7 @@ function populateSegments(s)
 							`<option value="1" ${inst.si==1?' selected':''}>WeWillRockYou</option>`+
 						`</select></div>`+
 					`</div>`;
-		cn += `<div style="background-color:white;" class="seg lstI ${i==s.mainseg && !simplifiedUI ? 'selected' : ''} ${exp ? "expanded":""}" id="seg${i}" data-set="${inst.set}">`+
+		cn += `<div class="seg lstI ${i==s.mainseg && !simplifiedUI ? 'selected' : ''} ${exp ? "expanded":""}" id="seg${i}" data-set="${inst.set}">`+
 				`<label class="check schkl ${smpl}">`+
 					`<input type="checkbox" id="seg${i}sel" onchange="selSeg(${i})" ${inst.sel ? "checked":""}>`+
 					`<span class="checkmark"></span>`+
@@ -828,12 +828,12 @@ function populateSegments(s)
 					`<tr>`+
 						`<td>${isMSeg?'Start X':'Start LED'}</td>`+
 						`<td>${isMSeg?(cfg.comp.seglen?"Width":"Stop X"):(cfg.comp.seglen?"LED count":"Stop LED")}</td>`+
-						// `<td>${isMSeg?'':'Offset'}</td>`+
+						`<td>${isMSeg?'':'Offset'}</td>`+
 					`</tr>`+
 					`<tr>`+
 						`<td><input class="segn" id="seg${i}s" type="number" min="0" max="${(isMSeg?mw:ledCount)-1}" value="${staX}" oninput="updateLen(${i})" onkeydown="segEnter(${i})"></td>`+
 						`<td><input class="segn" id="seg${i}e" type="number" min="0" max="${(isMSeg?mw:ledCount)}" value="${stoX-(cfg.comp.seglen?staX:0)}" oninput="updateLen(${i})" onkeydown="segEnter(${i})"></td>`+
-						// `<td ${isMSeg?'style="text-align:revert;"':''}>${isMSeg?miXck+'<br>'+rvXck:''}<input class="segn ${isMSeg?'hide':''}" id="seg${i}of" type="number" value="${inst.of}" oninput="updateLen(${i})"></td>`+
+						`<td ${isMSeg?'style="text-align:revert;"':''}>${isMSeg?miXck+'<br>'+rvXck:''}<input class="segn ${isMSeg?'hide':''}" id="seg${i}of" type="number" value="${inst.of}" oninput="updateLen(${i})"></td>`+
 					`</tr>`+
 					(isMSeg ? '<tr><td>Start Y</td><td>'+(cfg.comp.seglen?'Height':'Stop Y')+'</td><td></td></tr>'+
 					'<tr>'+
@@ -842,13 +842,13 @@ function populateSegments(s)
 						'<td style="text-align:revert;">'+miYck+'<br>'+rvYck+'</td>'+
 					'</tr>' : '') +
 					`<tr>`+
-						// `<td>Grouping</td>`+
-						// `<td>Spacing</td>`+
+						`<td>Grouping</td>`+
+						`<td>Spacing</td>`+
 						`<td></td>`+
 					`</tr>`+
 					`<tr>`+
-						// `<td><input class="segn" id="seg${i}grp" type="number" min="1" max="255" value="${inst.grp}" oninput="updateLen(${i})" onkeydown="segEnter(${i})"></td>`+
-						// `<td><input class="segn" id="seg${i}spc" type="number" min="0" max="255" value="${inst.spc}" oninput="updateLen(${i})" onkeydown="segEnter(${i})"></td>`+
+						`<td><input class="segn" id="seg${i}grp" type="number" min="1" max="255" value="${inst.grp}" oninput="updateLen(${i})" onkeydown="segEnter(${i})"></td>`+
+						`<td><input class="segn" id="seg${i}spc" type="number" min="0" max="255" value="${inst.spc}" oninput="updateLen(${i})" onkeydown="segEnter(${i})"></td>`+
 						`<td><button class="btn btn-xs" onclick="setSeg(${i})"><i class="icons btn-icon" id="segc${i}">&#xe390;</i></button></td>`+
 					`</tr>`+
 					`</table>`+
