@@ -31,6 +31,7 @@ void config_update_channels();
 void config_setMode(uint8_t mode);
 void config_setColor(uint32_t* client_color);
 uint32_t *config_read_color(uint8_t id);
+void config_set_single_color(uint32_t color_received, uint8_t pri_sec_ter);
 void config_set_segment_brightness(uint8_t brightness, uint8_t segment_index);
 void config_set_brightness(uint8_t bri);
 void config_set_selected_flag(int id, bool select_flag);

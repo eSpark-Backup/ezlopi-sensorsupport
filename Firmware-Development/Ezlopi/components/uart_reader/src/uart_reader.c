@@ -86,23 +86,22 @@ void parse_json(char* start){
         }
 
         cJSON* col = cJSON_GetObjectItemCaseSensitive(seg, "col");
-        if(col != NULL){
-            for (int i = 0 ; i < cJSON_GetArraySize(col) ; i++)
-            {
-                    cJSON* subitem = cJSON_GetArrayItem(col, i);
+        for (int i = 0; i < cJSON_GetArraySize(col); i++) {
+        cJSON* subitem = cJSON_GetArrayItem(col, i);
 
-                    for(int j = 0; j < cJSON_GetArraySize(subitem)-1; j++ ){ //FIXME: Array size is 4 RGBW not RGB
-                        if(cJSON_GetArraySize(subitem) != 0)
-                        {
-                            cJSON* subsubitem = cJSON_GetArrayItem(subitem, j);
-                            ESP_LOGI(TAG, "JSON COL %d : %u",j, subsubitem->valueint);
-                            uint8_t color = subsubitem->valueint;
-                            rgbcolor[i] += (color << ((2-j)*8));
-                        }
-                            ESP_LOGI(TAG,"ARRAY SIZE %d", cJSON_GetArraySize(subitem));
+            if (cJSON_IsArray(subitem) && cJSON_GetArraySize(subitem) == 4) {
+                // Extract all 4 items from the subarray to form a 32-bit color
+                uint32_t color = 0;
+                for (int j = 0; j < 4; j++) {
+                    cJSON* subsubitem = cJSON_GetArrayItem(subitem, j);
+                    if (cJSON_IsNumber(subsubitem)) {
+                        color |= ((uint32_t)(subsubitem->valueint) << (8 * (2 - j)));
                     }
+                }
+
+                // Set the color using config_set_single_color
+                config_set_single_color(color, i);  // i + 1 represents the color index
             }
-        	config_setColor(rgbcolor);
         }
 
         cJSON* id = cJSON_GetObjectItemCaseSensitive(seg, "id");

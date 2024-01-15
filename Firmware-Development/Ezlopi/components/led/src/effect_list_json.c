@@ -23,7 +23,7 @@ void create_list_json_string(char** json_string, enum PAL_EFF pal_eff)
     cJSON *json_array = cJSON_CreateArray();
     size_t total_items = (pal_eff == EFFECT_JSON)? MAX_EFFECTS__ : MAX_PALETTES__;
     char** list = (pal_eff == EFFECT_JSON)? effect_name_list : palette_name_list;
-    for(size_t i = 0; i < total_items; i++)
+    for(size_t i = 0; i < total_items-1; i++)
     {
         cJSON_AddItemToArray(json_array, cJSON_CreateString(list[i]));
     }

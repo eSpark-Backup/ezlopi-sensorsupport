@@ -241,6 +241,17 @@ void config_setColor(uint32_t* client_color) {
 	led_set_config(&led_config);
 }
 
+void config_set_single_color(uint32_t color_received, uint8_t pri_sec_ter)
+{
+	for (int i = 0; i < config_get_channels(); i++) {
+		if(led_config.channel[i] != NULL && led_config.channel[i]->selected && pri_sec_ter < 3 && pri_sec_ter > -1){
+					led_config.channel[i]->color[pri_sec_ter] = color_received;
+					led_config.channel[i]->color_buffer[pri_sec_ter] = led_config.channel[i]->color[pri_sec_ter];
+		}
+	}
+	led_set_config(&led_config);
+}
+
 uint32_t *config_read_color(uint8_t id)
 {
 	return led_config.channel[id]->color;
@@ -1054,9 +1065,9 @@ char* json_update_config()
 		cJSON_AddItemToObject(seg_object, "col", col_array);
 
 		// Add individual arrays to "col" array
-		cJSON *col_element_1 = cJSON_CreateIntArray((int[]){(MYCOLOR(0) & 0xFF0000) >> 16, (MYCOLOR(0) & 0x00FF00) >> 8, (MYCOLOR(0) & 0x0000FF) >> 0}, 3);
-		cJSON *col_element_2 = cJSON_CreateIntArray((int[]){(MYCOLOR(1) & 0xFF0000) >> 16, (MYCOLOR(1) & 0x00FF00) >> 8, (MYCOLOR(1) & 0x0000FF) >> 0}, 3);
-		cJSON *col_element_3 = cJSON_CreateIntArray((int[]){(MYCOLOR(2) & 0xFF0000) >> 16, (MYCOLOR(2) & 0x00FF00) >> 8, (MYCOLOR(2) & 0x0000FF) >> 0}, 3);
+		cJSON *col_element_1 = cJSON_CreateIntArray((int[]){(MYCOLOR(0) & 0xFF0000) >> 16, (MYCOLOR(0) & 0x00FF00) >> 8, (MYCOLOR(0) & 0x0000FF) >> 0, 0}, 4);
+		cJSON *col_element_2 = cJSON_CreateIntArray((int[]){(MYCOLOR(1) & 0xFF0000) >> 16, (MYCOLOR(1) & 0x00FF00) >> 8, (MYCOLOR(1) & 0x0000FF) >> 0, 0}, 4);
+		cJSON *col_element_3 = cJSON_CreateIntArray((int[]){(MYCOLOR(2) & 0xFF0000) >> 16, (MYCOLOR(2) & 0x00FF00) >> 8, (MYCOLOR(2) & 0x0000FF) >> 0, 0}, 4);
 
 		cJSON_AddItemToArray(col_array, col_element_1);
 		cJSON_AddItemToArray(col_array, col_element_2);
