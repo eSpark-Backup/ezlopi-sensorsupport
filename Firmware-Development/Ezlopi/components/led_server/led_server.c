@@ -459,36 +459,39 @@ void populate_response(enum webpage_name page, httpd_req_t *req)
         memset((void *)response_buffer, 0, sizeof(response_buffer));
         sprintf(response_buffer, "NOT FOUND");
         httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
-        break;
+        return;
     default:
         break;
     }
 
-    memset((void *)response_buffer, 0, sizeof(response_buffer));
+    // memset((void *)response_buffer, 0, sizeof(response_buffer));
 
     // Convert file size to string using snprintf
     // char content_length_str[16];
     // snprintf(content_length_str, sizeof(content_length_str), "%d", content_size_int);
     // httpd_resp_set_hdr(req, "Content-Length", content_length_str);
 
-    size_t chunk_size = 1024;
-    size_t offset = 0, dump_size = content_size_int;
+    // size_t chunk_size = 1024;
+    // size_t offset = 0, dump_size = content_size_int;
 
-    // Send chunks using a while loop
-    while (offset < dump_size) {
-        size_t remaining_size = dump_size - offset;
-        size_t current_chunk_size = remaining_size < chunk_size ? remaining_size : chunk_size;
+    // // Send chunks using a while loop
+    // while (offset < dump_size) {
+    //     size_t remaining_size = dump_size - offset;
+    //     size_t current_chunk_size = remaining_size < chunk_size ? remaining_size : chunk_size;
 
-        // Get the current chunk
-        const unsigned char* current_chunk = hex_dump + offset;
+    //     // Get the current chunk
+    //     const unsigned char* current_chunk = hex_dump + offset;
 
-        // Send the chunk
-        httpd_resp_send(req, (const char*)current_chunk, content_size_int);
+    //     // Send the chunk
+    //     httpd_resp_send(req, (const char*)current_chunk, content_size_int);
 
-        // Update offset for the next chunk
-        offset += current_chunk_size;
-    }
+    //     // Update offset for the next chunk
+    //     offset += current_chunk_size;
+    // }
+
+    httpd_resp_send(req, (const char*)hex_dump, content_size_int);
+
 
     // End the response after sending all chunks
-    httpd_resp_send_chunk(req, NULL, 0);
+    // httpd_resp_send_chunk(req, NULL, 0);
 }
