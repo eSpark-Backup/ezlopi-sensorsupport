@@ -252,7 +252,7 @@ function onLoad()
 	applyCfg();
 	if (cfg.comp.hdays) { //load custom holiday list
 		fetch(getURL("/holidays.json"), {	// may be loaded from external source
-			method: 'get'
+			method: 'get', headers:{ 'Connection': 'keep-alive'}
 		})
 		.then((res)=>{
 			//if (!res.ok) showErrorToast();
@@ -439,7 +439,7 @@ function presetError(empty)
 		if (bckstr.length > 10) hasBackup = true;
 	} catch (e) {}
 
-	var cn = `<div class="pres c" ${empty?'style="padding:8px;margin-top: 16px;"':'onclick="pmtLast=0;loadPresets();" style="cursor:pointer;padding:8px;margin-top: 16px;"'}>`;
+	var cn = `<div ${empty?'style="padding:8px;margin-top: 16px; display:none;"':'onclick="pmtLast=0;loadPresets();" style="cursor:pointer;padding:8px;margin-top: 16px;"'}>`;
 	if (empty)
 		cn += `You have no presets yet!`;
 	else
@@ -487,7 +487,7 @@ function loadPresets(callback = null)
 	if (!callback && pmt == pmtLast) return;
 
 	fetch(getURL('/presets.json'), {
-		method: 'get'
+		method: 'get', headers:{ 'Connection': 'keep-alive'}
 	})
 	.then(res => {
 		if (res.status=="404") return {"0":{}};
@@ -511,7 +511,8 @@ function loadPresets(callback = null)
 function loadPalettes(callback = null)
 {
 	fetch(getURL('/json/palettes'), {
-		method: 'get'
+		method: 'get',
+		headers:{ 'Connection': 'keep-alive'}
 	})
 	.then((res)=>{
 		if (!res.ok) showErrorToast();
@@ -538,7 +539,8 @@ function loadPalettes(callback = null)
 function loadFX(callback = null)
 {
 	fetch(getURL('/json/effects'), {
-		method: 'get'
+		method: 'get',
+		headers:{ 'Connection': 'keep-alive'}
 	})
 	.then((res)=>{
 		if (!res.ok) showErrorToast();
@@ -565,7 +567,8 @@ function loadFX(callback = null)
 function loadFXData(callback = null)
 {
 	fetch(getURL('/json/fxdata'), {
-		method: 'get'
+		method: 'get',
+		headers:{ 'Connection': 'keep-alive'}
 	})
 	.then((res)=>{
 		if (!res.ok) showErrorToast();
@@ -825,12 +828,12 @@ function populateSegments(s)
 					`<tr>`+
 						`<td>${isMSeg?'Start X':'Start LED'}</td>`+
 						`<td>${isMSeg?(cfg.comp.seglen?"Width":"Stop X"):(cfg.comp.seglen?"LED count":"Stop LED")}</td>`+
-						`<td>${isMSeg?'':'Offset'}</td>`+
+						// `<td>${isMSeg?'':'Offset'}</td>`+
 					`</tr>`+
 					`<tr>`+
 						`<td><input class="segn" id="seg${i}s" type="number" min="0" max="${(isMSeg?mw:ledCount)-1}" value="${staX}" oninput="updateLen(${i})" onkeydown="segEnter(${i})"></td>`+
 						`<td><input class="segn" id="seg${i}e" type="number" min="0" max="${(isMSeg?mw:ledCount)}" value="${stoX-(cfg.comp.seglen?staX:0)}" oninput="updateLen(${i})" onkeydown="segEnter(${i})"></td>`+
-						`<td ${isMSeg?'style="text-align:revert;"':''}>${isMSeg?miXck+'<br>'+rvXck:''}<input class="segn ${isMSeg?'hide':''}" id="seg${i}of" type="number" value="${inst.of}" oninput="updateLen(${i})"></td>`+
+						// `<td ${isMSeg?'style="text-align:revert;"':''}>${isMSeg?miXck+'<br>'+rvXck:''}<input class="segn ${isMSeg?'hide':''}" id="seg${i}of" type="number" value="${inst.of}" oninput="updateLen(${i})"></td>`+
 					`</tr>`+
 					(isMSeg ? '<tr><td>Start Y</td><td>'+(cfg.comp.seglen?'Height':'Stop Y')+'</td><td></td></tr>'+
 					'<tr>'+
@@ -839,13 +842,13 @@ function populateSegments(s)
 						'<td style="text-align:revert;">'+miYck+'<br>'+rvYck+'</td>'+
 					'</tr>' : '') +
 					`<tr>`+
-						`<td>Grouping</td>`+
-						`<td>Spacing</td>`+
+						// `<td>Grouping</td>`+
+						// `<td>Spacing</td>`+
 						`<td></td>`+
 					`</tr>`+
 					`<tr>`+
-						`<td><input class="segn" id="seg${i}grp" type="number" min="1" max="255" value="${inst.grp}" oninput="updateLen(${i})" onkeydown="segEnter(${i})"></td>`+
-						`<td><input class="segn" id="seg${i}spc" type="number" min="0" max="255" value="${inst.spc}" oninput="updateLen(${i})" onkeydown="segEnter(${i})"></td>`+
+						// `<td><input class="segn" id="seg${i}grp" type="number" min="1" max="255" value="${inst.grp}" oninput="updateLen(${i})" onkeydown="segEnter(${i})"></td>`+
+						// `<td><input class="segn" id="seg${i}spc" type="number" min="0" max="255" value="${inst.spc}" oninput="updateLen(${i})" onkeydown="segEnter(${i})"></td>`+
 						`<td><button class="btn btn-xs" onclick="setSeg(${i})"><i class="icons btn-icon" id="segc${i}">&#xe390;</i></button></td>`+
 					`</tr>`+
 					`</table>`+
@@ -1106,7 +1109,8 @@ function populateNodes(i,n)
 function loadNodes()
 {
 	fetch(getURL('/json/nodes'), {
-		method: 'get'
+		method: 'get',
+		headers:{ 'Connection': 'keep-alive'}
 	})
 	.then((res)=>{
 		if (!res.ok) showToast('Could not load Node list!', true);
@@ -1696,7 +1700,8 @@ function requestJson(command=null)
 	fetch(getURL('/json/si'), {
 		method: type,
 		headers: {
-			"Content-type": "application/json; charset=UTF-8"
+			"Content-type": "application/json; charset=UTF-8",
+			'Connection': 'keep-alive'
 		},
 		body: req
 	})	
@@ -1838,9 +1843,9 @@ function makeSeg()
 		behavior: 'smooth',
 		block: 'start',
 	});
-	var cn = `<div class="seg lstI expanded">`+
+	var cn = `<div class="seg lstI expanded" style="background-color:white; color:black;">`+
 		`<div class="segin">`+
-			`<input type="text" id="seg${lu}t" autocomplete="off" maxlength=32 value="" placeholder="New segment ${lu}"/>`+
+			`<input style="background-color:#3e46ae; color:white;" type="text" id="seg${lu}t" autocomplete="off" maxlength=32 value="" placeholder="New segment ${lu}"/>`+
 			`<table class="segt">`+
 				`<tr>`+
 					`<td width="38%">${isM?'Start X':'Start LED'}</td>`+
@@ -2668,7 +2673,7 @@ function setBalance(b)
 function rmtTgl(ip,i) {
 	event.preventDefault();
 	event.stopPropagation();
-	fetch(`http://${ip}/win&T=2`, {method: 'get'})
+	fetch(`http://${ip}/win&T=2`, {method: 'get', headers: { 'Connection': 'keep-alive'}})
 	.then((r)=>{
 		return r.text();
 	})
@@ -2713,7 +2718,7 @@ function rSegs()
 {
 	var bt = gId('rsbtn');
 	if (!cnfrS) {
-		bt.style.color = "var(--c-r)";
+		bt.style.color = "white";
 		bt.innerHTML = "Confirm reset";
 		cnfrS = true; return;
 	}
@@ -2762,7 +2767,8 @@ function getPalettesData(page, callback)
 	fetch(getURL(`/json/palx?page=${page}`), {
 		method: 'get',
 		headers: {
-			"Content-type": "application/json; charset=UTF-8"
+			"Content-type": "application/json; charset=UTF-8",
+			'Connection': 'keep-alive'
 		}
 	})
 	.then(res => {
@@ -3008,9 +3014,11 @@ function move(e)
 		f > 0.12 &&
 		gEBCN("tabcontent")[iSlide].scrollTop == scrollS)
 	{
-		_C.style.setProperty('--i', iSlide -= s);
-		f = 1 - f;
-		updateTablinks(iSlide);
+		if(iSlide < 2){
+			_C.style.setProperty('--i', iSlide -= s);
+			f = 1 - f;
+			updateTablinks(iSlide);
+		}
 	}
 	_C.style.setProperty('--f', f);
 	_C.classList.toggle('smooth', !(locked = false));
