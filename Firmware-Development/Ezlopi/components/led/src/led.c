@@ -841,9 +841,9 @@ static void task(void *args) {
 				case FX_MODE_ICU:
 					WS2812FX_call(i, WS2812FX_mode_icu);
 					break;
-				case FX_MODE_PLAYLIST:
-					// playlist_next(now, i);
-					break;
+				// case FX_MODE_PLAYLIST:
+				// 	// playlist_next(now, i);
+				// 	break;
 				case FX_MODE_DNA2D:
 					// WS2812FX_call(i, WS2812FX_mode_2Ddna);
 					WS2812FX_mode_2Ddna(i);
@@ -871,7 +871,16 @@ void led_on() {
 	q = xQueueCreate(1, sizeof(struct LED_CONFIG));
 	ESP_ERROR_CHECK(q != NULL ? ESP_OK : ESP_FAIL);
 	ESP_ERROR_CHECK(
-			xTaskCreate(task, "led_task", 4 * 1024, NULL, tskIDLE_PRIORITY, &taskHandle) == pdPASS ? ESP_OK : ESP_FAIL);
+			// xTaskCreate(task, "led_task", 4 * 1024, NULL, tskIDLE_PRIORITY, &taskHandle) == pdPASS ? ESP_OK : ESP_FAIL);
+			xTaskCreatePinnedToCore(
+				task, 
+				"led_task", 
+				4 * 1024, 
+				NULL, 
+				tskIDLE_PRIORITY, 
+				&taskHandle, 
+				1
+			) == pdPASS ? ESP_OK : ESP_FAIL);
 }
 
 /**
