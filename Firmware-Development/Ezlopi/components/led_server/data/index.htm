@@ -126,7 +126,7 @@
 			<input id="hexc" tooltip="Hex RGB" type="text" class="noslide" onkeydown="hexEnter()" autocomplete="off" maxlength="8" />
 			<button id="hexcnf" class="btn btn-xs" onclick="fromHex();"><i class="icons btn-icon">&#xe390;</i></button>
 		</div>
-		<div style="padding: 8px 0;" id="btns">
+		<div style="padding: 8px 0; display: none;" id="btns">
 			<button class="btn btn-xs" tooltip="Pixel Magic Tool" type="button" id="pxmb" onclick="window.location.href=getURL('/pxmagic.htm')"><i class="icons btn-icon">&#xe410;</i></button>
 			<button class="btn btn-xs" tooltip="Add custom palette" type="button" onclick="window.location.href=getURL('/cpal.htm')"><i class="icons btn-icon">&#xe18a;</i></button>
 			<button class="btn btn-xs" tooltip="Remove custom palette" type="button" id="rmPal" onclick="palettesData=null;localStorage.removeItem('wledPalx');requestJson({rmcpal:true});setTimeout(loadPalettes,250,loadPalettesData);"><i class="icons btn-icon">&#xe037;</i></button>
@@ -294,9 +294,9 @@
 	<!-- <button class="tablinks" onclick="openTab(3)"><i class="icons">&#xe04c;</i><p class="tab-label">Presets</p></button> -->
 </div>
 
-<div id="connind"></div>
-<div id="toast" onclick="clearErrorToast(100);"></div>
-<div id="namelabel" onclick="toggleNodes()"></div>
+<div style="display: none;" id="connind"></div>
+<div style="display: none;" id="toast" onclick="clearErrorToast(100);"></div>
+<div style="display: none;" id="namelabel" onclick="toggleNodes()"></div>
 <div id="info" class="modal">
 	<button class="btn btn-xs close" onclick="toggleInfo()"><i class="icons rot45">&#xe18a;</i></button>
 	<div id="imgw">
