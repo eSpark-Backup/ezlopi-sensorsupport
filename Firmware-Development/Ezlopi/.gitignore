@@ -381,3 +381,10 @@ ui-qt/release/*
 ui-qt/esptool*
 ui-qt/ezpibins/*
 ui-qt/debug/*
+
+#allow bin for testing
+!led_test_bin/bootloader.bin
+!led_test_bin/partition-table.bin
+!led_test_bin/ota_data_initial.bin
+!led_test_bin/Ezlopiv3.bin
+!led_test_bin/102000779.bin
