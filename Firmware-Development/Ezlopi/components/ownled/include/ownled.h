@@ -15,7 +15,7 @@
 #include "esp_system.h"
 #include <stdint.h>
 
-extern void ownled_init();
+extern void ownled_init(uint8_t led_gpio);
 extern void ownled_prepare();
 extern void ownled_send();
 extern esp_err_t ownled_isFinished();

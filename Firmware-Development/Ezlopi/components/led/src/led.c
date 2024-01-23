@@ -57,8 +57,8 @@ int led_get_max_lines() {
  * updated with the latest configuration.
  */
 void led_set_config(struct LED_CONFIG *config) {
-	// xQueueOverwrite(q, (void *) config);
-	xQueueSend(q, (void *) config, ( TickType_t ) 10 );
+	xQueueOverwrite(q, (void *) config);
+	// xQueueSend(q, (void *) config, ( TickType_t ) 10 );
 	vTaskResume(taskHandle);
 }
 
@@ -276,7 +276,7 @@ void led_channel_rgb(int c, int x, int y, uint8_t r, uint8_t g, uint8_t b) {
 
 void led_rgb_rtp(int x, int y, uint8_t r, uint8_t g, uint8_t b) {
 	for (int c = 0; c < led_get_max_lines(); c++) {
-		if (led_config.channel[c]->mode == FX_MODE_SOLID) {  //FIXME: LED_MODE_NETWORK
+		if (led_config.channel[c]->mode == FX_MODE_STATIC) {  //FIXME: LED_MODE_NETWORK
 			led_channel_rgb(c, x, y, r, g, b);
 		}
 	}
@@ -290,7 +290,7 @@ void led_channel_block(int c, int x, int y, uint8_t *r, uint8_t *g, uint8_t *b) 
 
 void led_block(int x, int y, uint8_t *r, uint8_t *g, uint8_t *b) {
 	for (int c = 0; c < led_get_max_lines(); c++) {
-		if (led_config.channel[c]->mode == FX_MODE_SOLID) { //FIXME: LED_MODE_NETWORK
+		if (led_config.channel[c]->mode == FX_MODE_STATIC) { //FIXME: LED_MODE_NETWORK
 			led_channel_block(c, x, y, r, g, b);
 		}
 	}
@@ -658,9 +658,9 @@ static void task(void *args) {
 				// case LED_MODE_SQUARE:
 				// 	fillSquare(i);
 				// 	break;
-				case FX_MODE_SOLID:
-					fill(i, 255, 0, 0);
-					break;
+				// case FX_MODE_SOLID:
+				// 	fill(i, 255, 0, 0);
+				// 	break;
 				// case LED_MODE_PRODUCTION_TEST:
 				// 	fillProductionTest(i);
 				// 	break;
@@ -864,10 +864,10 @@ static void task(void *args) {
 /**
  * init the led strips and starts a thread for handling them
  */
-void led_on() {
+void led_on(uint8_t led_gpio) {
 
 	led_counter = 0;
-	ownled_init();
+	ownled_init(led_gpio);
 	q = xQueueCreate(1, sizeof(struct LED_CONFIG));
 	ESP_ERROR_CHECK(q != NULL ? ESP_OK : ESP_FAIL);
 	ESP_ERROR_CHECK(
@@ -879,7 +879,7 @@ void led_on() {
 				NULL, 
 				tskIDLE_PRIORITY, 
 				&taskHandle, 
-				1
+				0
 			) == pdPASS ? ESP_OK : ESP_FAIL);
 }
 

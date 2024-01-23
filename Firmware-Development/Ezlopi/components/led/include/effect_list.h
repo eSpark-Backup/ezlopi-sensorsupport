@@ -1,8 +1,8 @@
 
-FX_MODE(SOLID,                  "Solid")
+// FX_MODE(SOLID,                  "Solid Red")
+FX_MODE(STATIC,                 "Static")
 FX_MODE(BLINK,                  "Blink")
 FX_MODE(BREATH,                 "Breath")
-FX_MODE(STATIC,                 "Static")
 FX_MODE(COLOR_WIPE,             "Wipe")
 FX_MODE(COLOR_WIPE_INV,         "Wipe_inv")
 FX_MODE(COLOR_WIPE_REV,         "Wipe_rev")

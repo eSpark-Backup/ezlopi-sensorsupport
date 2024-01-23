@@ -1,12 +1,15 @@
 #include "cJSON.h"
-#include "ezlopi_cloud.h"
-#include "ezlopi_devices_list.h"
-#include "ezlopi_device_value_updated.h"
-#include "ezlopi_cloud_constants.h"
-#include "ezlopi_valueformatter.h"
-
+#include "math.h"
 #include "trace.h"
+
 #include "ezlopi_adc.h"
+#include "ezlopi_cloud.h"
+#include "ezlopi_cjson_macros.h"
+#include "ezlopi_devices_list.h"
+#include "ezlopi_valueformatter.h"
+#include "ezlopi_cloud_constants.h"
+#include "ezlopi_device_value_updated.h"
+
 #include "sensor_0032_ADC_soilMoisture.h"
 
 static int __prepare(void *arg);
@@ -52,12 +55,12 @@ static int __notify(l_ezlopi_item_t *item)
 {
     int ret = 0;
 
-    s_ezlopi_analog_data_t *soil_moisture_data = (s_ezlopi_analog_data_t*)item->user_arg;
-    if(soil_moisture_data)
+    s_ezlopi_analog_data_t *soil_moisture_data = (s_ezlopi_analog_data_t *)item->user_arg;
+    if (soil_moisture_data)
     {
         s_ezlopi_analog_data_t tmp_data = {.value = 0, .voltage = 0};
         ezlopi_adc_get_adc_data(item->interface.adc.gpio_num, &tmp_data);
-        if(tmp_data.value != soil_moisture_data->value)
+        if (fabs(tmp_data.voltage - soil_moisture_data->voltage) > 100)
         {
             soil_moisture_data->value = tmp_data.value;
             soil_moisture_data->voltage = tmp_data.voltage;
@@ -73,11 +76,11 @@ static int __get_cjson_value(l_ezlopi_item_t *item, void *arg)
     if (item && arg)
     {
         cJSON *cj_result = (cJSON *)arg;
-        s_ezlopi_analog_data_t *soil_moisture_data = (s_ezlopi_analog_data_t*)item->user_arg;
+        s_ezlopi_analog_data_t *soil_moisture_data = (s_ezlopi_analog_data_t *)item->user_arg;
         double percent_data = ((4095 - soil_moisture_data->value) / 4095.0) * 100;
-        cJSON_AddNumberToObject(cj_result, "value", percent_data);
+        cJSON_AddNumberToObject(cj_result, ezlopi_value_str, percent_data);
         char *valueFormatted = ezlopi_valueformatter_double(percent_data);
-        cJSON_AddStringToObject(cj_result, "valueFormatted", valueFormatted);
+        cJSON_AddStringToObject(cj_result, ezlopi_valueFormatted_str, valueFormatted);
         free(valueFormatted);
         ret = 1;
     }
@@ -97,19 +100,27 @@ static int __init(l_ezlopi_item_t *item)
 
 static void __prepare_device_cloud_properties(l_ezlopi_device_t *device, cJSON *cj_device)
 {
-    char *device_name = NULL;
-    CJSON_GET_VALUE_STRING(cj_device, "dev_name", device_name);
+    // char *device_name = NULL;
+    // CJSON_GET_VALUE_STRING(cj_device, ezlopi_dev_name_str, device_name);
+    // ASSIGN_DEVICE_NAME_V2(device, device_name);
+    // device->cloud_properties.device_id = ezlopi_cloud_generate_device_id();
 
-    ASSIGN_DEVICE_NAME_V2(device, device_name);
     device->cloud_properties.category = category_generic_sensor;
     device->cloud_properties.subcategory = subcategory_moisture;
     device->cloud_properties.device_type = dev_type_sensor;
-    device->cloud_properties.device_id = ezlopi_cloud_generate_device_id();
+    // cJSON *cj_info = cJSON_CreateObject();
+    // cJSON_AddStringToObject(cj_info, ezlopi_manufacturer_str, "EzloPi");
+    // cJSON_AddStringToObject(cj_info, ezlopi_model_str, "EzloPi Generic");
+    // cJSON_AddStringToObject(cj_info, "protocol", "WiFi");
+    // cJSON_AddStringToObject(cj_info, "firmware.stack", "3.0.4");
+    // cJSON_AddStringToObject(cj_info, "hardware", "ESP32");
+    device->cloud_properties.info = NULL;
+    device->cloud_properties.device_type_id = NULL;
 }
 
 static void __prepare_item_properties(l_ezlopi_item_t *item, cJSON *cj_device, void *user_arg)
 {
-    CJSON_GET_VALUE_INT(cj_device, "dev_type", item->interface_type);
+    CJSON_GET_VALUE_INT(cj_device, ezlopi_dev_type_str, item->interface_type);
     item->cloud_properties.has_getter = true;
     item->cloud_properties.has_setter = false;
     item->cloud_properties.item_name = ezlopi_item_name_soil_humidity;
@@ -120,7 +131,7 @@ static void __prepare_item_properties(l_ezlopi_item_t *item, cJSON *cj_device, v
 
     item->interface_type = EZLOPI_DEVICE_INTERFACE_ANALOG_INPUT;
     item->interface.adc.resln_bit = 3;
-    CJSON_GET_VALUE_INT(cj_device, "gpio", item->interface.adc.gpio_num);
+    CJSON_GET_VALUE_INT(cj_device, ezlopi_dev_name_str, item->interface.adc.gpio_num);
     item->user_arg = user_arg;
 }
 
@@ -131,18 +142,19 @@ static int __prepare(void *arg)
 
     if (prep_arg && prep_arg->cjson_device)
     {
-        l_ezlopi_device_t *device = ezlopi_device_add_device();
+        l_ezlopi_device_t *device = ezlopi_device_add_device(prep_arg->cjson_device);
         if (device)
         {
             __prepare_device_cloud_properties(device, prep_arg->cjson_device);
             l_ezlopi_item_t *item_temperature = ezlopi_device_add_item_to_device(device, sensor_0032_ADC_soilMoisture);
             if (item_temperature)
             {
+                item_temperature->cloud_properties.device_id = device->cloud_properties.device_id;
                 s_ezlopi_analog_data_t *soil_moisture_data = (s_ezlopi_analog_data_t *)malloc(sizeof(s_ezlopi_analog_data_t));
                 if (soil_moisture_data)
                 {
                     memset(soil_moisture_data, 0, sizeof(s_ezlopi_analog_data_t));
-                    __prepare_item_properties(item_temperature, prep_arg->cjson_device, (void*)soil_moisture_data);
+                    __prepare_item_properties(item_temperature, prep_arg->cjson_device, (void *)soil_moisture_data);
                 }
             }
         }

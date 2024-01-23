@@ -1,8 +1,10 @@
 #include <string.h>
 
 #include "trace.h"
+
 #include "ezlopi_devices.h"
 #include "ezlopi_scenes_v2.h"
+#include "ezlopi_cloud_constants.h"
 #include "ezlopi_scenes_operators.h"
 #include "ezlopi_scenes_when_methods.h"
 
@@ -23,7 +25,7 @@ int ezlopi_scene_when_is_item_state(l_scenes_list_v2_t *scene_node, void *arg)
             {
                 item_id = strtoul(curr_field->value.value_string, NULL, 16);
             }
-            else if (0 == strncmp(curr_field->name, "value", 4))
+            else if (0 == strncmp(curr_field->name, ezlopi_value_str, 4))
             {
                 value_field = curr_field;
             }
@@ -44,7 +46,7 @@ int ezlopi_scene_when_is_item_state(l_scenes_list_v2_t *scene_node, void *arg)
                         if (cj_tmp_value)
                         {
                             curr_item->func(EZLOPI_ACTION_GET_EZLOPI_VALUE, curr_item, (void *)cj_tmp_value, NULL);
-                            cJSON *cj_value = cJSON_GetObjectItem(cj_tmp_value, "value");
+                            cJSON *cj_value = cJSON_GetObjectItem(cj_tmp_value, ezlopi_value_str);
                             if (cj_value)
                             {
                                 switch (cj_value->type)
@@ -111,7 +113,7 @@ int ezlopi_scene_when_is_interval(l_scenes_list_v2_t *scene_node, void *arg)
     if (scene_node)
     {
         char *end_prt = NULL;
-        uint32_t interval = strtoul(scene_node->when->fields->value.value_string, &end_prt, 10);
+        uint32_t interval = strtoul(scene_node->when_block->fields->value.value_string, &end_prt, 10);
         if (end_prt)
         {
             if (0 == strncmp(end_prt, "m", 1))
@@ -129,20 +131,20 @@ int ezlopi_scene_when_is_interval(l_scenes_list_v2_t *scene_node, void *arg)
         }
 
         uint32_t last_update = 0;
-        if (scene_node->when->fields->user_arg)
+        if (scene_node->when_block->fields->user_arg)
         {
-            last_update = (uint32_t)scene_node->when->fields->user_arg;
+            last_update = (uint32_t)scene_node->when_block->fields->user_arg;
 
             if (((xTaskGetTickCount() - last_update) / 1000) > interval)
             {
-                scene_node->when->fields->user_arg = xTaskGetTickCount();
+                scene_node->when_block->fields->user_arg = (void *)xTaskGetTickCount();
                 ret = 1;
             }
         }
         else
         {
             ret = 1;
-            scene_node->when->fields->user_arg = xTaskGetTickCount();
+            scene_node->when_block->fields->user_arg = (void *)xTaskGetTickCount();
         }
     }
 
@@ -263,7 +265,7 @@ int ezlopi_scene_when_compare_numbers(l_scenes_list_v2_t *scene_node, void *arg)
             {
                 item_id = strtoul(curr_field->value.value_string, NULL, 16);
             }
-            else if (0 == strncmp(curr_field->name, "value", 4))
+            else if (0 == strncmp(curr_field->name, ezlopi_value_str, 4))
             {
                 value_field = curr_field;
             }
@@ -276,7 +278,7 @@ int ezlopi_scene_when_compare_numbers(l_scenes_list_v2_t *scene_node, void *arg)
 
         if (item_id && value_field && comparator_field)
         {
-            ret = ezlopi_scenes_operators_compare_value_number(item_id, value_field, comparator_field);
+            ret = ezlopi_scenes_operators_value_number_operations(item_id, value_field, comparator_field);
         }
     }
 

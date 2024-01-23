@@ -1,5 +1,5 @@
 
-
+#warning "Implementation not done"
 #if 0
 
 #include "cJSON.h"
@@ -8,7 +8,7 @@
 #include "ezlopi_device_value_updated.h"
 #include "ezlopi_cloud_category_str.h"
 #include "ezlopi_cloud_subcategory_str.h"
-#include "ezlopi_item_name_str.h"
+#include "ezlopi_cloud_item_name_str.h"
 #include "ezlopi_cloud_device_types_str.h"
 #include "ezlopi_cloud_value_type_str.h"
 #include "ezlopi_valueformatter.h"
@@ -69,7 +69,7 @@ static int __get_value_cjson(l_ezlopi_item_t *item, void *arg)
         s_ezlopi_analog_data_t ezlopi_analog_data;
         memset(&ezlopi_analog_data, 0, sizeof(s_ezlopi_analog_data_t));
         ezlopi_adc_get_adc_data(item->interface.adc.gpio_num, &ezlopi_analog_data);
-        cJSON_AddNumberToObject(cj_result, "value", ezlopi_analog_data.value);
+        cJSON_AddNumberToObject(cj_result, ezlopi_value_str, ezlopi_analog_data.value);
         ret = 1;
     }
     return ret;
@@ -82,20 +82,27 @@ static int __init(l_ezlopi_item_t *item)
     {
         ezlopi_adc_init(item->interface.adc.gpio_num, item->interface.adc.resln_bit);
         ret = 1;
+    } else {
+        ret = -1;
+        if (item->user_args)
+        {
+            free(item->user_args);
+            item->user_args = NULL;
+        }
     }
     return ret;
 }
 
 static void __setup_device_cloud_properties(l_ezlopi_device_t *device, cJSON *cj_device)
 {
-    char *device_name = NULL;
-    CJSON_GET_VALUE_STRING(cj_device, "dev_name", device_name);
+    // char *device_name = NULL;
+    // CJSON_GET_VALUE_STRING(cj_device, ezlopi_dev_name_str, device_name);
+    // ASSIGN_DEVICE_NAME_V2(device, device_name);
+    // device->cloud_properties.device_id = ezlopi_cloud_generate_device_id();
 
-    ASSIGN_DEVICE_NAME_V2(device, device_name);
     device->cloud_properties.category = category_not_defined;
     device->cloud_properties.subcategory = subcategory_not_defined;
     device->cloud_properties.device_type = dev_type_device;
-    device->cloud_properties.device_id = ezlopi_cloud_generate_device_id();
 }
 
 static void __setup_item_cloud_properties(l_ezlopi_item_t *item, cJSON *cj_device)
@@ -113,7 +120,7 @@ static void __setup_item_interface_properties(l_ezlopi_item_t *item, cJSON *cj_d
 {
     item->interface_type = EZLOPI_DEVICE_INTERFACE_ANALOG_INPUT;
     item->interface.adc.resln_bit = 3;
-    CJSON_GET_VALUE_INT(cj_device, "gpio", item->interface.adc.gpio_num);
+    CJSON_GET_VALUE_INT(cj_device, ezlopi_dev_name_str, item->interface.adc.gpio_num);
 }
 
 static int __prepare(void *arg)
@@ -125,7 +132,7 @@ static int __prepare(void *arg)
         cJSON *cjson_device = prep_arg->cjson_device;
         if (cjson_device)
         {
-            l_ezlopi_device_t *device = ezlopi_device_add_device();
+            l_ezlopi_device_t *device = ezlopi_device_add_device(prep_arg->cjson_device);
             if (device)
             {
                 __setup_device_cloud_properties(device, cjson_device);
@@ -138,7 +145,7 @@ static int __prepare(void *arg)
                 }
                 else
                 {
-                    ezlopi_device_free_device(device);
+                    ret = -1;
                 }
             }
         }

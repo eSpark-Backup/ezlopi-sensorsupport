@@ -5,17 +5,13 @@
 #include "stdbool.h"
 
 #include "ezlopi_adc.h"
-#include "ezlopi_actions.h"
 #include "ezlopi_timer.h"
+#include "ezlopi_actions.h"
+#include "ezlopi_cjson_macros.h"
 #include "ezlopi_devices_list.h"
-#include "ezlopi_device_value_updated.h"
-#include "ezlopi_cloud_category_str.h"
-#include "ezlopi_cloud_subcategory_str.h"
-#include "ezlopi_item_name_str.h"
-#include "ezlopi_cloud_device_types_str.h"
-#include "ezlopi_cloud_value_type_str.h"
-#include "ezlopi_cloud_scales_str.h"
 #include "ezlopi_valueformatter.h"
+#include "ezlopi_cloud_constants.h"
+#include "ezlopi_device_value_updated.h"
 
 #include "sensor_0056_ADC_Force_Sensitive_Resistor.h"
 
@@ -51,12 +47,7 @@ int sensor_0056_ADC_Force_Sensitive_Resistor(e_ezlopi_actions_t action, l_ezlopi
     }
     case EZLOPI_ACTION_NOTIFY_1000_MS:
     {
-        static uint8_t count;
-        if (count++ > 1)
-        {
-            __0056_notify(item);
-            count = 0;
-        }
+        __0056_notify(item);
         break;
     }
     default:
@@ -70,13 +61,16 @@ int sensor_0056_ADC_Force_Sensitive_Resistor(e_ezlopi_actions_t action, l_ezlopi
 //------------------------------------------------------------------------------------------------------
 static void __prepare_device_cloud_properties(l_ezlopi_device_t *device, cJSON *cj_device)
 {
-    char *device_name = NULL;
-    CJSON_GET_VALUE_STRING(cj_device, "dev_name", device_name);
-    ASSIGN_DEVICE_NAME_V2(device, device_name);
+    // char *device_name = NULL;
+    // CJSON_GET_VALUE_STRING(cj_device, ezlopi_dev_name_str, device_name);
+    // ASSIGN_DEVICE_NAME_V2(device, device_name);
+    // device->cloud_properties.device_id = ezlopi_cloud_generate_device_id();
+
     device->cloud_properties.category = category_level_sensor;
     device->cloud_properties.subcategory = subcategory_not_defined;
     device->cloud_properties.device_type = dev_type_sensor;
-    device->cloud_properties.device_id = ezlopi_cloud_generate_device_id();
+    device->cloud_properties.info = NULL;
+    device->cloud_properties.device_type_id = NULL;
 }
 static void __prepare_item_cloud_properties(l_ezlopi_item_t *item, cJSON *cj_device, void *user_data)
 {
@@ -88,8 +82,8 @@ static void __prepare_item_cloud_properties(l_ezlopi_item_t *item, cJSON *cj_dev
     item->cloud_properties.scale = scales_newton;
     item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
 
-    CJSON_GET_VALUE_INT(cj_device, "dev_type", item->interface_type); // _max = 10
-    CJSON_GET_VALUE_INT(cj_device, "gpio", item->interface.adc.gpio_num);
+    CJSON_GET_VALUE_INT(cj_device, ezlopi_dev_type_str, item->interface_type); // _max = 10
+    CJSON_GET_VALUE_INT(cj_device, ezlopi_dev_name_str, item->interface.adc.gpio_num);
     item->interface.adc.resln_bit = 3; // ADC 12_bit
 
     // passing the custom data_structure
@@ -108,13 +102,14 @@ static int __0056_prepare(void *arg)
         {
             memset(FSR_struct, 0, sizeof(fsr_t));
 
-            l_ezlopi_device_t *FSR_device = ezlopi_device_add_device();
+            l_ezlopi_device_t *FSR_device = ezlopi_device_add_device(device_prep_arg->cjson_device);
             if (FSR_device)
             {
                 __prepare_device_cloud_properties(FSR_device, device_prep_arg->cjson_device);
                 l_ezlopi_item_t *FSR_item = ezlopi_device_add_item_to_device(FSR_device, sensor_0056_ADC_Force_Sensitive_Resistor);
                 if (FSR_item)
                 {
+                    FSR_item->cloud_properties.device_id = FSR_device->cloud_properties.device_id;
                     __prepare_item_cloud_properties(FSR_item, device_prep_arg->cjson_device, FSR_struct);
                 }
                 else
@@ -125,7 +120,6 @@ static int __0056_prepare(void *arg)
             }
             else
             {
-                ezlopi_device_free_device(FSR_device);
                 free(FSR_struct);
             }
             ret = 1;
@@ -159,8 +153,8 @@ static int __0056_get_cjson_value(l_ezlopi_item_t *item, void *arg)
         {
             fsr_t *FSR_struct = (fsr_t *)item->user_arg;
             char *valueFormatted = ezlopi_valueformatter_float(FSR_struct->FSR_value);
-            cJSON_AddStringToObject(cj_result, "valueFormatted", valueFormatted);
-            cJSON_AddNumberToObject(cj_result, "value", FSR_struct->FSR_value);
+            cJSON_AddStringToObject(cj_result, ezlopi_valueFormatted_str, valueFormatted);
+            cJSON_AddNumberToObject(cj_result, ezlopi_value_str, FSR_struct->FSR_value);
             free(valueFormatted);
             ret = 1;
         }
@@ -183,8 +177,8 @@ static int __0056_notify(l_ezlopi_item_t *item)
         // TRACE_E(" Force[N]: %.4f", FSR_struct->FSR_value);
         if (new_force != FSR_struct->FSR_value)
         {
-            ezlopi_device_value_updated_from_device_v3(item);
             FSR_struct->FSR_value = new_force;
+            ezlopi_device_value_updated_from_device_v3(item);
         }
         ret = 1;
     }

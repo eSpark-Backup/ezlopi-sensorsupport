@@ -281,17 +281,21 @@ function onLoad()
 	// Once we figure out why ESP8266 sometimes corrupts JSON responses if they are made in quick succession
 	// we can remove all setTimeout() throttling
 	loadPalettes(()=>{
+		console.log("Load palettes");
 		setTimeout(()=>{ // ESP8266 can't handle quick requests
 			// fill effect extra data array
 			loadFXData(()=>{
+				console.log("Load fxdata");
 				setTimeout(()=>{ // ESP8266 can't handle quick requests
 					// load and populate effects
 					loadFX(()=>{
+						console.log("Load effects");
 						setTimeout(()=>{ // ESP8266 can't handle quick requests
-							loadPalettesData(()=>{
+							// loadPalettesData(()=>{
+								console.log("Request Json");
 								requestJson();// will load presets and create WS
 								if (cfg.comp.css) setTimeout(()=>{loadSkinCSS('skinCss')},100);
-							});
+							// });
 						},50);
 					});
 				},50);
@@ -439,7 +443,7 @@ function presetError(empty)
 		if (bckstr.length > 10) hasBackup = true;
 	} catch (e) {}
 
-	var cn = `<div ${empty?'style="padding:8px;margin-top: 16px; display:none;"':'onclick="pmtLast=0;loadPresets();" style="cursor:pointer;padding:8px;margin-top: 16px;"'}>`;
+	var cn = `<div ${empty?'style="padding:8px;margin-top: 16px; display:none;"':'onclick="pmtLast=0;loadPresets();" style="cursor:pointer;padding:8px;margin-top: 16px; display:none;"'}>`;
 	if (empty)
 		cn += `You have no presets yet!`;
 	else
@@ -774,9 +778,9 @@ function populateSegments(s)
 
 		let segp = `<div id="segp${i}" class="sbs">`+
 						`<i class="icons slider-icon pwr ${inst.on ? "act":""}" id="seg${i}pwr" onclick="setSegPwr(${i})">&#xe08f;</i>`+
-						`<div class="sliderwrap il">`+
+						`<div style="background-color:#3e46ae; margin-bottom:4px;" class="sliderwrap il">`+
 							`<input id="seg${i}bri" class="noslide" onchange="setSegBri(${i})" oninput="updateTrail(this)" max="255" min="1" type="range" value="${inst.bri}" />`+
-							`<div class="sliderdisplay"></div>`+
+							`<div style="background-image:linear-gradient(90deg, #000, #000); border-radius:10px;"  class="sliderdisplay"></div>`+
 						`</div>`+
 					`</div>`;
 		let staX = inst.start;
@@ -785,12 +789,12 @@ function populateSegments(s)
 		let stoY = inst.stopY;
 		let isMSeg = isM && staX<mw*mh; // 2D matrix segment
 		let rvXck = `<label style="color: black;" class="check revchkl">Reverse ${isM?'':'direction'}<input type="checkbox" id="seg${i}rev" onchange="setRev(${i})" ${inst.rev?"checked":""}><span class="checkmark"></span></label>`;
-		let miXck = `<label style="color: black;" class="check revchkl">Mirror<input type="checkbox" id="seg${i}mi" onchange="setMi(${i})" ${inst.mi?"checked":""}><span class="checkmark"></span></label>`;
+		let miXck = `<label style="color: black; display: none;" class="check revchkl">Mirror<input type="checkbox" id="seg${i}mi" onchange="setMi(${i})" ${inst.mi?"checked":""}><span class="checkmark"></span></label>`;
 		let rvYck = "", miYck ="";
 		let smpl = simplifiedUI ? 'hide' : '';
 		if (isMSeg) {
 			rvYck = `<label style="color: black;" class="check revchkl">Reverse<input type="checkbox" id="seg${i}rY" onchange="setRevY(${i})" ${inst.rY?"checked":""}><span class="checkmark"></span></label>`;
-			miYck = `<label style="color: black;" class="check revchkl">Mirror<input type="checkbox" id="seg${i}mY" onchange="setMiY(${i})" ${inst.mY?"checked":""}><span class="checkmark"></span></label>`;
+			miYck = `<label style="color: black; display: none;" class="check revchkl">Mirror<input type="checkbox" id="seg${i}mY" onchange="setMiY(${i})" ${inst.mY?"checked":""}><span class="checkmark"></span></label>`;
 		}
 		let map2D = `<div id="seg${i}map2D" data-map="map2D" class="lbl-s hide">Expand 1D FX<br>`+
 						`<div class="sel-p"><select class="sel-p" id="seg${i}m12" onchange="setM12(${i})">`+
@@ -834,6 +838,7 @@ function populateSegments(s)
 						`<td><input class="segn" id="seg${i}s" type="number" min="0" max="${(isMSeg?mw:ledCount)-1}" value="${staX}" oninput="updateLen(${i})" onkeydown="segEnter(${i})"></td>`+
 						`<td><input class="segn" id="seg${i}e" type="number" min="0" max="${(isMSeg?mw:ledCount)}" value="${stoX-(cfg.comp.seglen?staX:0)}" oninput="updateLen(${i})" onkeydown="segEnter(${i})"></td>`+
 						// `<td ${isMSeg?'style="text-align:revert;"':''}>${isMSeg?miXck+'<br>'+rvXck:''}<input class="segn ${isMSeg?'hide':''}" id="seg${i}of" type="number" value="${inst.of}" oninput="updateLen(${i})"></td>`+
+						`<td><button class="btn btn-xs" onclick="setSeg(${i})"><i class="icons btn-icon" id="segc${i}">&#xe390;</i></button></td>`+
 					`</tr>`+
 					(isMSeg ? '<tr><td>Start Y</td><td>'+(cfg.comp.seglen?'Height':'Stop Y')+'</td><td></td></tr>'+
 					'<tr>'+
@@ -849,21 +854,20 @@ function populateSegments(s)
 					`<tr>`+
 						// `<td><input class="segn" id="seg${i}grp" type="number" min="1" max="255" value="${inst.grp}" oninput="updateLen(${i})" onkeydown="segEnter(${i})"></td>`+
 						// `<td><input class="segn" id="seg${i}spc" type="number" min="0" max="255" value="${inst.spc}" oninput="updateLen(${i})" onkeydown="segEnter(${i})"></td>`+
-						`<td><button class="btn btn-xs" onclick="setSeg(${i})"><i class="icons btn-icon" id="segc${i}">&#xe390;</i></button></td>`+
 					`</tr>`+
 					`</table>`+
 					`<div style="color: black;" class="h bp" id="seg${i}len"></div>`+
 					(!isMSeg ? rvXck : '') +
 					(isMSeg&&stoY-staY>1&&stoX-staX>1 ? map2D : '') +
 					(s.AudioReactive && s.AudioReactive.on ? "" : sndSim) +
-					`<label style="color: black;" class="check revchkl" id="seg${i}lbtm">`+
+					`<label style="color: black; display: none;" class="check revchkl" id="seg${i}lbtm">`+
 						(isMSeg?'Transpose':'Mirror effect') + (isMSeg ?
 						'<input type="checkbox" id="seg'+i+'tp" onchange="setTp('+i+')" '+(inst.tp?"checked":"")+'>':
 						'<input type="checkbox" id="seg'+i+'mi" onchange="setMi('+i+')" '+(inst.mi?"checked":"")+'>') +
 						`<span class="checkmark"></span>`+
 					`</label>`+
 					`<div class="del">`+
-						`<button class="btn btn-xs" id="segr${i}" title="Repeat until end" onclick="rptSeg(${i})"><i class="icons btn-icon">&#xe22d;</i></button>`+
+						`<button style="display: none;" class="btn btn-xs" id="segr${i}" title="Repeat until end" onclick="rptSeg(${i})"><i class="icons btn-icon">&#xe22d;</i></button>`+
 						`<button class="btn btn-xs" id="segd${i}" title="Delete" onclick="delSeg(${i})"><i class="icons btn-icon">&#xe037;</i></button>`+
 					`</div>`+
 				`</div>`+
@@ -1674,6 +1678,7 @@ var reqsLegal = false;
 function requestJson(command=null)
 {
 	gId('connind').style.backgroundColor = "var(--c-y)";
+	console.log("command && ReqLegal", command, !reqsLegal);
 	if (command && !reqsLegal) return; // stop post requests from chrome onchange event on page restore
 	if (!jsonTimeout) jsonTimeout = setTimeout(()=>{if (ws) ws.close(); ws=null; showErrorToast()}, 3000);
 	var req = null;
@@ -1706,6 +1711,7 @@ function requestJson(command=null)
 		body: req
 	})	
 	.then(res => {
+		console.log("RES ", res);
 		clearTimeout(jsonTimeout);
 		jsonTimeout = null;
 		if (!res.ok) showErrorToast();

@@ -126,7 +126,7 @@ static void setDefaults() {
 		// led_config.channel[0]->selected = true;
 
 		// led_config.channel[i]->mode = LED_MODE_SOLID + i; //:FIXME: Revert back to solid by default
-		led_config.channel[i]->mode = FX_MODE_COLOR_WIPE;
+		led_config.channel[i]->mode = FX_MODE_STATIC;
 		// led_config.channel[i]->mode = FX_MODE_DNA2D;
 
 		led_config.channel[i]->black[0] = led_config.channel[i]->black[1] =
@@ -146,7 +146,7 @@ static void setDefaults() {
 
 		led_config.channel[i]->options = 0;
 
-		led_config.channel[i]->color[0] = 0xFF0000;
+		led_config.channel[i]->color[0] = 0xFFFF00;
 		led_config.channel[i]->color[1] = 0x00FF00;
 		led_config.channel[i]->color[2] = 0x0000FF;
 
@@ -154,7 +154,7 @@ static void setDefaults() {
 		led_config.channel[i]->color_buffer[1] = led_config.channel[i]->color[1];
 		led_config.channel[i]->color_buffer[2] = led_config.channel[i]->color[2];
 
-		led_config.channel[i]->brightness = 1;
+		led_config.channel[i]->brightness = 0.5;
 
 		led_config.channel[i]->palette = DEFAULT_PALETTE;
 
@@ -931,8 +931,8 @@ void config_set_channels(uint8_t seg_id) {
 	// led_config.channels = seg_id < led_config.channels ? led_config.channels : seg_id+1;
 	led_config.channel[led_config.channels] = (struct LED_CONFIG_CHANNEL*)calloc(1,sizeof(struct LED_CONFIG_CHANNEL));
 	led_config.channel[led_config.channels]->segment_id = seg_id;
-	led_config.channel[led_config.channels]->selected = false;
-	led_config.channel[led_config.channels]->mode = FX_MODE_SOLID;
+	led_config.channel[led_config.channels]->selected = true;
+	led_config.channel[led_config.channels]->mode = FX_MODE_STATIC;
 	led_config.channel[led_config.channels]->speed = 1000;
 
 	led_config.channel[led_config.channels]->black[0] = led_config.channel[led_config.channels]->black[1] =
@@ -943,7 +943,7 @@ void config_set_channels(uint8_t seg_id) {
 
 	led_config.channel[led_config.channels]->options = 0;
 
-	led_config.channel[led_config.channels]->color[0] = 0xFF0000;
+	led_config.channel[led_config.channels]->color[0] = 0xFFFF00;
 	led_config.channel[led_config.channels]->color[1] = 0x00FF00;
 	led_config.channel[led_config.channels]->color[2] = 0x0000FF;
 
@@ -951,7 +951,7 @@ void config_set_channels(uint8_t seg_id) {
 	led_config.channel[led_config.channels]->color_buffer[1] = led_config.channel[led_config.channels]->color[1];
 	led_config.channel[led_config.channels]->color_buffer[2] = led_config.channel[led_config.channels]->color[2];
 
-	led_config.channel[led_config.channels]->brightness = 1;
+	led_config.channel[led_config.channels]->brightness = 0.5;
 
 	led_config.channel[led_config.channels]->palette = DEFAULT_PALETTE; 
 	led_config.channels++;
@@ -1051,36 +1051,39 @@ char* json_update_config()
 
 	for(size_t seg_index = 0; seg_index < led_config.channels; seg_index++)
 	{
-		// Create and add a "seg" object within the array
-		cJSON *seg_object = cJSON_CreateObject();
-		cJSON_AddItemToArray(seg_array, seg_object);
+		if(MYLED)
+		{
+			// Create and add a "seg" object within the array
+			cJSON *seg_object = cJSON_CreateObject();
+			cJSON_AddItemToArray(seg_array, seg_object);
 
-		// Add properties to the "seg" object
-		cJSON_AddNumberToObject(seg_object, "id", MYLED->segment_id);
-		cJSON_AddNumberToObject(seg_object, "start", MYLED->start);
-		cJSON_AddNumberToObject(seg_object, "stop", MYLED->stop);
+			// Add properties to the "seg" object
+			cJSON_AddNumberToObject(seg_object, "id", MYLED->segment_id);
+			cJSON_AddNumberToObject(seg_object, "start", MYLED->start);
+			cJSON_AddNumberToObject(seg_object, "stop", MYLED->stop);
 
-		// Create and add "col" array to "seg" object
-		cJSON *col_array = cJSON_CreateArray();
-		cJSON_AddItemToObject(seg_object, "col", col_array);
+			// Create and add "col" array to "seg" object
+			cJSON *col_array = cJSON_CreateArray();
+			cJSON_AddItemToObject(seg_object, "col", col_array);
 
-		// Add individual arrays to "col" array
-		cJSON *col_element_1 = cJSON_CreateIntArray((int[]){(MYCOLOR(0) & 0xFF0000) >> 16, (MYCOLOR(0) & 0x00FF00) >> 8, (MYCOLOR(0) & 0x0000FF) >> 0, 0}, 4);
-		cJSON *col_element_2 = cJSON_CreateIntArray((int[]){(MYCOLOR(1) & 0xFF0000) >> 16, (MYCOLOR(1) & 0x00FF00) >> 8, (MYCOLOR(1) & 0x0000FF) >> 0, 0}, 4);
-		cJSON *col_element_3 = cJSON_CreateIntArray((int[]){(MYCOLOR(2) & 0xFF0000) >> 16, (MYCOLOR(2) & 0x00FF00) >> 8, (MYCOLOR(2) & 0x0000FF) >> 0, 0}, 4);
+			// Add individual arrays to "col" array
+			cJSON *col_element_1 = cJSON_CreateIntArray((int[]){(MYCOLOR(0) & 0xFF0000) >> 16, (MYCOLOR(0) & 0x00FF00) >> 8, (MYCOLOR(0) & 0x0000FF) >> 0, 0}, 4);
+			cJSON *col_element_2 = cJSON_CreateIntArray((int[]){(MYCOLOR(1) & 0xFF0000) >> 16, (MYCOLOR(1) & 0x00FF00) >> 8, (MYCOLOR(1) & 0x0000FF) >> 0, 0}, 4);
+			cJSON *col_element_3 = cJSON_CreateIntArray((int[]){(MYCOLOR(2) & 0xFF0000) >> 16, (MYCOLOR(2) & 0x00FF00) >> 8, (MYCOLOR(2) & 0x0000FF) >> 0, 0}, 4);
 
-		cJSON_AddItemToArray(col_array, col_element_1);
-		cJSON_AddItemToArray(col_array, col_element_2);
-		cJSON_AddItemToArray(col_array, col_element_3);
+			cJSON_AddItemToArray(col_array, col_element_1);
+			cJSON_AddItemToArray(col_array, col_element_2);
+			cJSON_AddItemToArray(col_array, col_element_3);
 
-		cJSON_AddNumberToObject(seg_object, "fx", MYLED->mode);
-		cJSON_AddNumberToObject(seg_object, "sx", (uint8_t)((MYLED->speed / 2000.f)*255));
-		cJSON_AddNumberToObject(seg_object, "ix", MYLED->intensity);
-		cJSON_AddNumberToObject(seg_object, "pal", MYLED->palette);
-		cJSON_AddNumberToObject(seg_object, "bri", (MYLED->brightness)* 255);
-		cJSON_AddBoolToObject(seg_object, "sel", MYLED->selected);
-		cJSON_AddBoolToObject(seg_object, "rev", MYLED->options && REVERSE);
-		cJSON_AddBoolToObject(seg_object, "mi", false);
+			cJSON_AddNumberToObject(seg_object, "fx", MYLED->mode);
+			cJSON_AddNumberToObject(seg_object, "sx", (uint8_t)((MYLED->speed / 2000.f)*255));
+			cJSON_AddNumberToObject(seg_object, "ix", MYLED->intensity);
+			cJSON_AddNumberToObject(seg_object, "pal", MYLED->palette);
+			cJSON_AddNumberToObject(seg_object, "bri", (MYLED->brightness)* 255);
+			cJSON_AddBoolToObject(seg_object, "sel", MYLED->selected);
+			cJSON_AddBoolToObject(seg_object, "rev", MYLED->options && REVERSE);
+			cJSON_AddBoolToObject(seg_object, "mi", false);
+		}
 	}
     
     // Create and add "info" object

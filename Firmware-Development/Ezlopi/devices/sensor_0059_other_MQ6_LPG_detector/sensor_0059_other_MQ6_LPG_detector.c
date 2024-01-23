@@ -1,44 +1,41 @@
+#include "math.h"
 #include "trace.h"
 #include "cJSON.h"
-#include "ezlopi_actions.h"
-#include "ezlopi_timer.h"
 #include "items.h"
-#include "math.h"
-#include "stdbool.h"
 #include "string.h"
+#include "stdbool.h"
 
 #include "ezlopi_adc.h"
+#include "ezlopi_timer.h"
+#include "ezlopi_actions.h"
 #include "ezlopi_devices_list.h"
-#include "ezlopi_device_value_updated.h"
-#include "ezlopi_cloud_category_str.h"
-#include "ezlopi_cloud_subcategory_str.h"
-#include "ezlopi_item_name_str.h"
-#include "ezlopi_cloud_device_types_str.h"
-#include "ezlopi_cloud_value_type_str.h"
-#include "ezlopi_cloud_scales_str.h"
+#include "ezlopi_cjson_macros.h"
 #include "ezlopi_valueformatter.h"
+#include "ezlopi_cloud_constants.h"
+#include "ezlopi_device_value_updated.h"
 
 #include "sensor_0059_other_MQ6_LPG_detector.h"
 
 //*************************************************************************
 //                          Declaration
 //*************************************************************************
-
+#warning "use of static variable"
 static bool Calibration_complete_LPG = false; // flag to activate calibration phase
-const char *mq6_sensor_gas_alarm_token[] =
-    {
-        "no_gas",
-        "combustible_gas_detected",
-        "toxic_gas_detected",
-        "unknown"};
+const char *mq6_sensor_gas_alarm_token[] = {
+    "no_gas",
+    "combustible_gas_detected",
+    "toxic_gas_detected",
+    "unknown",
+};
 //--------------------------------------------------------------------------------------------------------
 static int __0059_prepare(void *arg);
 static int __0059_init(l_ezlopi_item_t *item);
 static int __0059_get_item(l_ezlopi_item_t *item, void *arg);
 static int __0059_get_cjson_value(l_ezlopi_item_t *item, void *arg);
 static int __0059_notify(l_ezlopi_item_t *item);
-static float Extract_MQ6_sensor_ppm(l_ezlopi_item_t *item);
-void Calibrate_MQ6_R0_resistance(void *params);
+
+static float __extract_MQ6_sensor_ppm(l_ezlopi_item_t *item);
+static void __calibrate_MQ6_R0_resistance(void *params);
 static void __prepare_device_digi_cloud_properties(l_ezlopi_device_t *device, cJSON *cj_device);
 static void __prepare_item_digi_cloud_properties(l_ezlopi_item_t *item, cJSON *cj_device);
 static void __prepare_device_adc_cloud_properties(l_ezlopi_device_t *device, cJSON *cj_device);
@@ -94,13 +91,14 @@ static int __0059_prepare(void *arg)
     if (device_prep_arg && (NULL != device_prep_arg->cjson_device))
     {
         //---------------------------  DIGI - DEVICE 1 --------------------------------------------
-        l_ezlopi_device_t *MQ6_device_digi = ezlopi_device_add_device();
+        l_ezlopi_device_t *MQ6_device_digi = ezlopi_device_add_device(device_prep_arg->cjson_device);
         if (MQ6_device_digi)
         {
             __prepare_device_digi_cloud_properties(MQ6_device_digi, device_prep_arg->cjson_device);
             l_ezlopi_item_t *MQ6_item_digi = ezlopi_device_add_item_to_device(MQ6_device_digi, sensor_0059_other_MQ6_LPG_detector);
             if (MQ6_item_digi)
             {
+                MQ6_item_digi->cloud_properties.device_id = MQ6_device_digi->cloud_properties.device_id;
                 __prepare_item_digi_cloud_properties(MQ6_item_digi, device_prep_arg->cjson_device);
             }
             else
@@ -108,23 +106,20 @@ static int __0059_prepare(void *arg)
                 ezlopi_device_free_device(MQ6_device_digi);
             }
         }
-        else
-        {
-            ezlopi_device_free_device(MQ6_device_digi);
-        }
 
         //---------------------------- ADC - DEVICE 2 -------------------------------------------
         mq6_value_t *MQ6_value = (mq6_value_t *)malloc(sizeof(mq6_value_t));
         if (NULL != MQ6_value)
         {
             memset(MQ6_value, 0, sizeof(mq6_value_t));
-            l_ezlopi_device_t *MQ6_device_adc = ezlopi_device_add_device();
+            l_ezlopi_device_t *MQ6_device_adc = ezlopi_device_add_device(device_prep_arg->cjson_device);
             if (MQ6_device_adc)
             {
                 __prepare_device_adc_cloud_properties(MQ6_device_adc, device_prep_arg->cjson_device);
                 l_ezlopi_item_t *MQ6_item_adc = ezlopi_device_add_item_to_device(MQ6_device_adc, sensor_0059_other_MQ6_LPG_detector);
                 if (MQ6_item_adc)
                 {
+                    MQ6_item_adc->cloud_properties.device_id = MQ6_device_adc->cloud_properties.device_id;
                     __prepare_item_adc_cloud_properties(MQ6_item_adc, device_prep_arg->cjson_device, MQ6_value);
                 }
                 else
@@ -135,7 +130,6 @@ static int __0059_prepare(void *arg)
             }
             else
             {
-                ezlopi_device_free_device(MQ6_device_adc);
                 free(MQ6_value);
             }
             ret = 1;
@@ -168,7 +162,7 @@ static int __0059_init(l_ezlopi_item_t *item)
             // calibrate if not done
             if (!Calibration_complete_LPG)
             {
-                xTaskCreate(Calibrate_MQ6_R0_resistance, "Task_to_calculate_R0_air", 2048, item, 1, NULL);
+                xTaskCreate(__calibrate_MQ6_R0_resistance, "Task_to_calculate_R0_air", 2048, item, 1, NULL);
             }
             ret = 2;
         }
@@ -179,13 +173,16 @@ static int __0059_init(l_ezlopi_item_t *item)
 //------------------------------------------------------------------------------------------------------
 static void __prepare_device_digi_cloud_properties(l_ezlopi_device_t *device, cJSON *cj_device)
 {
-    char *device_name = NULL;
-    CJSON_GET_VALUE_STRING(cj_device, "dev_name", device_name);
-    ASSIGN_DEVICE_NAME_V2(device, device_name);
+    // char *device_name = NULL;
+    // CJSON_GET_VALUE_STRING(cj_device, ezlopi_dev_name_str, device_name);
+    // ASSIGN_DEVICE_NAME_V2(device, device_name);
+    // device->cloud_properties.device_id = ezlopi_cloud_generate_device_id();
+
     device->cloud_properties.category = category_security_sensor;
     device->cloud_properties.subcategory = subcategory_gas;
     device->cloud_properties.device_type = dev_type_sensor;
-    device->cloud_properties.device_id = ezlopi_cloud_generate_device_id();
+    device->cloud_properties.info = NULL;
+    device->cloud_properties.device_type_id = NULL;
 }
 static void __prepare_item_digi_cloud_properties(l_ezlopi_item_t *item, cJSON *cj_device)
 {
@@ -197,20 +194,23 @@ static void __prepare_item_digi_cloud_properties(l_ezlopi_item_t *item, cJSON *c
     item->cloud_properties.scale = NULL;
     item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
 
-    CJSON_GET_VALUE_INT(cj_device, "dev_type", item->interface_type); // _max = 10
-    CJSON_GET_VALUE_INT(cj_device, "gpio1", item->interface.gpio.gpio_in.gpio_num);
+    CJSON_GET_VALUE_INT(cj_device, ezlopi_dev_type_str, item->interface_type); // _max = 10
+    CJSON_GET_VALUE_INT(cj_device, ezlopi_gpio1_str, item->interface.gpio.gpio_in.gpio_num);
     TRACE_I("MQ6-> DIGITAL_PIN: %d ", item->interface.gpio.gpio_in.gpio_num);
 }
 //------------------------------------------------------------------------------------------------------
 static void __prepare_device_adc_cloud_properties(l_ezlopi_device_t *device, cJSON *cj_device)
 {
-    char *device_name = NULL;
-    CJSON_GET_VALUE_STRING(cj_device, "dev_name", device_name);
-    ASSIGN_DEVICE_NAME_V2(device, device_name);
+    // char *device_name = NULL;
+    // CJSON_GET_VALUE_STRING(cj_device, ezlopi_dev_name_str, device_name);
+    // ASSIGN_DEVICE_NAME_V2(device, device_name);
+    // device->cloud_properties.device_id = ezlopi_cloud_generate_device_id();
+
     device->cloud_properties.category = category_level_sensor;
     device->cloud_properties.subcategory = subcategory_not_defined;
     device->cloud_properties.device_type = dev_type_sensor;
-    device->cloud_properties.device_id = ezlopi_cloud_generate_device_id();
+    device->cloud_properties.info = NULL;
+    device->cloud_properties.device_type_id = NULL;
 }
 static void __prepare_item_adc_cloud_properties(l_ezlopi_item_t *item, cJSON *cj_device, void *user_data)
 {
@@ -222,8 +222,8 @@ static void __prepare_item_adc_cloud_properties(l_ezlopi_item_t *item, cJSON *cj
     item->cloud_properties.scale = scales_parts_per_million;
     item->cloud_properties.item_id = ezlopi_cloud_generate_item_id();
 
-    CJSON_GET_VALUE_INT(cj_device, "dev_type", item->interface_type); // _max = 10
-    CJSON_GET_VALUE_INT(cj_device, "gpio2", item->interface.adc.gpio_num);
+    CJSON_GET_VALUE_INT(cj_device, ezlopi_dev_type_str, item->interface_type); // _max = 10
+    CJSON_GET_VALUE_INT(cj_device, ezlopi_gpio2_str, item->interface.adc.gpio_num);
     TRACE_I("MQ6-> ADC_PIN: %d ", item->interface.adc.gpio_num);
     item->interface.adc.resln_bit = 3; // ADC 12_bit
 
@@ -254,18 +254,18 @@ static int __0059_get_item(l_ezlopi_item_t *item, void *arg)
                             cJSON_AddItemToArray(json_array_enum, json_value);
                         }
                     }
-                    cJSON_AddItemToObject(cj_result, "enum", json_array_enum);
+                    cJSON_AddItemToObject(cj_result, ezlopi_enum_str, json_array_enum);
                 }
                 //--------------------------------------------------------------------------------------
-                cJSON_AddStringToObject(cj_result, "valueFormatted", (char *)item->user_arg ? item->user_arg : "no_gas");
-                cJSON_AddStringToObject(cj_result, "value", (char *)item->user_arg ? item->user_arg : "no_gas");
+                cJSON_AddStringToObject(cj_result, ezlopi_valueFormatted_str, (char *)item->user_arg ? item->user_arg : "no_gas");
+                cJSON_AddStringToObject(cj_result, ezlopi_value_str, (char *)item->user_arg ? item->user_arg : "no_gas");
             }
             if (ezlopi_item_name_smoke_density == item->cloud_properties.item_name)
             {
                 mq6_value_t *MQ6_value = ((mq6_value_t *)item->user_arg);
                 char *valueFormatted = ezlopi_valueformatter_float(MQ6_value->_LPG_ppm);
-                cJSON_AddStringToObject(cj_result, "valueFormatted", valueFormatted);
-                cJSON_AddNumberToObject(cj_result, "value", MQ6_value->_LPG_ppm);
+                cJSON_AddStringToObject(cj_result, ezlopi_valueFormatted_str, valueFormatted);
+                cJSON_AddNumberToObject(cj_result, ezlopi_value_str, MQ6_value->_LPG_ppm);
                 free(valueFormatted);
             }
             ret = 1;
@@ -284,15 +284,15 @@ static int __0059_get_cjson_value(l_ezlopi_item_t *item, void *arg)
         {
             if (ezlopi_item_name_gas_alarm == item->cloud_properties.item_name)
             {
-                cJSON_AddStringToObject(cj_result, "valueFormatted", (char *)item->user_arg ? item->user_arg : "no_gas");
-                cJSON_AddStringToObject(cj_result, "value", (char *)item->user_arg ? item->user_arg : "no_gas");
+                cJSON_AddStringToObject(cj_result, ezlopi_valueFormatted_str, (char *)item->user_arg ? item->user_arg : "no_gas");
+                cJSON_AddStringToObject(cj_result, ezlopi_value_str, (char *)item->user_arg ? item->user_arg : "no_gas");
             }
             if (ezlopi_item_name_smoke_density == item->cloud_properties.item_name)
             {
                 mq6_value_t *MQ6_value = ((mq6_value_t *)item->user_arg);
                 char *valueFormatted = ezlopi_valueformatter_float(MQ6_value->_LPG_ppm);
-                cJSON_AddStringToObject(cj_result, "valueFormatted", valueFormatted);
-                cJSON_AddNumberToObject(cj_result, "value", MQ6_value->_LPG_ppm);
+                cJSON_AddStringToObject(cj_result, ezlopi_valueFormatted_str, valueFormatted);
+                cJSON_AddNumberToObject(cj_result, ezlopi_value_str, MQ6_value->_LPG_ppm);
                 free(valueFormatted);
             }
             ret = 1;
@@ -308,7 +308,7 @@ static int __0059_notify(l_ezlopi_item_t *item)
     {
         if (ezlopi_item_name_gas_alarm == item->cloud_properties.item_name)
         {
-            char *curret_value = NULL;
+            const char *curret_value = NULL;
             if (0 == gpio_get_level(item->interface.gpio.gpio_in.gpio_num)) // when D0 -> 0V,
             {
                 // curret_value = "combustible_gas_detected";
@@ -328,12 +328,12 @@ static int __0059_notify(l_ezlopi_item_t *item)
         if (ezlopi_item_name_smoke_density == item->cloud_properties.item_name)
         {
             // extract the sensor_output_values
-            double new_value = (double)Extract_MQ6_sensor_ppm(item);
+            double new_value = (double)__extract_MQ6_sensor_ppm(item);
             mq6_value_t *MQ6_value = (mq6_value_t *)item->user_arg;
             if (fabs((double)(MQ6_value->_LPG_ppm) - new_value) > 0.0001)
             {
-                ezlopi_device_value_updated_from_device_v3(item);
                 MQ6_value->_LPG_ppm = (float)new_value;
+                ezlopi_device_value_updated_from_device_v3(item);
             }
         }
         ret = 1;
@@ -341,7 +341,7 @@ static int __0059_notify(l_ezlopi_item_t *item)
     return ret;
 }
 //------------------------------------------------------------------------------------------------------
-static float Extract_MQ6_sensor_ppm(l_ezlopi_item_t *item)
+static float __extract_MQ6_sensor_ppm(l_ezlopi_item_t *item)
 {
     uint32_t mq6_adc_pin = item->interface.adc.gpio_num;
     mq6_value_t *MQ6_value = (mq6_value_t *)item->user_arg;
@@ -388,7 +388,7 @@ static float Extract_MQ6_sensor_ppm(l_ezlopi_item_t *item)
     return _LPG_ppm;
 }
 
-void Calibrate_MQ6_R0_resistance(void *params)
+static void __calibrate_MQ6_R0_resistance(void *params)
 {
     l_ezlopi_item_t *item = (l_ezlopi_item_t *)params;
     if (NULL != item)
@@ -427,8 +427,7 @@ void Calibrate_MQ6_R0_resistance(void *params)
         //-------------------------------------------------
         // Calculate the 'Rs' of heater during clean air [calibration phase]
         // Range -> [2Kohm - 20Kohm]
-        float RS_calib = 0;                                                                               // Define variable for sensor resistance
-        RS_calib = ((MQ6_VOLT_RESOLUTION_Vc * mq6_eqv_RL) / (_sensor_volt / 1000.0f)) - mq6_eqv_RL; // Calculate RS in fresh air
+        float RS_calib = ((MQ6_VOLT_RESOLUTION_Vc * mq6_eqv_RL) / (_sensor_volt / 1000.0f)) - mq6_eqv_RL; // Calculate RS in fresh air
         TRACE_E("CALIB_TASK -> 'RS_calib' = %.2f", RS_calib);
         if (RS_calib < 0)
         {

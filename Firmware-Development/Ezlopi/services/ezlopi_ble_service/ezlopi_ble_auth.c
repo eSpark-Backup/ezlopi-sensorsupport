@@ -38,12 +38,12 @@ e_auth_status_t ezlopi_ble_auth_check_user_id(char *user_id)
 
     if (NULL != stored_user_id)
     {
-        TRACE_D("here");
         if (user_id)
         {
-            TRACE_D("stored_user_id: %s, user_id:%s", stored_user_id, user_id);
+            TRACE_D("stored_user_id: %s, user_id: %s", stored_user_id, user_id);
             if (0 == strncmp(stored_user_id, user_id, strlen(stored_user_id)))
             {
+                TRACE_I("Authenticated.");
                 sg_last_auth_status = BLE_AUTH_SUCCESS;
             }
             else
@@ -56,7 +56,9 @@ e_auth_status_t ezlopi_ble_auth_check_user_id(char *user_id)
     }
     else
     {
-        sg_last_auth_status = BLE_AUTH_USER_ID_NOT_FOUND;
+        ezlopi_nvs_write_user_id_str(user_id);
+        // sg_last_auth_status = BLE_AUTH_USER_ID_NOT_FOUND;
+        sg_last_auth_status = BLE_AUTH_SUCCESS;
     }
 
     return sg_last_auth_status;

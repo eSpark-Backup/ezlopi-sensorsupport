@@ -1,23 +1,21 @@
-
-
-idf_component_register(SRCS "item_prepare.c" "get_cjson_value.c" "device_0068_other_addressable_RGB.c"
-                            "set_cjson_value.c"
+idf_component_register(SRCS "device_0068_other_addressable_RGB.c" 
                         INCLUDE_DIRS "."
-                        REQUIRES trace 
-                        led_strip
-                        ezlopi_actions 
-                        ezlopi_hal 
-                        ezlopi_timer 
-                        ezlopi_devices 
-                        ezlopi_cloud_constants 
-                        ezlopi_valueformatter
-                        gpio_isr_service
-                        ezlopi_wifi
+                        REQUIRES    
+                            # trace 
+                            # led_strip
+                            ezlopi_actions 
+                            # ezlopi_hal 
+                            # ezlopi_timer 
+                            ezlopi_devices 
+                            # ezlopi_cloud_constants 
+                            # ezlopi_valueformatter
+                            # gpio_isr_service
+                            # ezlopi_wifi
 
-                        esp_netif
+                            # esp_netif
 
-                        led
-                        config
-                        led_server
+                            led
+                            config
+                            led_server
                         )
 

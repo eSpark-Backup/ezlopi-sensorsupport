@@ -27,28 +27,6 @@ void devices_list_v3(cJSON *cj_request, cJSON *cj_response)
                 cJSON *cj_properties = ezlopi_device_create_device_table_from_prop(curr_device);
                 if (cj_properties)
                 {
-#if 0
-                     tmp_string[64];
-                    snprintf(tmp_string, sizeof(tmp_string), "%08x", curr_device->cloud_properties.device_id);
-                    cJSON_AddStringToObject(cj_properties, "_id", tmp_string);
-                    cJSON_AddStringToObject(cj_properties, "deviceTypeId", "ezlopi");
-                    cJSON_AddStringToObject(cj_properties, "parentDeviceId", "");
-                    cJSON_AddStringToObject(cj_properties, "category", curr_device->cloud_properties.category);
-                    cJSON_AddStringToObject(cj_properties, "subcategory", curr_device->cloud_properties.subcategory);
-                    cJSON_AddStringToObject(cj_properties, "gatewayId", "");
-                    cJSON_AddBoolToObject(cj_properties, "batteryPowered", false);
-                    cJSON_AddStringToObject(cj_properties, "name", curr_device->cloud_properties.device_name);
-                    cJSON_AddStringToObject(cj_properties, "type", curr_device->cloud_properties.device_type);
-                    cJSON_AddBoolToObject(cj_properties, "reachable", true);
-                    cJSON_AddBoolToObject(cj_properties, "persistent", true);
-                    cJSON_AddBoolToObject(cj_properties, "serviceNotification", false);
-                    cJSON_AddBoolToObject(cj_properties, "armed", false);
-                    cJSON_AddStringToObject(cj_properties, "roomId", "");
-                    cJSON_AddStringToObject(cj_properties, "security", "");
-                    cJSON_AddBoolToObject(cj_properties, "ready", true);
-                    cJSON_AddStringToObject(cj_properties, "status", "synced");
-                    cJSON_AddObjectToObject(cj_properties, "info");
-#endif
                     if (!cJSON_AddItemToArray(cjson_devices_array, cj_properties))
                     {
                         cJSON_Delete(cj_properties);
@@ -69,92 +47,77 @@ void devices_list_v3(cJSON *cj_request, cJSON *cj_response)
     }
 }
 
-#if 0 // v2.x
-void devices_list(cJSON *cj_request, cJSON *cj_response)
+void device_name_set(cJSON *cj_request, cJSON *cj_response)
 {
     cJSON_AddItemReferenceToObject(cj_response, ezlopi_id_str, cJSON_GetObjectItem(cj_request, ezlopi_id_str));
     cJSON_AddItemReferenceToObject(cj_response, ezlopi_key_method_str, cJSON_GetObjectItem(cj_request, ezlopi_key_method_str));
-    cJSON *cjson_result = cJSON_AddObjectToObject(cj_response, ezlopi_result_str);
-    if (cjson_result)
+
+    cJSON *cj_result = cJSON_AddObjectToObject(cj_response, ezlopi_result_str);
+    if (cj_result)
     {
-        cJSON *cjson_devices_array = cJSON_AddArrayToObject(cjson_result, "devices");
-        if (cjson_devices_array)
+        cJSON *cj_params = cJSON_GetObjectItem(cj_request, ezlopi_params_str);
+        if (cj_params)
         {
-            l_ezlopi_configured_devices_t *registered_devices = ezlopi_devices_list_get_configured_items();
-
-            while (NULL != registered_devices)
+            cJSON *cj_device_id = cJSON_GetObjectItem(cj_params, ezlopi__id_str);
+            if (cj_device_id)
             {
-                if (NULL != registered_devices->properties)
+                uint32_t device_id = strtoul(cj_device_id->valuestring, NULL, 16);
+                if (device_id)
                 {
-                    cJSON *cj_properties = cJSON_CreateObject();
-                    if (cj_properties)
-                    {
-                        char tmp_string[64];
-                        snprintf(tmp_string, sizeof(tmp_string), "%08x", registered_devices->properties->ezlopi_cloud.device_id);
-                        cJSON_AddStringToObject(cj_properties, "_id", tmp_string);
-                        cJSON_AddStringToObject(cj_properties, "deviceTypeId", "ezlopi");
-                        cJSON_AddStringToObject(cj_properties, "parentDeviceId", "");
-                        cJSON_AddStringToObject(cj_properties, "category", registered_devices->properties->ezlopi_cloud.category);
-                        cJSON_AddStringToObject(cj_properties, "subcategory", registered_devices->properties->ezlopi_cloud.subcategory);
-                        snprintf(tmp_string, sizeof(tmp_string), "%08x", ezlopi_cloud_generate_gateway_id());
-                        cJSON_AddStringToObject(cj_properties, "gatewayId", tmp_string);
-                        cJSON_AddBoolToObject(cj_properties, "batteryPowered", registered_devices->properties->ezlopi_cloud.battery_powered);
-                        cJSON_AddStringToObject(cj_properties, "name", registered_devices->properties->ezlopi_cloud.device_name);
-                        cJSON_AddStringToObject(cj_properties, "type", registered_devices->properties->ezlopi_cloud.device_type);
-                        cJSON_AddBoolToObject(cj_properties, "reachable", registered_devices->properties->ezlopi_cloud.reachable);
-                        cJSON_AddBoolToObject(cj_properties, "persistent", true);
-                        cJSON_AddBoolToObject(cj_properties, "serviceNotification", false);
-                        cJSON_AddBoolToObject(cj_properties, "armed", false);
-                        cJSON_AddStringToObject(cj_properties, "roomId", "");
-                        cJSON_AddStringToObject(cj_properties, "security", "");
-                        cJSON_AddBoolToObject(cj_properties, "ready", true);
-                        cJSON_AddStringToObject(cj_properties, "status", "synced");
-                        cJSON_AddObjectToObject(cj_properties, "info");
-
-                        if (!cJSON_AddItemToArray(cjson_devices_array, cj_properties))
-                        {
-                            cJSON_Delete(cj_properties);
-                        }
-                    }
+                    ezlopi_device_name_set_by_device_id(device_id, cJSON_GetObjectItem(cj_params, ezlopi_name_str));
                 }
-
-                registered_devices = registered_devices->next;
             }
         }
-        else
+    }
+}
+
+void device_updated(cJSON *cj_request, cJSON *cj_response)
+{
+    if (cj_request)
+    {
+        cJSON_DeleteItemFromObject(cj_response, ezlopi_sender_str);
+        cJSON_DeleteItemFromObject(cj_response, ezlopi_error_str);
+
+        cJSON_AddStringToObject(cj_response, ezlopi_id_str, ezlopi_ui_broadcast_str);
+        cJSON_AddStringToObject(cj_response, ezlopi_msg_subclass_str, "hub.device.updated");
+
+        cJSON *cj_result = cJSON_AddObjectToObject(cj_response, ezlopi_result_str);
+        if (cj_result)
         {
-            TRACE_E("Failed to create devices-array");
+            cJSON *cj_params = cJSON_GetObjectItem(cj_request, ezlopi_params_str);
+            if (cj_params)
+            {
+                cJSON *cj_device_id = cJSON_GetObjectItem(cj_params, ezlopi__id_str);
+                if (cj_device_id && cj_device_id->valuestring)
+                {
+                    uint32_t device_id = strtoul(cj_device_id->valuestring, NULL, 16);
+                    l_ezlopi_device_t *device_node = ezlopi_device_get_head();
+
+                    while (device_node)
+                    {
+                        if (device_id == device_node->cloud_properties.device_id)
+                        {
+                            char tmp_str[32];
+                            snprintf(tmp_str, sizeof(tmp_str), "%08x", device_id);
+                            cJSON_AddStringToObject(cj_result, ezlopi__id_str, tmp_str);
+                            cJSON_AddStringToObject(cj_result, ezlopi_name_str, device_node->cloud_properties.device_name);
+                            cJSON_AddTrueToObject(cj_result, ezlopi_syncNotification_str);
+
+                            s_ezlopi_cloud_controller_t *controller_info = ezlopi_device_get_controller_information();
+
+                            if (controller_info)
+                            {
+                                cJSON_AddBoolToObject(cj_result, ezlopi_armed_str, controller_info->armed ? ezlopi_true_str : ezlopi_false_str);
+                                cJSON_AddBoolToObject(cj_result, ezlopi_serviceNotification_str, controller_info->service_notification ? ezlopi_true_str : ezlopi_false_str);
+                            }
+
+                            break;
+                        }
+
+                        device_node = device_node->next;
+                    }
+                }
+            }
         }
     }
-    else
-    {
-        TRACE_E("Failed to create 'result'");
-    }
 }
-
-char *devices_name_set(const char *payload, uint32_t len, struct json_token *method, uint32_t msg_count)
-{
-    uint32_t buf_len = 300;
-    char *send_buf = (char *)malloc(buf_len);
-
-    if (send_buf)
-    {
-        struct json_token msg_id = JSON_INVALID_TOKEN;
-        struct json_token sender = JSON_INVALID_TOKEN;
-        memset(send_buf, 0, buf_len);
-
-        json_scanf(payload, len, "{id: %T}", &msg_id);
-        json_scanf(payload, len, "{sender: %T}", &sender);
-
-        snprintf(send_buf, buf_len, "{\"method\": \"%.*s\",\"msg_id\":%d,\"error\": null,\"id\": \"%.*s\",\"result\": {},\"sender\":%.*s}",
-                 method->len, method->ptr,
-                 msg_count,
-                 msg_id.len, msg_id.ptr,
-                 sender.len ? sender.len : 2, sender.len ? sender.ptr : "{}");
-
-        TRACE_B(">> WS Tx - '%.*s' [%d]\r\n%s", method->len, method->ptr, strlen(send_buf), send_buf);
-    }
-
-    return send_buf;
-}
-#endif

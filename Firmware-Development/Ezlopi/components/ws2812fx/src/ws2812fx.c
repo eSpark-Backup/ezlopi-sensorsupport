@@ -543,7 +543,7 @@ uint16_t WS2812FX_mode_static(int line) {
     setPixelColor(line, i, COLORFROMPALETTE(i-(SEGMENT->start)));
   }
 
-  return 500;
+  return 100;
 }
 
 #define REVERSE (uint8_t)0x80

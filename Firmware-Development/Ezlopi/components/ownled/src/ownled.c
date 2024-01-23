@@ -200,40 +200,40 @@ static struct
  * settings of different hardware
  */
 
-#define CONFIG_CONTROLLER_LED_LINES 2
+#define CONFIG_CONTROLLER_LED_LINES 1
 #define CONFIG_CONTROLLER_LED_LINE0 16
 #define CONFIG_CONTROLLER_LED_LINE1 32
-static const uint8_t version_gpio[CONFIG_CONTROLLER_LED_LINES] = {CONFIG_CONTROLLER_LED_LINE0
-#if CONFIG_CONTROLLER_LED_LINES >= 2
-																  ,
-																  CONFIG_CONTROLLER_LED_LINE1
-#endif
-#if CONFIG_CONTROLLER_LED_LINES >= 3
-																  ,
-																  CONFIG_CONTROLLER_LED_LINE2
-#endif
-#if CONFIG_CONTROLLER_LED_LINES >= 4
-																  ,
-																  CONFIG_CONTROLLER_LED_LINE3
-#endif
-#if CONFIG_CONTROLLER_LED_LINES >= 5
-																  ,
-																  CONFIG_CONTROLLER_LED_LINE4
-#endif
-#if CONFIG_CONTROLLER_LED_LINES >= 6
-																  ,
-																  CONFIG_CONTROLLER_LED_LINE5
-#endif
-#if CONFIG_CONTROLLER_LED_LINES >= 7
-																  ,
-																  CONFIG_CONTROLLER_LED_LINE6
-#endif
-#if CONFIG_CONTROLLER_LED_LINES >= 8
-																  ,
-																  CONFIG_CONTROLLER_LED_LINE7
-#endif
+// static const uint8_t version_gpio[CONFIG_CONTROLLER_LED_LINES] = {CONFIG_CONTROLLER_LED_LINE0
+// #if CONFIG_CONTROLLER_LED_LINES >= 2
+// 																  ,
+// 																  CONFIG_CONTROLLER_LED_LINE1
+// #endif
+// #if CONFIG_CONTROLLER_LED_LINES >= 3
+// 																  ,
+// 																  CONFIG_CONTROLLER_LED_LINE2
+// #endif
+// #if CONFIG_CONTROLLER_LED_LINES >= 4
+// 																  ,
+// 																  CONFIG_CONTROLLER_LED_LINE3
+// #endif
+// #if CONFIG_CONTROLLER_LED_LINES >= 5
+// 																  ,
+// 																  CONFIG_CONTROLLER_LED_LINE4
+// #endif
+// #if CONFIG_CONTROLLER_LED_LINES >= 6
+// 																  ,
+// 																  CONFIG_CONTROLLER_LED_LINE5
+// #endif
+// #if CONFIG_CONTROLLER_LED_LINES >= 7
+// 																  ,
+// 																  CONFIG_CONTROLLER_LED_LINE6
+// #endif
+// #if CONFIG_CONTROLLER_LED_LINES >= 8
+// 																  ,
+// 																  CONFIG_CONTROLLER_LED_LINE7
+// #endif
 
-};
+// };
 
 /*
  *
@@ -264,7 +264,7 @@ uint8_t ownled_getBlocksize()
 	}
 }
 
-void ownled_init()
+void ownled_init(uint8_t led_gpio)
 {
 
 	if (ownled_getChannels() == 0)
@@ -281,7 +281,7 @@ void ownled_init()
 
 		// rmt_config_t config = {.rmt_mode = RMT_MODE_TX, .channel = lines[i].rmtChannel,
 		// 					   .clk_div = 1, // 80 MHz (APB CLK typical)
-		// 					   .gpio_num = version_gpio[i],
+		// 					   .gpio_num = led_gpio,
 		// 					   .mem_block_num = ownled_getBlocksize(),
 		// 					   .tx_config = {
 		// 						   .loop_en = false,
@@ -296,7 +296,7 @@ void ownled_init()
 		rmt_config_t config = {.rmt_mode = RMT_MODE_TX, 
 								.channel = lines[i].rmtChannel,
 							   	.clk_div = 1, // 80 MHz (APB CLK typical)
-							   	.gpio_num = version_gpio[i],
+							   	.gpio_num = led_gpio,
 							   	.mem_block_num = ownled_getBlocksize(),
 								.flags = 0,
 							   	.tx_config = {
@@ -309,9 +309,9 @@ void ownled_init()
 								   .idle_output_en = true,
 							   }};
 
-		gpio_pad_select_gpio(version_gpio[i]);
-		gpio_set_level(version_gpio[i], 0);
-		gpio_set_direction(version_gpio[i],
+		gpio_pad_select_gpio(led_gpio);
+		gpio_set_level(led_gpio, 0);
+		gpio_set_direction(led_gpio,
 						   GPIO_MODE_OUTPUT);
 
 		ESP_ERROR_CHECK(rmt_config(&config));
@@ -319,7 +319,7 @@ void ownled_init()
 			rmt_set_tx_thr_intr_en(lines[i].rmtChannel, true,
 								   ownled_getBlocksize() * RMT_MEM_ITEM_NUM / 2));
 		ESP_LOGD(TAG, "init %d config %d %p", i,
-				 version_gpio[i],
+				 led_gpio,
 				 &RMT.tx_lim_ch[i]);
 	}
 	vTaskDelay(500/portTICK_PERIOD_MS);

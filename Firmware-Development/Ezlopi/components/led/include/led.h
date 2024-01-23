@@ -177,7 +177,7 @@ struct LED_CONFIG {
   int total_leds;
 };
 
-void led_on();
+void led_on(uint8_t led_gpio);
 void led_off();
 
 int led_get_max_lines();
