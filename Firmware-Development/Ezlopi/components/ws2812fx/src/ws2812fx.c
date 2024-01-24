@@ -936,7 +936,8 @@ uint16_t WS2812FX_mode_fade(int line) {
   fx_segments[line]->counter_mode_step += 8;
   if (fx_segments[line]->counter_mode_step > 511)
     fx_segments[line]->counter_mode_step = 0;
-  return (fx_segments[line]->speed / 128);
+  // return (fx_segments[line]->speed / 128);
+  return 15*(2000/fx_segments[line]->speed);
 }
 
 /*

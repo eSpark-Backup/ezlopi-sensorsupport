@@ -1061,6 +1061,8 @@ char* json_update_config()
 			cJSON_AddNumberToObject(seg_object, "id", MYLED->segment_id);
 			cJSON_AddNumberToObject(seg_object, "start", MYLED->start);
 			cJSON_AddNumberToObject(seg_object, "stop", MYLED->stop);
+			
+			cJSON_AddStringToObject(seg_object, "n", MYLED->segment_name);
 
 			// Create and add "col" array to "seg" object
 			cJSON *col_array = cJSON_CreateArray();
@@ -1099,7 +1101,7 @@ char* json_update_config()
     cJSON_AddItemToObject(info, "leds", leds);
 
     // Add properties to "leds" object
-    cJSON_AddNumberToObject(leds, "count", 100);
+    cJSON_AddNumberToObject(leds, "count", 300);
     cJSON_AddNumberToObject(leds, "pwr", 480);
     cJSON_AddNumberToObject(leds, "fps", 4);
     cJSON_AddNumberToObject(leds, "maxpwr", 850);
@@ -1119,8 +1121,8 @@ char* json_update_config()
     cJSON_AddStringToObject(info, "lm", "");
     cJSON_AddStringToObject(info, "lip", "");
     cJSON_AddNumberToObject(info, "ws", 0);
-    cJSON_AddNumberToObject(info, "fxcount", 187);
-    cJSON_AddNumberToObject(info, "palcount", 71);
+    cJSON_AddNumberToObject(info, "fxcount", FX_MODE_MAX);
+    cJSON_AddNumberToObject(info, "palcount", PALETTE_MAX);
     cJSON_AddNumberToObject(info, "cpalcount", 0);
 
     // Create and add "maps" array to "info" object

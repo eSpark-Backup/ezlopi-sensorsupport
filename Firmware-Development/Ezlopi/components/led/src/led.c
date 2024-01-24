@@ -57,8 +57,16 @@ int led_get_max_lines() {
  * updated with the latest configuration.
  */
 void led_set_config(struct LED_CONFIG *config) {
-	xQueueOverwrite(q, (void *) config);
-	// xQueueSend(q, (void *) config, ( TickType_t ) 10 );
+	// xQueueOverwrite(q, (void *) config);
+	// xQueueSend(q, (void *) config, ( TickType_t ) 0 );
+	if(pdTRUE == xQueueOverwriteFromISR(q, (void *) config, ( TickType_t ) 0 ))
+	// if(pdTRUE == xQueueSendFromISR(q, (void *) config, ( TickType_t ) 0 ))
+	{
+		ESP_LOGI(TAG, "QUEUE SENT SUCCESSFULLY!");
+	}
+	else{
+		ESP_LOGI(TAG, "QUEUE NOT SENT!");
+	};
 	vTaskResume(taskHandle);
 }
 
@@ -587,8 +595,10 @@ static void task(void *args) {
 		/**
 		 * generate LED data
 		 */
-		// if (xQueueReceive(q, &led_config, 0) == pdTRUE) {handleNewConfig();}
-		if (xQueueReceive(q, &led_config, ( TickType_t ) 1) == pdTRUE) {
+		// if (xQueueReceive(q, &led_config, 0) == pdTRUE)
+		if (xQueueReceive(q, &led_config, ( TickType_t ) 10) == pdTRUE) 
+		// if (xQueueReceiveFromISR(q, &led_config, ( TickType_t ) 0) == pdTRUE) 
+		{
 			handleNewConfig(); 
 			ESP_LOGI(TAG, "SEGMENT COUNT = %d", led_config.channels);
 		}
@@ -879,7 +889,7 @@ void led_on(uint8_t led_gpio) {
 				NULL, 
 				tskIDLE_PRIORITY, 
 				&taskHandle, 
-				0
+				1
 			) == pdPASS ? ESP_OK : ESP_FAIL);
 }
 

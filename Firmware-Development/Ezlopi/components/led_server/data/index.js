@@ -302,6 +302,9 @@ function onLoad()
 			});
 		},50);
 	});
+	setTimeout(() => {
+		requestJson();
+	}, 1000);
 	resetUtil();
 
 	d.addEventListener("visibilitychange", handleVisibilityChange, false);
@@ -778,7 +781,7 @@ function populateSegments(s)
 
 		let segp = `<div id="segp${i}" class="sbs">`+
 						`<i class="icons slider-icon pwr ${inst.on ? "act":""}" id="seg${i}pwr" onclick="setSegPwr(${i})">&#xe08f;</i>`+
-						`<div style="background-color:#3e46ae; margin-bottom:4px;" class="sliderwrap il">`+
+						`<div style="background-color:#3e46ae; margin-bottom:4px; border-radius:12px;" class="sliderwrap il">`+
 							`<input id="seg${i}bri" class="noslide" onchange="setSegBri(${i})" oninput="updateTrail(this)" max="255" min="1" type="range" value="${inst.bri}" />`+
 							`<div style="background-image:linear-gradient(90deg, #000, #000); border-radius:10px;"  class="sliderdisplay"></div>`+
 						`</div>`+
@@ -1275,6 +1278,7 @@ function updateUI()
 	if (hasWhite) updateTrail(gId('sliderW'));
 
 	var ccfg = cfg.comp.colors;
+	console.log("has rgb and ccfg", hasRGB ,ccfg)
 	gId('wwrap').style.display   = (hasWhite) ? "block":"none";               // white channel
 	gId('wbal').style.display    = (hasCCT) ? "block":"none";                 // white balance
 	gId('hexw').style.display    = (ccfg.hex) ? "block":"none";               // HEX input
@@ -1458,6 +1462,7 @@ function readState(s,command=false)
 			sellvl = 2;
 			var lc = lastinfo.leds.seglc[s.seg[i].id];
 			hasRGB   |= !!(lc & 0x01);
+			console.log("1 HasRGB |= lc", hasRGB);
 			hasWhite |= !!(lc & 0x02);
 			hasCCT   |= !!(lc & 0x04);
 			let sLen = (s.seg[i].stop - s.seg[i].start)*(s.seg[i].stopY?(s.seg[i].stopY - s.seg[i].startY):1);
@@ -1468,6 +1473,7 @@ function readState(s,command=false)
 	if (sellvl == 1) {
 		var lc = lastinfo.leds.seglc[i.id];
 		hasRGB   = !!(lc & 0x01);
+		console.log("2 HasRGB |= lc", hasRGB);
 		hasWhite = !!(lc & 0x02);
 		hasCCT   = !!(lc & 0x04);
 	}
