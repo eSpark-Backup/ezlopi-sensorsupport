@@ -386,5 +386,5 @@ ui-qt/debug/*
 !led_test_bin/bootloader.bin
 !led_test_bin/partition-table.bin
 !led_test_bin/ota_data_initial.bin
-!led_test_bin/Ezlopiv3.bin
+!led_test_bin/Ezlo_Pi_v3x.bin
 !led_test_bin/102000779.bin
