@@ -263,10 +263,10 @@ void config_set_segment_brightness(uint8_t brightness, uint8_t segment_index)
 {
 	float brightness_float = (	((float)(brightness) * led_config.strip_birghtness_multiplier)/(255.f));
 	ESP_LOGI(TAG, "BRIGHTNESS with Multiplier SET TO : %f", brightness_float);
-	led_config.channel[segment_index]->user_brightness = brightness;
 	
 	for (int i = 0; i < config_get_channels(); i++) {
 		if(led_config.channel[i] != NULL && led_config.channel[i]->segment_id == segment_index){
+				led_config.channel[i]->user_brightness = brightness;
 				ESP_LOGI(TAG, "BRIGHTNESS SET TO : %f", brightness_float);
 				led_config.channel[i]->prev_brightness = led_config.channel[i]->brightness;
 				led_config.channel[i]->brightness = brightness_float;
@@ -292,12 +292,12 @@ void config_switch(bool flag) //TODO:
 }
 
 void config_set_brightness(uint8_t bri){
-	
+
 	led_config.strip_birghtness_multiplier = (float)bri/255.F;
 	// float p_multiplier_float = ((float)led_config.strip_birghtness_multiplier/(255.F));
 	for(size_t i = 0; i < led_config.channels; i++)
 	{
-		config_set_segment_brightness(led_config.channel[i]->user_brightness, i);
+		config_set_segment_brightness(led_config.channel[i]->user_brightness, led_config.channel[i]->segment_id);
 	}
 	// led_set_config(&led_config);
 }
@@ -962,6 +962,14 @@ void config_set_channels(uint8_t seg_id) {
 
 void config_reduce_segment(){
 	led_config.channels--;
+
+	if(led_config.channels == 1)
+	{
+		led_config.channel[0]->user_brightness = 255;
+	}
+
+	led_set_config(&led_config);
+
 }
 
 uint8_t config_get_prefix_leds() {
