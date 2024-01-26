@@ -161,6 +161,7 @@ struct LED_CONFIG_CHANNEL {
   uint8_t palette;
 
   char *segment_name;
+  uint8_t user_brightness;
   uint32_t color_buffer[3];
   float brightness;
   float prev_brightness;
@@ -168,6 +169,7 @@ struct LED_CONFIG_CHANNEL {
 
 struct LED_CONFIG {
   int16_t refresh_rate;
+  float strip_birghtness_multiplier;
   uint8_t channels;
   uint8_t prefix_leds;
   struct LED_CONFIG_CHANNEL* channel[MAX_SEGMENTS];

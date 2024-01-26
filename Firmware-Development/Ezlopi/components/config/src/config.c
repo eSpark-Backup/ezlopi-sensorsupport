@@ -112,6 +112,7 @@ static void setDefaults() {
 	led_config.prefix_leds = 0;
 	led_config.refresh_rate = 20.;
 	led_config.total_leds = 300;
+	led_config.strip_birghtness_multiplier = 0.5;
 	ESP_LOGI(TAG, "CHANNELS ACTIVE : %d", config_get_channels());
 	for (int i = 0; i < config_get_channels(); i++) {
 	//allocate memory for a segment
@@ -154,7 +155,9 @@ static void setDefaults() {
 		led_config.channel[i]->color_buffer[1] = led_config.channel[i]->color[1];
 		led_config.channel[i]->color_buffer[2] = led_config.channel[i]->color[2];
 
-		led_config.channel[i]->brightness = 0.5;
+		led_config.channel[i]->user_brightness = 255;
+		led_config.channel[i]->brightness = 1;
+		led_config.channel[i]->prev_brightness = 1;
 
 		led_config.channel[i]->palette = DEFAULT_PALETTE;
 
@@ -167,7 +170,6 @@ static void setDefaults() {
 
 	config_coloring_defaults();
 	ownled_setColorOrder(OWNLED_GRB);
-	// config_set_brightness(50);
 
 	led_config.artnet_universe_offset = 0;
 	led_config.artnet_width = 512 / 3;
@@ -259,7 +261,9 @@ uint32_t *config_read_color(uint8_t id)
 
 void config_set_segment_brightness(uint8_t brightness, uint8_t segment_index)
 {
-	float brightness_float = ((float)(brightness)/(255.f));
+	float brightness_float = (	((float)(brightness) * led_config.strip_birghtness_multiplier)/(255.f));
+	ESP_LOGI(TAG, "BRIGHTNESS with Multiplier SET TO : %f", brightness_float);
+	led_config.channel[segment_index]->user_brightness = brightness;
 	
 	for (int i = 0; i < config_get_channels(); i++) {
 		if(led_config.channel[i] != NULL && led_config.channel[i]->segment_id == segment_index){
@@ -289,16 +293,13 @@ void config_switch(bool flag) //TODO:
 
 void config_set_brightness(uint8_t bri){
 	
-	float fBri = 0;
-	fBri = (bri/255.f);
-	
-	led_coloring.brightness = fBri;
-	for(int i = 0; i < led_config.channels; i++){
-		if((NULL != led_config.channel[i])){
-			led_config.channel[i]->brightness = fBri;
-		}
+	led_config.strip_birghtness_multiplier = (float)bri/255.F;
+	// float p_multiplier_float = ((float)led_config.strip_birghtness_multiplier/(255.F));
+	for(size_t i = 0; i < led_config.channels; i++)
+	{
+		config_set_segment_brightness(led_config.channel[i]->user_brightness, i);
 	}
-	led_set_config(&led_config);
+	// led_set_config(&led_config);
 }
 
 void config_set_selected_flag(int id, bool select_flag){
@@ -951,7 +952,9 @@ void config_set_channels(uint8_t seg_id) {
 	led_config.channel[led_config.channels]->color_buffer[1] = led_config.channel[led_config.channels]->color[1];
 	led_config.channel[led_config.channels]->color_buffer[2] = led_config.channel[led_config.channels]->color[2];
 
-	led_config.channel[led_config.channels]->brightness = 0.5;
+	led_config.channel[led_config.channels]->user_brightness = 255;
+	led_config.channel[led_config.channels]->brightness = 1;
+	led_config.channel[led_config.channels]->prev_brightness= 1;
 
 	led_config.channel[led_config.channels]->palette = DEFAULT_PALETTE; 
 	led_config.channels++;
@@ -1021,7 +1024,7 @@ char* json_update_config()
 
     // Add properties to "state" object
     cJSON_AddBoolToObject(state, "on", true);
-    cJSON_AddNumberToObject(state, "bri", (led_config.channel[0]->brightness)* 255);
+    cJSON_AddNumberToObject(state, "bri", (uint8_t)((led_config.strip_birghtness_multiplier * 255.F)));
     cJSON_AddNumberToObject(state, "transition", 7);
 
     // Create and add "nl" object
@@ -1081,7 +1084,7 @@ char* json_update_config()
 			cJSON_AddNumberToObject(seg_object, "sx", (uint8_t)((MYLED->speed / 2000.f)*255));
 			cJSON_AddNumberToObject(seg_object, "ix", MYLED->intensity);
 			cJSON_AddNumberToObject(seg_object, "pal", MYLED->palette);
-			cJSON_AddNumberToObject(seg_object, "bri", (MYLED->brightness)* 255);
+			cJSON_AddNumberToObject(seg_object, "bri", (MYLED->user_brightness));
 			cJSON_AddBoolToObject(seg_object, "sel", MYLED->selected);
 			cJSON_AddBoolToObject(seg_object, "rev", MYLED->options && REVERSE);
 			cJSON_AddBoolToObject(seg_object, "mi", false);
