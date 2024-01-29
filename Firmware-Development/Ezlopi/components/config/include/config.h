@@ -83,6 +83,8 @@ uint16_t config_get_artnet_universe_offset();
 uint8_t config_get_channels();
 void config_set_channels(uint8_t seg_id);
 void config_reduce_segment();
+void config_set_group(int id, int set_number);
+void config_set_segment_on_status(int id, bool on_status);
 
 // const char *config_get_compile_date();
 // const char *config_get_version();

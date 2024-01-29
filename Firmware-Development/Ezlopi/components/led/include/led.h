@@ -165,6 +165,9 @@ struct LED_CONFIG_CHANNEL {
   uint32_t color_buffer[3];
   float brightness;
   float prev_brightness;
+
+  uint8_t group_set;
+  bool is_on;
 };
 
 struct LED_CONFIG {

@@ -141,6 +141,16 @@ void parse_json(char* start){
 
         cJSON* id = cJSON_GetObjectItemCaseSensitive(seg, "id");
         if(id != NULL){
+            cJSON* on = cJSON_GetObjectItemCaseSensitive(seg, "on");
+            if(on != NULL)            
+            {
+                config_set_segment_on_status(id->valueint, cJSON_IsTrue(on));
+            }
+            cJSON* set = cJSON_GetObjectItemCaseSensitive(seg, "set");
+            if(set != NULL)
+            {
+                config_set_group(id->valueint, set->valueint);
+            }
             // Get "id" and "bri" values from "seg" object
             cJSON *bri = cJSON_GetObjectItem(seg, "bri");
 

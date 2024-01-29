@@ -116,7 +116,7 @@ static void setDefaults() {
 	ESP_LOGI(TAG, "CHANNELS ACTIVE : %d", config_get_channels());
 	for (int i = 0; i < config_get_channels(); i++) {
 	//allocate memory for a segment
-	led_config.channel[i] = (struct LED_CONFIG_CHANNEL*)malloc(sizeof(struct LED_CONFIG_CHANNEL));
+		led_config.channel[i] = (struct LED_CONFIG_CHANNEL*)malloc(sizeof(struct LED_CONFIG_CHANNEL));
 
 		// led_config.channel[i]->sx = led_config.channel[i].sy = 6;
 		// led_config.channel[i]->ox = led_config.channel[i].oy = 0;
@@ -165,7 +165,7 @@ static void setDefaults() {
 		led_config.channel[i]->sy = 10;
 		led_config.channel[i]->orientation = LED_ORI0_MEANDER;
 
-
+		led_config.channel[i]->group_set = 0;
 	}
 
 	config_coloring_defaults();
@@ -265,7 +265,7 @@ void config_set_segment_brightness(uint8_t brightness, uint8_t segment_index)
 	ESP_LOGI(TAG, "BRIGHTNESS with Multiplier SET TO : %f", brightness_float);
 	
 	for (int i = 0; i < config_get_channels(); i++) {
-		if(led_config.channel[i] != NULL && led_config.channel[i]->segment_id == segment_index){
+		if(led_config.channel[i] != NULL && led_config.channel[i]->segment_id == segment_index && led_config.channel[i]->is_on){
 				led_config.channel[i]->user_brightness = brightness;
 				ESP_LOGI(TAG, "BRIGHTNESS SET TO : %f", brightness_float);
 				led_config.channel[i]->prev_brightness = led_config.channel[i]->brightness;
@@ -957,6 +957,10 @@ void config_set_channels(uint8_t seg_id) {
 	led_config.channel[led_config.channels]->prev_brightness= 1;
 
 	led_config.channel[led_config.channels]->palette = DEFAULT_PALETTE; 
+	led_config.channel[led_config.channels]->group_set = 0;
+	led_config.channel[led_config.channels]->is_on = true;
+
+
 	led_config.channels++;
 }
 
@@ -1073,6 +1077,7 @@ char* json_update_config()
 			cJSON_AddNumberToObject(seg_object, "id", MYLED->segment_id);
 			cJSON_AddNumberToObject(seg_object, "start", MYLED->start);
 			cJSON_AddNumberToObject(seg_object, "stop", MYLED->stop);
+			cJSON_AddNumberToObject(seg_object, "set", MYLED->group_set);
 			
 			cJSON_AddStringToObject(seg_object, "n", MYLED->segment_name);
 
@@ -1097,6 +1102,7 @@ char* json_update_config()
 			cJSON_AddBoolToObject(seg_object, "sel", MYLED->selected);
 			cJSON_AddBoolToObject(seg_object, "rev", MYLED->options && REVERSE);
 			cJSON_AddBoolToObject(seg_object, "mi", false);
+			cJSON_AddBoolToObject(seg_object, "on", (MYLED->brightness) ? true : false);
 		}
 	}
     
@@ -1186,4 +1192,36 @@ char* json_update_config()
     // Free the cJSON object
     cJSON_Delete(root);
     return json_string;
+}
+
+void config_set_group(int id, int set_number)
+{
+	ESP_LOGI(TAG, "Setting Group %d for ID %d", set_number, id);
+	for(int i = 0; i < led_config.channels; i++)
+	{
+		if(led_config.channel[i]->segment_id == id)
+		{
+			led_config.channel[i]->group_set = set_number;
+		}
+	}
+}
+
+void config_set_segment_on_status(int id, bool on_status)
+{
+	for (int i = 0; i < config_get_channels(); i++) {
+		if(led_config.channel[i] != NULL && led_config.channel[i]->segment_id == id){
+			if(on_status)
+			{
+				led_config.channel[i]->prev_brightness = led_config.channel[i]->brightness;
+				led_config.channel[i]->brightness = (led_config.channel[i]->user_brightness * led_config.strip_birghtness_multiplier)/255.F;
+			}
+			if(!on_status)
+			{
+				led_config.channel[i]->prev_brightness = led_config.channel[i]->brightness;
+				led_config.channel[i]->brightness = 0;
+			}
+			led_config.channel[i]->is_on = on_status;
+		}
+	}
+	led_set_config(&led_config);
 }
