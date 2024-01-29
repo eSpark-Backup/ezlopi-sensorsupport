@@ -1039,6 +1039,7 @@ char* json_update_config()
     cJSON_AddBoolToObject(state, "on", true);
     cJSON_AddNumberToObject(state, "bri", (uint8_t)((led_config.strip_birghtness_multiplier * 255.F)));
     cJSON_AddNumberToObject(state, "transition", 7);
+    // cJSON_AddNumberToObject(state, "mainseg", 1);
 
     // Create and add "nl" object
     cJSON *nl = cJSON_CreateObject();
@@ -1128,8 +1129,14 @@ char* json_update_config()
     cJSON_AddItemToObject(leds, "seglc", seglc_array);
 
     // Add a single element to "seglc" array
-    cJSON_AddNumberToObject(seglc_array, "", 1);
+	for(int i = 0; i < led_config.channels; i++)
+	{
+    	cJSON_AddNumberToObject(seglc_array, "", 1);
+	}
     // ... add other properties to "leds" object ...
+
+    cJSON_AddNumberToObject(leds, "lc", 1);
+
 
     cJSON_AddFalseToObject(info, "str"); // Example for boolean value
     cJSON_AddStringToObject(info, "name", "WLED");

@@ -43,6 +43,7 @@
 	--sgp: "block";
 	--bmt: 0;
 	--sti: 42px;
+	--c-ezlo: #3e46ae;
 }
 
 html {
@@ -1134,12 +1135,12 @@ textarea {
 }
 
 .pwr {
-	color: var(--c-6);
+	color: var(--c-r);
 	cursor: pointer;
 }
 
 .act {
-	color: var(--c-f);
+	color: var(--c-ezlo);
 }
 
 .del {
