@@ -70,6 +70,41 @@ void parse_json(char* start){
 
         cJSON* seg = cJSON_GetObjectItemCaseSensitive(root, "seg");
 
+        if(cJSON_IsArray(seg))
+        {
+            // "seg" is an array
+            cJSON *seg_item;
+            uint8_t item_index = 0;
+            cJSON_ArrayForEach(seg_item, seg) {
+                cJSON *id = cJSON_GetObjectItemCaseSensitive(seg_item, "id");
+                cJSON *sel = cJSON_GetObjectItemCaseSensitive(seg_item, "sel");
+                cJSON *start = cJSON_GetObjectItemCaseSensitive(seg_item, "start");
+                cJSON *stop = cJSON_GetObjectItemCaseSensitive(seg_item, "stop");
+
+                if (cJSON_IsNumber(id) && cJSON_IsBool(sel)) {
+                    int segment_id = id->valueint;
+                    bool selected = cJSON_IsTrue(sel); // cJSON stores boolean as int (0 or 1)
+                    config_set_selected_flag(segment_id, selected);
+                } else {
+                    printf("Error: Invalid 'id' or 'sel' value.\n");
+                }
+
+                if(cJSON_IsNumber(start) && cJSON_IsNumber(stop) && cJSON_IsBool(sel))
+                {
+                    int a_start = start->valueint;
+                    int a_stop = stop->valueint;
+                    config_set_segment_start_stop(item_index, a_start, a_stop);
+                    config_set_selected_flag(item_index, cJSON_IsTrue(sel));
+                }
+                if(!cJSON_IsNumber(start) && cJSON_IsNumber(stop))
+                {
+                    config_delete_segment(item_index);
+                }
+
+                item_index++;
+            }
+        }
+
         cJSON* fx = cJSON_GetObjectItemCaseSensitive(seg, "fx");
         if(fx != NULL){
             config_setMode((uint8_t)fx->valueint);

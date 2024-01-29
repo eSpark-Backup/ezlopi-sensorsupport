@@ -669,7 +669,7 @@ static uint16_t color_wipe(int line, uint32_t color1, uint32_t color2,
  */
 static uint16_t color_wipe_wled(int line, bool rev, bool useRandomColors) {
   // CREATEDEFAULTPALETTE(SEGCOLOR(0));
-  uint32_t cycleTime = 50 + (255 - (int)(255*((float)SEGSPEED/(float)2000)));  
+  uint32_t cycleTime = 350 + (255 - (int)(255*((float)SEGSPEED/(float)2000)));  
   // uint32_t perc = strip.now % cycleTime;
   uint32_t perc = SEGMENT->next_time % cycleTime;
   uint16_t prog = (perc * 65535) / cycleTime;

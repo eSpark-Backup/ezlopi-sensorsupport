@@ -156,7 +156,7 @@ static void setDefaults() {
 		led_config.channel[i]->color_buffer[2] = led_config.channel[i]->color[2];
 
 		led_config.channel[i]->user_brightness = 255;
-		led_config.channel[i]->brightness = 1;
+		led_config.channel[i]->brightness = (led_config.channel[i]->user_brightness * led_config.strip_birghtness_multiplier)/255.F;
 		led_config.channel[i]->prev_brightness = 1;
 
 		led_config.channel[i]->palette = DEFAULT_PALETTE;
@@ -953,7 +953,7 @@ void config_set_channels(uint8_t seg_id) {
 	led_config.channel[led_config.channels]->color_buffer[2] = led_config.channel[led_config.channels]->color[2];
 
 	led_config.channel[led_config.channels]->user_brightness = 255;
-	led_config.channel[led_config.channels]->brightness = 1;
+	led_config.channel[led_config.channels]->brightness = (led_config.channel[led_config.channels]->user_brightness * led_config.strip_birghtness_multiplier)/255.F;
 	led_config.channel[led_config.channels]->prev_brightness= 1;
 
 	led_config.channel[led_config.channels]->palette = DEFAULT_PALETTE; 
@@ -966,6 +966,7 @@ void config_reduce_segment(){
 	if(led_config.channels == 1)
 	{
 		led_config.channel[0]->user_brightness = 255;
+		led_config.channel[0]->brightness = (led_config.channel[0]->user_brightness * led_config.strip_birghtness_multiplier)/255.F;
 	}
 
 	led_set_config(&led_config);
