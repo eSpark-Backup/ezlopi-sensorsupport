@@ -93,7 +93,7 @@ void parse_json(char* start){
                 {
                     int a_start = start->valueint;
                     int a_stop = stop->valueint;
-                    config_set_segment_start_stop(item_index, a_start, a_stop);
+                    config_set_segment_start_stop(item_index, a_start, a_stop-1);
                     config_set_selected_flag(item_index, cJSON_IsTrue(sel));
                 }
                 if(!cJSON_IsNumber(start) && cJSON_IsNumber(stop))
@@ -182,7 +182,7 @@ void parse_json(char* start){
                     seg_start = start->valueint;
                     seg_stop = stop->valueint;
                     ESP_LOGI(TAG, "Segment Start: %d", seg_start);
-                    config_set_segment_start_stop(seg_id, seg_start, seg_stop);
+                    config_set_segment_start_stop(seg_id, seg_start, seg_stop-1);
                 }
 
             }

@@ -137,7 +137,7 @@ static void setDefaults() {
 		led_config.channel[i]->stop = led_config.channel[i]->start+10;
 
 		led_config.channel[i]->segment_id = i;
-		char *default_segment_name = "main";
+		char *default_segment_name = "Segment 0";
 		led_config.channel[i]->segment_name = strdup(default_segment_name);
 
 		led_config.channel[i]->number_of_leds = led_config.channel[i]->stop - led_config.channel[i]->start;
@@ -320,6 +320,8 @@ void config_set_selected_flag(int id, bool select_flag){
 void config_set_segment_start_stop(int seg_id, int seg_start, int seg_stop){
 
 	// if(seg_id > (led_config.channels-1) ){led_config.channel[seg_id] = (struct LED_CONFIG_CHANNEL*)calloc(1,sizeof(struct LED_CONFIG_CHANNEL));}
+	#define MAX_MIOS_SEGMENT 7
+	ESP_LOGI(TAG,"Total Segments registered : %d out of %d", led_config.channels, MAX_MIOS_SEGMENT);
 	bool found = false;
 
 	for(int i = 0; i < led_config.channels; i++){
@@ -332,6 +334,8 @@ void config_set_segment_start_stop(int seg_id, int seg_start, int seg_stop){
 			break;
 		}
 	}
+
+	if(led_config.channels == MAX_MIOS_SEGMENT) return;
 
 	// if(led_config.channel[seg_id] != NULL && led_config.channel[seg_id]->segment_id == seg_id){
 	// 	if((led_config.channel[seg_id]->selected == true)){
@@ -1077,7 +1081,7 @@ char* json_update_config()
 			// Add properties to the "seg" object
 			cJSON_AddNumberToObject(seg_object, "id", MYLED->segment_id);
 			cJSON_AddNumberToObject(seg_object, "start", MYLED->start);
-			cJSON_AddNumberToObject(seg_object, "stop", MYLED->stop);
+			cJSON_AddNumberToObject(seg_object, "stop", MYLED->stop+1);
 			cJSON_AddNumberToObject(seg_object, "set", MYLED->group_set);
 			
 			cJSON_AddStringToObject(seg_object, "n", MYLED->segment_name);
