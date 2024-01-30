@@ -23,7 +23,7 @@
 #include "uart_reader.h"
 #include "effect_list_json.h"
 
-#include "./compressed_webpage_files/compressed_index_htm.h"
+#include "./compressed_webpage_files/compressed_index_html.h"
 #include "./compressed_webpage_files/compressed_index_css.h"
 #include "./compressed_webpage_files/compressed_index_js.h"
 #include "./compressed_webpage_files/compressed_iro_js.h"
@@ -265,24 +265,28 @@ httpd_handle_t start_webserver(void)
     ESP_LOGI(TAG, "Starting server");
     httpd_handle_t server = NULL;
     
-    httpd_ssl_config_t config = HTTPD_SSL_CONFIG_DEFAULT();
-    config.httpd.max_uri_handlers = 10;
+    // httpd_ssl_config_t config = HTTPD_SSL_CONFIG_DEFAULT();
+    // config.httpd.max_uri_handlers = 10;
     // config.httpd.max_open_sockets = 6;
     // config.session_tickets = true;
     // config.transport_mode = HTTPD_SSL_TRANSPORT_INSECURE;
 
+    httpd_config_t config = HTTPD_DEFAULT_CONFIG();
+    config.max_uri_handlers = 10;
+
     /*certificates and key*/
-    extern const unsigned char cacert_pem_start[] asm("_binary_cacert_pem_start");
-    extern const unsigned char cacert_pem_end[]   asm("_binary_cacert_pem_end");
-    config.cacert_pem = cacert_pem_start;
-    config.cacert_len = cacert_pem_end - cacert_pem_start;
+    // extern const unsigned char cacert_pem_start[] asm("_binary_cacert_pem_start");
+    // extern const unsigned char cacert_pem_end[]   asm("_binary_cacert_pem_end");
+    // config.cacert_pem = cacert_pem_start;
+    // config.cacert_len = cacert_pem_end - cacert_pem_start;
 
-    extern const unsigned char prvtkey_pem_start[] asm("_binary_prvtkey_pem_start");
-    extern const unsigned char prvtkey_pem_end[]   asm("_binary_prvtkey_pem_end");
-    config.prvtkey_pem = prvtkey_pem_start;
-    config.prvtkey_len = prvtkey_pem_end - prvtkey_pem_start;
+    // extern const unsigned char prvtkey_pem_start[] asm("_binary_prvtkey_pem_start");
+    // extern const unsigned char prvtkey_pem_end[]   asm("_binary_prvtkey_pem_end");
+    // config.prvtkey_pem = prvtkey_pem_start;
+    // config.prvtkey_len = prvtkey_pem_end - prvtkey_pem_start;
 
-    esp_err_t ret = httpd_ssl_start(&server, &config);
+    // esp_err_t ret = httpd_ssl_start(&server, &config);
+    esp_err_t ret = httpd_start(&server, &config);
     if (ESP_OK != ret)
     {
         ESP_LOGI(TAG, "Error starting server!");
@@ -349,9 +353,9 @@ void populate_response(enum webpage_name page, httpd_req_t *req)
     case INDEX_HTML:
         httpd_resp_set_type(req, "text/html");
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-        httpd_resp_set_hdr(req, "Content-Encoding", "br");
-        content_size_int = brotli_index_htm_br_len;
-        hex_dump = brotli_index_htm_br;
+        httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
+        content_size_int = gzip_index_html_gz_len;
+        hex_dump = gzip_index_html_gz;
         #ifdef USE_MALLOC
         response_buffer = (char *)calloc(sizeof(char),  1024 * 19);
         #endif
@@ -359,9 +363,9 @@ void populate_response(enum webpage_name page, httpd_req_t *req)
     case INDEX_CSS:
         httpd_resp_set_type(req, "text/css");
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-        httpd_resp_set_hdr(req, "Content-Encoding", "br");
-        content_size_int = brotli_index_css_br_len;
-        hex_dump = brotli_index_css_br;
+        httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
+        content_size_int = gzip_index_css_gz_len;
+        hex_dump = gzip_index_css_gz;
         #ifdef USE_MALLOC
         response_buffer = (char *)calloc(sizeof(char),  1024 * 32);
         #endif
@@ -369,9 +373,9 @@ void populate_response(enum webpage_name page, httpd_req_t *req)
     case INDEX_JS:
         httpd_resp_set_type(req, "text/javascript");
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-        httpd_resp_set_hdr(req, "Content-Encoding", "br");
-        content_size_int = brotli_index_js_br_len;
-        hex_dump = brotli_index_js_br;
+        httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
+        content_size_int = gzip_index_js_gz_len;
+        hex_dump = gzip_index_js_gz;
         #ifdef USE_MALLOC
         response_buffer = (char *)calloc(sizeof(char),  1024 * 103);
         #endif
@@ -379,9 +383,9 @@ void populate_response(enum webpage_name page, httpd_req_t *req)
     case IRO_JS:
         httpd_resp_set_type(req, "text/javascript");
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-        httpd_resp_set_hdr(req, "Content-Encoding", "br");
-        content_size_int = brotli_iro_js_br_len;
-        hex_dump = brotli_iro_js_br;
+        httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
+        content_size_int = gzip_iro_js_gz_len;
+        hex_dump = gzip_iro_js_gz;
         #ifdef USE_MALLOC
         response_buffer = (char *)calloc(sizeof(char),  1024 * 103);
         #endif
@@ -389,9 +393,9 @@ void populate_response(enum webpage_name page, httpd_req_t *req)
     case RANGETOUCH_JS:
         httpd_resp_set_type(req, "text/javascript");
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-        httpd_resp_set_hdr(req, "Content-Encoding", "br");
-        content_size_int = brotli_rangetouch_js_br_len;
-        hex_dump = brotli_rangetouch_js_br;
+        httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
+        content_size_int = gzip_rangetouch_js_gz_len;
+        hex_dump = gzip_rangetouch_js_gz;
         #ifdef USE_MALLOC
         response_buffer = (char *)calloc(sizeof(char),  1024 * 103);
         #endif
