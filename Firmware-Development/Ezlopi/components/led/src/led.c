@@ -696,9 +696,9 @@ static void task(void *args) {
 				case FX_MODE_COLOR_WIPE_REV:
 					WS2812FX_call(i, WS2812FX_mode_color_wipe_rev);
 					break;
-				case FX_MODE_COLOR_WIPE_REV_INV:
-					WS2812FX_call(i, WS2812FX_mode_color_wipe_rev_inv);
-					break;
+				// case FX_MODE_COLOR_WIPE_REV_INV:
+				// 	WS2812FX_call(i, WS2812FX_mode_color_wipe_rev_inv);
+				// 	break;
 				case FX_MODE_COLOR_WIPE_RANDOM:
 					WS2812FX_call(i, WS2812FX_mode_color_wipe_random);
 					break;
