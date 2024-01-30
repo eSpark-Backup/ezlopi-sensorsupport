@@ -1621,15 +1621,15 @@ uint16_t WS2812FX_mode_chase_flash(int line) {
       uint16_t m =
           (fx_segments[line]->counter_mode_step + 1) % segmentLength(line);
       if (isReverse(line)) {
-        setPixelColor(line, fx_segments[line]->stop - n, SEGCOLOR(1));
-        setPixelColor(line, fx_segments[line]->stop - m, SEGCOLOR(1));
+        setPixelColor(line, fx_segments[line]->stop - n, SEGCOLOR(0));
+        setPixelColor(line, fx_segments[line]->stop - m, SEGCOLOR(0));
 
         // setPixelColor(line, SEGMENT->stop - n, COLORFROMPALETTE(n));
         // setPixelColor(line, SEGMENT->stop - m, COLORFROMPALETTE(m));
         
       } else {
-        setPixelColor(line, fx_segments[line]->start + n, SEGCOLOR(1));
-        setPixelColor(line, fx_segments[line]->start + m, SEGCOLOR(1));
+        setPixelColor(line, fx_segments[line]->start + n, SEGCOLOR(0));
+        setPixelColor(line, fx_segments[line]->start + m, SEGCOLOR(0));
 
         // setPixelColor(line, SEGMENT->start + n, COLORFROMPALETTE(n));
         // setPixelColor(line, SEGMENT->start + m, COLORFROMPALETTE(m));
