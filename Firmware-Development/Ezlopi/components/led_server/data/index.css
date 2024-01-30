@@ -245,6 +245,7 @@ button {
 	top: 8px;
 	right: 9px;
 	cursor: pointer;
+	color: #3e46ae;
 }
 
 .flr {
@@ -1157,6 +1158,7 @@ textarea {
 	top: 8px;
 	cursor: pointer;
 	z-index: 1;
+	display: none;
 }
 
 /* radiobuttons and checkmarks */

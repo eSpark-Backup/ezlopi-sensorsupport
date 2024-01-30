@@ -2018,7 +2018,7 @@ uint16_t WS2812FX_mode_icu(int line) {
 /////////////////////
 uint16_t WS2812FX_mode_2Ddna(int line) {         // dna originally by by ldirko at https://pastebin.com/pCkkkzcs. Updated by Preyy. WLED conversion by Andrew Tuline.
   // if (!strip.isMatrix || !SEGMENT.is2D()) return mode_static(); // not a 2D set-up
-  CREATEDEFAULTPALETTE(SEGCOLOR(0));
+  CREATEDEFAULTPALETTE(SEGCOLOR(1));
   const uint16_t cols = 10;
   const uint16_t rows = 10;
 
