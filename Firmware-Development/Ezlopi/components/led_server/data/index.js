@@ -5,6 +5,7 @@ var hasWhite = false, hasRGB = false, hasCCT = false;
 var nlDur = 60, nlTar = 0;
 var nlMode = false;
 var segLmax = 0; // size (in pixels) of largest selected segment
+var currentlySelectedSegments = 0
 var selectedFx = 0;
 var selectedPal = 0;
 var csel = 0; // selected color slot (0-2)
@@ -1340,17 +1341,19 @@ function updateSelectedFx()
 	var selectedEffect = parent.querySelector(`.lstI[data-id="${selectedFx}"]`);
 	if (selectedEffect) {
 		selectedEffect.classList.add('selected');
+		console.log("Seleected Effect and Selected segs",selectedEffect, currentlySelectedSegments);
 		setEffectParameters(selectedFx);
 		// hide non-0D effects if segment only has 1 pixel (0D)
 		parent.querySelectorAll('.lstI').forEach((fx)=>{
 			let ds = fx.dataset;
-			if (ds.opt) {
-				let opts = ds.opt.split(";");
+			if (true) {  
+				// let opts = ds.opt.split(";");
 				if (ds.id>0) {
-					if (segLmax==0) fx.classList.add('hide'); // none of the segments selected (hide all effects)
+					console.log("SeglMax and selected segs", segLmax, currentlySelectedSegments);
+					if (segLmax==0 || currentlySelectedSegments===0) fx.classList.add('hide'); // none of the segments selected (hide all effects)
 					else {
-						if ((segLmax==1 && (!opts[3] || opts[3].indexOf("0")<0)) || (!isM && opts[3] && ((opts[3].indexOf("2")>=0 && opts[3].indexOf("1")<0)))) fx.classList.add('hide');
-						else fx.classList.remove('hide');
+						// if ((segLmax==1 && (!opts[3] || opts[3].indexOf("0")<0)) || (!isM && opts[3] && ((opts[3].indexOf("2")>=0 && opts[3].indexOf("1")<0)))) fx.classList.add('hide');
+						fx.classList.remove('hide');
 					}
 				}
 			}
@@ -1451,6 +1454,7 @@ function readState(s,command=false)
 	var sellvl=0; // 0: selc is invalid, 1: selc is mainseg, 2: selc is first selected
 	hasRGB = hasWhite = hasCCT = false;
 	segLmax = 0;
+	currentlySelectedSegments = 0;
 	for (let i = 0; i < (s.seg||[]).length; i++)
 	{
 		if (sellvl == 0 && s.seg[i].id == s.mainseg) {
@@ -1467,6 +1471,7 @@ function readState(s,command=false)
 			hasCCT   |= !!(lc & 0x04);
 			let sLen = (s.seg[i].stop - s.seg[i].start)*(s.seg[i].stopY?(s.seg[i].stopY - s.seg[i].startY):1);
 			segLmax = segLmax < sLen ? sLen : segLmax;
+			currentlySelectedSegments++;
 		}
 	}
 	var i=s.seg[selc];
