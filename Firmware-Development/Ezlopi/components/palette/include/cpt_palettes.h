@@ -1,5 +1,6 @@
 #ifndef CPT_PALETTE_H_
 #define CPT_PALETTE_H_
+#include <stdint.h>
 
 /*
  * Color palettes for FastLED effects (65-73).
@@ -12,7 +13,7 @@
 // http://soliton.vm.bytemark.co.uk/pub/cpt-city/ing/xmas/tn/ib_jul01.png.index.html
 // converted for FastLED with gammas (2.6, 2.2, 2.5)
 // Size: 16 bytes of program space.
-
+typedef uint8_t byte;
 
 const byte ib_jul01_gp[]   = {
     0, 194,  1,  1,
@@ -903,8 +904,7 @@ static struct paletteContainer{
 
 #define paletteGroup(arrayName) {(const byte*)arrayName, sizeof(arrayName)/4}
 
-
-const struct paletteContainer gGradientPalettes[] = {  //TODO: Re Order the number of  all
+extern const struct paletteContainer gGradientPalettes[] = {  //TODO: Re Order the number of  all
   paletteGroup(default_palette),        // 72-59 Default Palette color as Color 1
   paletteGroup(default_palette),        // 72-59 Default Palette color as Color 1
   paletteGroup(Sunset_Real_gp),         // 13-00 Sunset

@@ -22,6 +22,7 @@
 #include "led_server.h"
 #include "uart_reader.h"
 #include "effect_list_json.h"
+#include "cpt_palettes_json.h"
 
 #include "./compressed_webpage_files/compressed_index_html.h"
 #include "./compressed_webpage_files/compressed_index_css.h"
@@ -57,6 +58,7 @@ enum webpage_name {
     JSON_SI,
     JSON_EFFECTS,
     JSON_PALETTES,
+    JSON_PALETTES_DATA,
     NOT_FOUND,
 };
 
@@ -168,6 +170,13 @@ static esp_err_t get_json_palettes_js_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
+static esp_err_t get_json_palettes_preview_js_handler(httpd_req_t *req)
+{
+    populate_response(JSON_PALETTES_DATA, req);
+
+    return ESP_OK;
+}
+
 static esp_err_t not_found_url_handler(httpd_req_t *req)
 {
     populate_response(NOT_FOUND, req);
@@ -231,6 +240,7 @@ static const Route routes[] = {
     {"/json/si", HTTP_GET, get_json_si_js_handler},
     {"/json/effects", HTTP_GET, get_json_effects_js_handler},
     {"/json/palettes", HTTP_GET, get_json_palettes_js_handler},
+    {"/json/palx", HTTP_GET, get_json_palettes_preview_js_handler},
     // {"/favicon.ico", HTTP_GET, not_found_url_handler},
 
     /* POST ROUTES */
@@ -272,7 +282,7 @@ httpd_handle_t start_webserver(void)
     // config.transport_mode = HTTPD_SSL_TRANSPORT_INSECURE;
 
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-    config.max_uri_handlers = 10;
+    config.max_uri_handlers = 11;
 
     /*certificates and key*/
     // extern const unsigned char cacert_pem_start[] asm("_binary_cacert_pem_start");
@@ -457,6 +467,28 @@ void populate_response(enum webpage_name page, httpd_req_t *req)
         httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
         free(src_res);
         return;
+    case JSON_PALETTES_DATA:
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        #ifdef USE_MALLOC
+        response_buffer = (char *)calloc(sizeof(char),  1024);
+        #endif
+        memset((void *)response_buffer, 0, sizeof(response_buffer));
+        // sprintf(response_buffer, "Palettes Data Response working");
+       
+        char *palx_json_string = palettesToJsonString();
+        // Free cJSON string
+        if(palx_json_string)
+        {
+            printf("Sending Palx response");
+            httpd_resp_send(req, palx_json_string, HTTPD_RESP_USE_STRLEN);
+            free(palx_json_string);
+        }
+        else{
+            httpd_resp_send(req, "Error!", HTTPD_RESP_USE_STRLEN);
+            printf("Cannot Send Palx Response due to unknown error!\n");
+        }
+        break;
     case NOT_FOUND:
         httpd_resp_set_type(req, "application/json");
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");

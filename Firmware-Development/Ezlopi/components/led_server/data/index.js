@@ -292,11 +292,11 @@ function onLoad()
 					loadFX(()=>{
 						console.log("Load effects");
 						setTimeout(()=>{ // ESP8266 can't handle quick requests
-							// loadPalettesData(()=>{
+							loadPalettesData(()=>{
 								console.log("Request Json");
 								requestJson();// will load presets and create WS
 								if (cfg.comp.css) setTimeout(()=>{loadSkinCSS('skinCss')},100);
-							// });
+							});
 						},50);
 					});
 				},50);

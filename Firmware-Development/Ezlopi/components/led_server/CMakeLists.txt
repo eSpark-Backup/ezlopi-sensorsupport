@@ -13,7 +13,7 @@ idf_component_register(	SRCS ${srcs}
                             led
                             spiffs
 
-                            EMBED_TXTFILES 
-                            "certs/cacert.pem"
-                            "certs/prvtkey.pem"
+                            # EMBED_TXTFILES 
+                            # "certs/cacert.pem"
+                            # "certs/prvtkey.pem"
 						)
