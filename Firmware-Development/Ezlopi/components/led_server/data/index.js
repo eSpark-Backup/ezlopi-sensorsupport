@@ -303,9 +303,7 @@ function onLoad()
 			});
 		},50);
 	});
-	setTimeout(() => {
-		requestJson();
-	}, 1000);
+
 	resetUtil();
 
 	d.addEventListener("visibilitychange", handleVisibilityChange, false);
@@ -315,6 +313,10 @@ function onLoad()
 		sl.addEventListener('touchstart', toggleBubble);
 		sl.addEventListener('touchend', toggleBubble);
 	});
+
+	setTimeout(() => {
+		requestJson();
+	}, 1000);
 }
 
 function updateTablinks(tabI)
@@ -1329,6 +1331,7 @@ function updateSelectedPalette(s)
 function updateSelectedFx()
 {
 	var parent = gId('fxlist');
+	var paletteSectionSelect = gId('pallist')
 	var selEffectInput = parent.querySelector(`input[name="fx"][value="${selectedFx}"]`);
 	if (selEffectInput) selEffectInput.checked = true;
 
@@ -1354,6 +1357,21 @@ function updateSelectedFx()
 					else {
 						// if ((segLmax==1 && (!opts[3] || opts[3].indexOf("0")<0)) || (!isM && opts[3] && ((opts[3].indexOf("2")>=0 && opts[3].indexOf("1")<0)))) fx.classList.add('hide');
 						fx.classList.remove('hide');
+					}
+				}
+			}
+		});
+
+		paletteSectionSelect.querySelectorAll('.lstI').forEach((pal)=>{
+			let ds = pal.dataset;
+			if (true) {  
+				// let opts = ds.opt.split(";");
+				if (ds.id>0) {
+					console.log("SeglMax and selected segs", segLmax, currentlySelectedSegments);
+					if (segLmax==0 || currentlySelectedSegments===0) pal.classList.add('hide'); // none of the segments selected (hide all effects)
+					else {
+						// if ((segLmax==1 && (!opts[3] || opts[3].indexOf("0")<0)) || (!isM && opts[3] && ((opts[3].indexOf("2")>=0 && opts[3].indexOf("1")<0)))) fx.classList.add('hide');
+						pal.classList.remove('hide');
 					}
 				}
 			}

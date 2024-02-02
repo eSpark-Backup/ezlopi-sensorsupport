@@ -510,6 +510,7 @@ button {
 	pointer-events: none;
 	background-color: white;
 	border: 1px solid black;
+	display: none;
 }
 
 /* New tooltip */
