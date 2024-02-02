@@ -134,7 +134,7 @@ static void setDefaults() {
 				led_config.channel[i]->black[2] = -1;
 
 		led_config.channel[i]->start = i*10;
-		led_config.channel[i]->stop = led_config.channel[i]->start+10;
+		led_config.channel[i]->stop = led_config.channel[i]->start+9;
 
 		led_config.channel[i]->segment_id = i;
 		char *default_segment_name = "Segment 0";
@@ -1143,7 +1143,7 @@ char* json_update_config()
 
 
     cJSON_AddFalseToObject(info, "str"); // Example for boolean value
-    cJSON_AddStringToObject(info, "name", "WLED");
+    cJSON_AddStringToObject(info, "name", "LED");
     cJSON_AddNumberToObject(info, "udpport", 21324);
     cJSON_AddFalseToObject(info, "live"); // Example for boolean value
     cJSON_AddNumberToObject(info, "liveseg", -1);
@@ -1191,7 +1191,7 @@ char* json_update_config()
     cJSON_AddNumberToObject(info, "uptime", 85);
     cJSON_AddStringToObject(info, "time", "1970-1-1, 00:01:25");
     cJSON_AddNumberToObject(info, "opt", 79);
-    cJSON_AddStringToObject(info, "brand", "WLED");
+    cJSON_AddStringToObject(info, "brand", "MIOS");
     cJSON_AddStringToObject(info, "product", "FOSS");
     cJSON_AddStringToObject(info, "mac", "94e68604985c");
     cJSON_AddStringToObject(info, "ip", "192.168.18.151");
@@ -1235,4 +1235,14 @@ void config_set_segment_on_status(int id, bool on_status)
 		}
 	}
 	led_set_config(&led_config);
+}
+
+void config_set_segment_name(int id, char* name)
+{
+	for (int i = 0; i < config_get_channels(); i++) {
+		if(led_config.channel[i]->segment_id == id)
+		{
+			led_config.channel[i]->segment_name = strdup(name);
+		}
+	}
 }

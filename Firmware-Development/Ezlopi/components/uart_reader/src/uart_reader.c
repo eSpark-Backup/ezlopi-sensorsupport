@@ -185,6 +185,11 @@ void parse_json(char* start){
                     config_set_segment_start_stop(seg_id, seg_start, seg_stop-1);
                 }
 
+                if(strcmp(n->valuestring, "") != 0)
+                {
+                    config_set_segment_name(seg_id, n->valuestring);
+                }
+
             }
 
 

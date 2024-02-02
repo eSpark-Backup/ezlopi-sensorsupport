@@ -476,18 +476,17 @@ void populate_response(enum webpage_name page, httpd_req_t *req)
         memset((void *)response_buffer, 0, sizeof(response_buffer));
         // sprintf(response_buffer, "Palettes Data Response working");
        
-        char *palx_json_string = palettesToJsonString();
-        // Free cJSON string
-        if(palx_json_string)
-        {
-            printf("Sending Palx response");
-            httpd_resp_send(req, palx_json_string, HTTPD_RESP_USE_STRLEN);
-            free(palx_json_string);
-        }
-        else{
-            httpd_resp_send(req, "Error!", HTTPD_RESP_USE_STRLEN);
-            printf("Cannot Send Palx Response due to unknown error!\n");
-        }
+        //char *palx_json_string = palettesToJsonString(); //TODO: Currently unsupported as too heap is required!
+        // if(palx_json_string)
+        // {
+        //     printf("Sending Palx response");
+        //     httpd_resp_send(req, palx_json_string, HTTPD_RESP_USE_STRLEN);
+        //     free(palx_json_string);
+        // }
+        // else{
+        //     httpd_resp_send(req, "Error!", HTTPD_RESP_USE_STRLEN);
+        //     printf("Cannot Send Palx Response due to unknown error!\n");
+        // }
         break;
     case NOT_FOUND:
         httpd_resp_set_type(req, "application/json");

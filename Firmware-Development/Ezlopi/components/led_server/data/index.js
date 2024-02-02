@@ -226,7 +226,7 @@ function onLoad()
 		loc = true;
 		locip = localStorage.getItem('locIp');
 		if (!locip) {
-			locip = prompt("File Mode. Please enter WLED IP!");
+			locip = prompt("File Mode. Please enter ALED IP!");
 			localStorage.setItem('locIp', locip);
 		}
 	} else {
@@ -819,7 +819,7 @@ function populateSegments(s)
 					`<input type="checkbox" id="seg${i}sel" onchange="selSeg(${i})" ${inst.sel ? "checked":""}>`+
 					`<span class="checkmark"></span>`+
 				`</label>`+
-				`<div style="color: black;" class="segname ${smpl}" onclick="selSegEx(${i})">`+
+				`<div style="color: black; width:170px; height:24px;" class="segname ${smpl}" onclick="selSegEx(${i})">`+
 					`<i class="icons e-icon frz" id="seg${i}frz" onclick="event.preventDefault();tglFreeze(${i});">&#x${inst.frz ? (li.live && li.liveseg==i?'e410':'e0e8') : 'e325'};</i>`+
 					(inst.n ? inst.n : "Segment "+i) +
 					`<div class="pop hide" onclick="event.preventDefault();event.stopPropagation();">`+
@@ -1085,7 +1085,7 @@ function btype(b)
 
 function bname(o)
 {
-	if (o.name=="WLED") return o.ip;
+	if (o.name=="ALED") return o.ip;
 	return o.name;
 }
 
@@ -1378,7 +1378,7 @@ function displayRover(i,s)
 {
 	gId('rover').style.transform = (i.live && s.lor == 0 && i.liveseg<0) ? "translateY(0px)":"translateY(100%)";
 	var sour = i.lip ? i.lip:""; if (sour.length > 2) sour = " from " + sour;
-	gId('lv').innerHTML = `WLED is receiving live ${i.lm} data${sour}`;
+	gId('lv').innerHTML = `ALED is receiving live ${i.lm} data${sour}`;
 	gId('roverstar').style.display = (i.live && s.lor) ? "block":"none";
 }
 
@@ -1425,7 +1425,7 @@ function makeWS() {
 		ws = null;
 	}
 	ws.onopen = (e)=>{
-		//ws.send("{'v':true}"); // unnecessary (https://github.com/Aircoookie/WLED/blob/master/wled00/ws.cpp#L18)
+		//ws.send("{'v':true}"); // unnecessary (https://github.com/Aircoookie/ALED/blob/master/wled00/ws.cpp#L18)
 		wsRpt = 0;
 		reqsLegal = true;
 	}
@@ -1539,7 +1539,7 @@ function readState(s,command=false)
 	return true;
 }
 
-// control HTML elements for Slider and Color Control (original ported form WLED-SR)
+// control HTML elements for Slider and Color Control (original ported form ALED-SR)
 // Technical notes
 // ===============
 // If an effect name is followed by an @, slider and color control is effective.
@@ -2716,7 +2716,7 @@ setInterval(()=>{
 	gId('heart').style.color = `hsl(${hc}, 100%, 50%)`;
 }, 910);
 
-function openGH() { window.open("https://github.com/Aircoookie/WLED/wiki"); }
+function openGH() { window.open("https://github.com/Aircoookie/ALED/wiki"); }
 
 var cnfr = false;
 function cnfReset()
@@ -2735,7 +2735,7 @@ function rSegs()
 {
 	var bt = gId('rsbtn');
 	if (!cnfrS) {
-		bt.style.color = "white";
+		bt.style.color = "var(--c-r)";
 		bt.innerHTML = "Confirm reset";
 		cnfrS = true; return;
 	}
