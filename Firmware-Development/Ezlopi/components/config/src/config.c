@@ -1143,7 +1143,7 @@ char* json_update_config()
 
 
     cJSON_AddFalseToObject(info, "str"); // Example for boolean value
-    cJSON_AddStringToObject(info, "name", "LED");
+    cJSON_AddStringToObject(info, "name", "EzloPi Addressable LED Config Page");
     cJSON_AddNumberToObject(info, "udpport", 21324);
     cJSON_AddFalseToObject(info, "live"); // Example for boolean value
     cJSON_AddNumberToObject(info, "liveseg", -1);
