@@ -28,7 +28,7 @@ const char* ezlopi_config_test =
                 \"dev_name\": \"Addressable LED Controller\",\
                 \"id_room\": \"\",\
                 \"id_item\": 68,\
-                \"gpio\": 23\
+                \"gpio\": 16\
             }\
     ],\
     \"dev_total\":1\
