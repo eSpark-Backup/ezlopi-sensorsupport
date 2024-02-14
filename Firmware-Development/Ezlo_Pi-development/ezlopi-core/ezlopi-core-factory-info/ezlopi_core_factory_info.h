@@ -306,14 +306,9 @@ static const char *ezlopi_config_test =
         [\
 {\
         \"dev_type\":6,\
-        \"dev_name\":\"PMS5003\",\
+        \"dev_name\":\"Deep Sleep\",\
         \"id_room\":\"\",\
-        \"id_item\":69,\
-        \"gpio1\":40,\
-        \"gpio2\":41,\
-        \"gpio3\":39,\
-        \"gpio4\":42,\
-        \"baudrate\":9600\
+        \"id_item\":69\
         }\
         ],\
     \"dev_total\": 1}";

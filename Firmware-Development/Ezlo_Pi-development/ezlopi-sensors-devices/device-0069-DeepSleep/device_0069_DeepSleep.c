@@ -101,10 +101,10 @@ static int __set_cjson_value(l_ezlopi_item_t *item, void *arg)
             {
                 if(value!=NULL && !strcmp(value, deepsleep_trigger_token[i]))
                 {
-                    deepsleep_init_params.wakeup_time_sec = (i+1)*10;
+                    deepsleep_init_params.wakeup_time_sec = (i+1)*600;
                     esp_sleep_enable_timer_wakeup(deepsleep_init_params.wakeup_time_sec * 1000000);
                     gettimeofday(&sleep_enter_time, NULL);
-                    ESP_LOGI("DEEPSLEEP","GOING TO SLEEP! GOODNIGHT!");
+                    ESP_LOGI("DEEPSLEEP","GOING TO SLEEP for %s! GOODNIGHT!",deepsleep_trigger_token[i]);
                     esp_deep_sleep_start();
                     break;
                 }
