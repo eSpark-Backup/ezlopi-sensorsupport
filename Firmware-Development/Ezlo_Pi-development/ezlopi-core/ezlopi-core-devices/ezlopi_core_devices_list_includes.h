@@ -68,6 +68,6 @@
 #include "sensor_0065_digitalIn_float_switch.h"
 #include "sensor_0066_other_R307_FingerPrint.h"
 #include "sensor_0067_hilink_presence_sensor.h"
-#include "device_0069_DeepSleep.h"
+#include "device_0070_DeepSleep.h"
 
 #endif // _EZLOPI_CORE_DEVICES_LIST_INCLUDES_H_

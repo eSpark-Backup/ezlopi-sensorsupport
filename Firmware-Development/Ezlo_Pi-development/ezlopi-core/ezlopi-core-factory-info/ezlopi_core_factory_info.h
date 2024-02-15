@@ -308,7 +308,7 @@ static const char *ezlopi_config_test =
         \"dev_type\":6,\
         \"dev_name\":\"Deep Sleep\",\
         \"id_room\":\"\",\
-        \"id_item\":69\
+        \"id_item\":70\
         }\
         ],\
     \"dev_total\": 1}";

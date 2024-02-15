@@ -1,26 +1,13 @@
-#include "cJSON.h"
-#include "ezlopi_util_trace.h"
-
-// #include "ezlopi_actions.h"
-#include "ezlopi_core_actions.h"
-#include "ezlopi_core_timer.h"
-#include "ezlopi_cloud_items.h"
-
-#include "ezlopi_core_cloud.h"
-#include "ezlopi_core_devices_list.h"
-#include "ezlopi_core_device_value_updated.h"
-#include "ezlopi_cloud_constants.h"
-#include "ezlopi_core_valueformatter.h"
-#include "ezlopi_core_cjson_macros.h"
-
 #include <sys/time.h>
 #include "esp_sleep.h"
 #include "esp_log.h"
 
+#include "ezlopi_cloud_items.h"
+#include "ezlopi_cloud_constants.h"
+#include "ezlopi_core_cjson_macros.h"
 
-#include "device_0069_DeepSleep.h"
+#include "device_0070_DeepSleep.h"
 
-// static bool deepsleep_initialized = false;
 const char *deepsleep_trigger_token[] =
     {
         "10 min",//by default
@@ -39,7 +26,7 @@ static int __get_cjson_value(l_ezlopi_item_t *item, void *arg);
 static int __set_cjson_value(l_ezlopi_item_t *item, void *arg);
 static void __setup_device_cloud_params(l_ezlopi_device_t *device, cJSON *cj_device);
 
-int device_0069_DeepSleep(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void* user_arg)
+int device_0070_DeepSleep(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void* user_arg)
 {
     int ret = 0;
 
@@ -80,7 +67,6 @@ static int __set_cjson_value(l_ezlopi_item_t *item, void *arg)
     int ret = 0;
     deepsleep_init_params.sleep_time_ms = (deepsleep_init_params.now.tv_sec - sleep_enter_time.tv_sec) * 1000 + (deepsleep_init_params.now.tv_usec - sleep_enter_time.tv_usec) / 1000;
     cJSON *device_details = (cJSON *)arg;
-    // ezlopi_deepsleep_action_struct_t *deepsleep_state = (ezlopi_deepsleep_action_struct_t *)item->user_arg;
     if (device_details)
     {
         if (ezlopi_item_name_energy_saving_mode == item->cloud_properties.item_name)
@@ -123,22 +109,16 @@ static int __get_cjson_value(l_ezlopi_item_t *item, void *arg)
     ezlopi_deepsleep_action_struct_t *deepsleep_state = (ezlopi_deepsleep_action_struct_t *)item->user_arg;
     if ((NULL != param) && (NULL != deepsleep_state))
     {
-        ESP_LOGI("DEEPSLEEP","Here1");
         if (ezlopi_item_name_energy_saving_mode == item->cloud_properties.item_name)
         {
-            ESP_LOGI("DEEPSLEEP","Here2");
-            //-------------------  POSSIBLE JSON ENUM CONTENTS ----------------------------------
             cJSON *json_array_enum = cJSON_CreateArray();
             if (NULL != json_array_enum)
             {
-                ESP_LOGI("DEEPSLEEP","Here3");
                 for (uint8_t i = 0; i < DEEPSLEEP_MAX_ENUMS; i++)
                 {
                     cJSON *json_value = cJSON_CreateString(deepsleep_trigger_token[i]);
-                    ESP_LOGI("DEEPSLEEP","Here4");
                     if (NULL != json_value)
                     {
-                        ESP_LOGI("DEEPSLEEP","Here5");
                         cJSON_AddItemToArray(json_array_enum, json_value);
                     }
                 }
@@ -161,23 +141,19 @@ static int __init(l_ezlopi_item_t *item)
 
 static int __prepare(void *arg)
 {
-    ESP_LOGI("DEEPSLEEP","Here");
     int ret = 0;
     ezlopi_deepsleep_action_struct_t *deepsleep_state = (ezlopi_deepsleep_action_struct_t*)malloc(sizeof(ezlopi_deepsleep_action_struct_t));
     s_ezlopi_prep_arg_t *prep_arg = (s_ezlopi_prep_arg_t *)arg;
     if (prep_arg && prep_arg->cjson_device)
     {
-        ESP_LOGI("DEEPSLEEP","Here1");
         cJSON *cj_device = prep_arg->cjson_device;
         l_ezlopi_device_t *device = ezlopi_device_add_device(cj_device);
         if (device)
         {
-            ESP_LOGI("DEEPSLEEP","Here2");
             __setup_device_cloud_params(device, cj_device);
-            deepsleep_item = ezlopi_device_add_item_to_device(device, device_0069_DeepSleep);
+            deepsleep_item = ezlopi_device_add_item_to_device(device, device_0070_DeepSleep);
             if (deepsleep_item)
             {
-                ESP_LOGI("DEEPSLEEP","Here3");
                 deepsleep_item->cloud_properties.show = true;
                 deepsleep_item->cloud_properties.has_getter = true;
                 deepsleep_item->cloud_properties.has_setter = true;
@@ -188,7 +164,6 @@ static int __prepare(void *arg)
                 /* initialize rf structure */
                 deepsleep_state->current_trigger_value = "10 min";
                 deepsleep_item->user_arg = deepsleep_state;
-                ESP_LOGI("DEEPSLEEP","Here4");
             }
         }
     }

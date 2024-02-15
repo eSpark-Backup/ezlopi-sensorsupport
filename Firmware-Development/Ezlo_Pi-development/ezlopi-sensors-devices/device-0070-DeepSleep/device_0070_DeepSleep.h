@@ -1,5 +1,5 @@
-#ifndef _DEVICE_0069_DeepSleep_
-#define _DEVICE_0069_DeepSleep_
+#ifndef _DEVICE_0070_DeepSleep_
+#define _DEVICE_0070_DeepSleep_
 
 #include "ezlopi_core_actions.h"
 #include "ezlopi_core_devices.h"
@@ -27,6 +27,6 @@ typedef struct deepsleep_parameters
     int sleep_time_ms;
 } deepsleep_parameters_t;
 
-int device_0069_DeepSleep(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void* user_arg);
+int device_0070_DeepSleep(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void* user_arg);
 
-#endif // __DEVICE_0069_DEEPSLEEP
+#endif // __DEVICE_0070_DEEPSLEEP

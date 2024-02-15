@@ -83,7 +83,7 @@ set(EZLOPI_SENSOR_DEVICE_COMPONENTS
         sensor-0065-digitalIn-float-switch
         sensor-0066-other-R307-FingerPrint
         sensor-0067-UART-hilink-presence-sensor
-        device-0069-DeepSleep
+        device-0070-DeepSleep
 )
 
 
