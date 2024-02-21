@@ -7,12 +7,51 @@
 	<meta content="yes" name="apple-mobile-web-app-capable">
 	<link rel="shortcut icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAGACGAAAAFgAAAIlQTkcNChoKAAAADUlIRFIAAAAQAAAAEAgGAAAAH/P/YQAAAE1JREFUOI1j/P//PwOxgNGeAUMxE9G6cQCKDWAhpADZ2f8PMjBS3QW08QK20KaZC2gfC9hCnqouoNgARgY7zMxAyNlUdQHlXiAlO2MDAD63EVqNHAe0AAAAAElFTkSuQmCC"/>
 	<title>EzloPi Addressable LED Config Page</title>
+	<style>
+		#loader-wrapper {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-color: white;
+		z-index: 9999;
+		}
+
+		.loader {
+		border: 16px solid #f3f3f3; /* Light grey */
+		border-top: 16px solid #3e46ae; /* Blue */
+		border-radius: 50%;
+		width: 120px;
+		height: 120px;
+		animation: spin 1s linear infinite;
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		margin-top: -60px; /* Half of the loader's height */
+  		margin-left: -60px; /* Half of the loader's width */
+		}
+
+		@keyframes spin {
+		0% { transform: rotate(0deg); }
+		100% { transform: rotate(360deg); }
+		}
+
+		body {
+		overflow: hidden; /* Prevent scrolling while loader is displayed */
+		}
+	</style>
 	<link id="dynamic-css" rel="stylesheet" href="">
 	<link rel="icon" href= 
 	"https://iili.io/J1J39dN.png"
           type="image/x-icon"> 
 </head>
 <body onload="onLoad()">
+
+<div id="loader-wrapper">
+	<div id="loader" class="loader"></div>
+</div>
 
 <div id="cv" class="overlay">Loading LED UI...</div>
 <noscript><div class="overlay" style="opacity:1;">Sorry, ALED UI needs JavaScript!</div></noscript>
@@ -347,6 +386,15 @@
 -->
 <div id="loaded-content"></div>
 <script>
+	//Loader
+	window.addEventListener("load", function() {
+    setTimeout(function() {
+      var loaderWrapper = document.getElementById("loader-wrapper");
+      // Hide the loader wrapper after a delay (e.g., 2 seconds)
+      loaderWrapper.style.display = "none";
+    }, 2000); // 2000 milliseconds = 2 seconds
+  });
+
     // Array of CSS and JavaScript resource URLs to load sequentially
     const resourceUrls = [
 		'iro.js',
