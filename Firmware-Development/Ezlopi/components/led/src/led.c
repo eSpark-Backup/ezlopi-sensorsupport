@@ -854,13 +854,13 @@ static void task(void *args) {
 				// case FX_MODE_PLAYLIST:
 				// 	// playlist_next(now, i);
 				// 	break;
-				case FX_MODE_DNA2D:
-					// WS2812FX_call(i, WS2812FX_mode_2Ddna);
-					WS2812FX_mode_2Ddna(i);
-					break;
-				case FX_MODE_DDNA_SPIRAL:
-					WS2812FX_mode_2DDNASpiral(i);
-					break;
+				// case FX_MODE_DNA2D:
+				// 	// WS2812FX_call(i, WS2812FX_mode_2Ddna);
+				// 	WS2812FX_mode_2Ddna(i);
+				// 	break;
+				// case FX_MODE_DDNA_SPIRAL:
+				// 	WS2812FX_mode_2DDNASpiral(i);
+				// 	break;
 				default:
 					break;
 				}
