@@ -4,21 +4,20 @@
 #include "ezlopi_core_actions.h"
 #include "ezlopi_core_devices.h"
 
-typedef struct ezlopi_deepsleep_action
+typedef struct ezlopi_rf_action
 {
     char* previous_trigger_value;
     char* current_trigger_value;
-} ezlopi_deepsleep_action_struct_t;
+} ezlopi_rf_action_struct_t;
 
 typedef enum
 {
-    MIN_10,
-    MIN_20,
-    MIN_30,
-    MIN_40,
-    DEEPSLEEP_MAX_ENUMS
+    RF_IDLE,
+    RF_SLEEP,
+    RF_TURNOFF,
+    RF_MAX_ENUMS
 
-} e_deepsleep_trigger_states_t;
+} e_rf_module_trigger_states_t;
 
 typedef struct deepsleep_parameters 
 {
@@ -27,6 +26,6 @@ typedef struct deepsleep_parameters
     int sleep_time_ms;
 } deepsleep_parameters_t;
 
-int device_0070_DeepSleep(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void* user_arg);
+int device_0070_RF_module(e_ezlopi_actions_t action, l_ezlopi_item_t *item, void *arg, void* user_arg);
 
 #endif // __DEVICE_0070_DEEPSLEEP
