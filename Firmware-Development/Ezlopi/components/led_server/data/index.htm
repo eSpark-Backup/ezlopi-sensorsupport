@@ -80,7 +80,7 @@
 			<div class="slider">
 				<!-- <i class="icons slider-icon" onclick="tglTheme()" style="transform: translateY(2px);">&#xe2a6;</i> -->
 				<div style="border: 1px solid black; border-radius: 12px; background-color: #3e46ae;" class="sliderwrap il">
-					<input id="sliderBri" onchange="setBri()" oninput="updateTrail(this)" max="255" min="1" type="range" value="128" />
+					<input id="sliderBri" onchange="setBri()" oninput="updateTrail(this)" max="255" min="0" type="range" value="128" />
 					<div class="sliderdisplay"></div>
 				</div>
 				<output class="sliderbubble"></output>
@@ -241,7 +241,7 @@
 			</div>
 		</div>
 		<div id="sliders">
-			<div id="slider0" class="slider">
+			<div id="slider0" class="slider" style="margin-bottom: 6px;">
 				<i class="icons slider-icon" onclick="tglFreeze()">&#xe325;</i>
 				<div tooltip="Effect speed" class="sliderwrap il">
 					<input id="sliderSpeed" class="noslide" onchange="setSpeed()" oninput="updateTrail(this)" max="255" min="0" type="range" value="128" />

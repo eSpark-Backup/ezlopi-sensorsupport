@@ -196,7 +196,7 @@ button {
 
 .e-icon, .g-icon, .sel-icon, .slider-icon {
 	cursor: pointer;
-	color: gray;
+	color: rgb(255, 255, 255);
 }
 
 .g-icon {
@@ -443,13 +443,17 @@ button {
 	bottom: 5px;
 }
 
+#slider0.slider{
+	margin-bottom: 6px;
+}
+
 #sliders {
 	position: -webkit-sticky;
 	position: sticky;
 	bottom: 0;
 	max-width: 300px;
 	z-index: 2;
-	padding-bottom: 10px;
+	padding-bottom: 15px;
 }
 
 #sliders .labels {
@@ -476,11 +480,12 @@ button {
 
 #sliders .slider {
 	padding-right: 64px; /* offset for bubble */
-	margin: 10px;
+	/* margin: 10px; */
+	margin: -6px;
 }
 
 #sliders .slider, #info .slider {
-	background-color: #3e46ae;	
+	background-color: #6975d0;	
 }
 
 #sliders .sliderwrap, .sbs .sliderwrap {
