@@ -220,7 +220,8 @@ void config_setMode(uint8_t mode) {
 			led_config.channel[i]->ox = led_config.channel[i]->oy = 0;
 			led_config.channel[i]->orientation = LED_ORI0_MEANDER;
 			led_config.channel[i]->black[0] = led_config.channel[i]->black[1] =
-				led_config.channel[i]->black[2] = -1;
+			led_config.channel[i]->black[2] = -1;
+			led_config.channel[i]->speed = 1000;
 		}		
 	}
 	ownled_setColorOrder(OWNLED_GRB);
@@ -374,7 +375,7 @@ void config_set_effect_intensity(uint8_t intensity){
 
 void config_set_effect_speed(uint8_t speed){
 
-	speed = (speed > 255) | (speed < 0) ? 128 : speed;
+	speed = (speed > 255) | (speed <= 0) ? 128 : speed;
 
 
 	uint16_t new_speed;

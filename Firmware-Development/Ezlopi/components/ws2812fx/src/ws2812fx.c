@@ -622,9 +622,9 @@ uint16_t WS2812FX_mode_strobe(int line) {
  * Classic Strobe effect. Cycling through the rainbow.
  */
 uint16_t WS2812FX_mode_strobe_rainbow(int line) {
-  return blink(line, color_wheel(SEGMENT->counter_mode_call & 0xFF), fx_segments[line]->colors[1], true);
+  return blink(line, color_wheel(SEGMENT->counter_mode_call & 0xFF), BLACK, true);
 }
-
+  
 /*
  * Color wipe function
  * LEDs are turned on (color1) in sequence, then turned off (color2) in
@@ -952,7 +952,7 @@ uint16_t WS2812FX_mode_scan(int line) {
   }
 
   for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
-    setPixelColor(line, i, fx_segments[line]->colors[1]);
+    setPixelColor(line, i, fx_segments[line]->colors[0]);
   }
 
   int led_offset =
@@ -1311,7 +1311,7 @@ uint16_t WS2812FX_mode_multi_strobe(int line) {
     if ((fx_segments[line]->counter_mode_step & 1) == 0) {
       for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop;
            i++) {
-        setPixelColor(line, i, fx_segments[line]->colors[1]);
+        setPixelColor(line, i, fx_segments[line]->colors[0]);
       }
       delay = 20;
     } else {
@@ -1980,10 +1980,10 @@ uint16_t WS2812FX_mode_icu(int line) {
 
   if (fx_segments[line]->aux_param3 == dest) { // pause between eye movements
     if (random8(6) == 0) {                    // blink once in a while
-      setPixelColor(line, fx_segments[line]->start + dest, BLACK);
+      setPixelColor(line, fx_segments[line]->start + dest, SEGCOLOR(0));
       setPixelColor(line,
                     fx_segments[line]->start + dest + virtualSegmentLength,
-                    BLACK);
+                    SEGCOLOR(0));
       return 200;
     }
     // fx_segments[line]->aux_param3 = random16l(segmentLength(line) / 2);
@@ -1991,9 +1991,9 @@ uint16_t WS2812FX_mode_icu(int line) {
     return 1000 + random16l(2000);
   }
 
-  setPixelColor(line, fx_segments[line]->start + dest, BLACK);
+  setPixelColor(line, fx_segments[line]->start + dest, SEGCOLOR(0));
   setPixelColor(line, fx_segments[line]->start + dest + virtualSegmentLength,
-                BLACK);
+                SEGCOLOR(0));
 
   if (fx_segments[line]->aux_param3 > fx_segments[line]->counter_mode_step) {
     fx_segments[line]->counter_mode_step++;
