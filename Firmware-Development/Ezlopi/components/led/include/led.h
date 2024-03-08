@@ -124,7 +124,7 @@ enum LED_ORIENTATION {
 
 enum LED_MODE 
 {  
-  #define FX_MODE(enumeration, y) FX_MODE_##enumeration,
+  #define FX_MODE(enumeration, y, z) FX_MODE_##enumeration,
   #include "effect_list.h"
 };
 

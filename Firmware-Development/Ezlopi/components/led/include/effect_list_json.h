@@ -3,5 +3,6 @@
 
 enum PAL_EFF {PALETTE_JSON, EFFECT_JSON};
 void create_list_json_string(char** json_string, enum PAL_EFF pal_eff);
+void create_fxdata_json_string(char** json_string);
 
 #endif /*_EFFECT_LIST_JSON_H_*/

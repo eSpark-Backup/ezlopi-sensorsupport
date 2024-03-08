@@ -59,6 +59,7 @@ enum webpage_name {
     JSON_EFFECTS,
     JSON_PALETTES,
     JSON_PALETTES_DATA,
+    JSON_FX_DATA,
     NOT_FOUND,
 };
 
@@ -177,6 +178,13 @@ static esp_err_t get_json_palettes_preview_js_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
+static esp_err_t get_json_fxdata_js_handler(httpd_req_t *req)
+{
+    populate_response(JSON_FX_DATA, req);
+
+    return ESP_OK;
+}
+
 static esp_err_t not_found_url_handler(httpd_req_t *req)
 {
     populate_response(NOT_FOUND, req);
@@ -243,6 +251,7 @@ static const Route routes[] = {
     {"/json/effects", HTTP_GET, get_json_effects_js_handler},
     {"/json/palettes", HTTP_GET, get_json_palettes_js_handler},
     {"/json/palx", HTTP_GET, get_json_palettes_preview_js_handler},
+    {"/json/fxdata", HTTP_GET, get_json_fxdata_js_handler},
     // {"/favicon.ico", HTTP_GET, not_found_url_handler},
 
     /* POST ROUTES */
@@ -284,7 +293,7 @@ httpd_handle_t start_webserver(void)
     // config.transport_mode = HTTPD_SSL_TRANSPORT_INSECURE;
 
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-    config.max_uri_handlers = 11;
+    config.max_uri_handlers = NUM_LED_ROUTES;
 
     /*certificates and key*/
     // extern const unsigned char cacert_pem_start[] asm("_binary_cacert_pem_start");
@@ -490,15 +499,35 @@ void populate_response(enum webpage_name page, httpd_req_t *req)
         //     printf("Cannot Send Palx Response due to unknown error!\n");
         // }
         break;
+    case JSON_FX_DATA:
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+        memset((void *)response_buffer, 0, sizeof(response_buffer));
+
+        create_fxdata_json_string(&src_res);
+        if(src_res != NULL)
+        {
+            strcpy(response_buffer, src_res);
+        }
+        else
+        {
+            printf("response buffer is NULL");
+        }
+        httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
+        free(src_res);
+    break;
     case NOT_FOUND:
+
+
+    break;
+    default:
         httpd_resp_set_type(req, "application/json");
         httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
         memset((void *)response_buffer, 0, sizeof(response_buffer));
         sprintf(response_buffer, "NOT FOUND");
         httpd_resp_send(req, response_buffer, HTTPD_RESP_USE_STRLEN);
         return;
-    default:
-        break;
+    break;
     }
 
     // memset((void *)response_buffer, 0, sizeof(response_buffer));

@@ -33,6 +33,7 @@ void WS2812FX_deinit(int line);
 #define SEGENV           fx_segments[line]
 #define SEGLEN           segmentLength(line)
 #define SEGSPEED         SEGMENT->speed
+#define SEGINTENSITY     SEGMENT->intensity
 #define SEGPALETTE       gGradientPalettes[SEGMENT->palette].palette
 #define SEGPALETTESIZE   gGradientPalettes[SEGMENT->palette].size
 #define SEGCOLOR(x)      fx_segments[line]->colors[x]

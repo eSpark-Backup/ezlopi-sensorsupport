@@ -1293,7 +1293,7 @@ function updateUI()
 	gId('rgbwrap').style.display = (hasRGB && ccfg.rgb) ? "block":"none";     // RGB sliders
 	gId('qcs-w').style.display   = (hasRGB && ccfg.quick) ? "block":"none";   // quick selection
 	//gId('csl').style.display     = (hasRGB || hasWhite) ? "block":"none";     // color selectors (hide for On/Off bus)
-	//gId('palw').style.display    = (hasRGB) ? "inline-block":"none";          // palettes are shown/hidden in setEffectParameters()
+	// gId('palw').style.display    = (hasRGB) ? "inline-block":"none";          // palettes are shown/hidden in setEffectParameters()
 
 	updatePA();
 	updatePSliders();

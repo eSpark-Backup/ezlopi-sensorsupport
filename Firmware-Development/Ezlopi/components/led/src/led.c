@@ -690,9 +690,9 @@ static void task(void *args) {
 					WS2812FX_call(i, WS2812FX_mode_android);
 					// WS2812FX_mode_android(i);
 					break;
-				case FX_MODE_COLOR_WIPE_INV:
-					WS2812FX_call(i, WS2812FX_mode_color_wipe_inv);
-					break;
+				// case FX_MODE_COLOR_WIPE_INV:
+				// 	WS2812FX_call(i, WS2812FX_mode_color_wipe_inv);
+				// 	break;
 				case FX_MODE_COLOR_WIPE_REV:
 					WS2812FX_call(i, WS2812FX_mode_color_wipe_rev);
 					break;

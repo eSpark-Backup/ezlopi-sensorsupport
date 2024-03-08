@@ -365,6 +365,10 @@ void config_set_segment_start_stop(int seg_id, int seg_start, int seg_stop){
 }
 
 void config_set_effect_intensity(uint8_t intensity){
+	// intensity = (intensity > 255) | (intensity <= 0) ? 128 : intensity;
+
+	intensity = (intensity > 255) ? 255 : ((intensity <= 0) ? 1 : intensity);
+
 	for(int i = 0; i < led_config.channels; i++){
 		if((NULL != led_config.channel[i])&&(led_config.channel[i]->selected)){
 			led_config.channel[i]->intensity = intensity;
@@ -379,7 +383,7 @@ void config_set_effect_speed(uint8_t speed){
 
 
 	uint16_t new_speed;
-	new_speed = ((float)speed/255.)*2000.;
+	new_speed = ((float)speed/255.0F)*2000.0F;
 	ESP_LOGI(TAG, "NEW SPEED  = %d", new_speed);
 
 	for(int i = 0; i < led_config.channels; i++){
@@ -910,7 +914,7 @@ void config_coloring_reload() {
 	nvs_close(my_handle);
 }
 
-static struct LED_COLORING defaults_led_coloring = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+static struct LED_COLORING defaults_led_coloring = { 1, 1, 1, 1, 1, 1, 1, 1, 0.3, 1 };
 // static struct LED_COLORING defaults_led_coloring = { 0, 1, 0, 1, 0, 1, 0, 1, 0, 1 };
 
 void config_coloring_defaults() {
@@ -1101,7 +1105,7 @@ char* json_update_config()
 			cJSON_AddItemToArray(col_array, col_element_3);
 
 			cJSON_AddNumberToObject(seg_object, "fx", MYLED->mode);
-			cJSON_AddNumberToObject(seg_object, "sx", (uint8_t)((MYLED->speed / 2000.f)*255));
+			cJSON_AddNumberToObject(seg_object, "sx", (uint8_t)(((MYLED->speed+1) / 2000.f)*255)); //1 added because when sx is set to 168 from UI, receive 168 but in response send 167. due to division
 			cJSON_AddNumberToObject(seg_object, "ix", MYLED->intensity);
 			cJSON_AddNumberToObject(seg_object, "pal", MYLED->palette);
 			cJSON_AddNumberToObject(seg_object, "bri", (MYLED->user_brightness));
