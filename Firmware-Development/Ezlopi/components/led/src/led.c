@@ -849,7 +849,8 @@ static void task(void *args) {
 					WS2812FX_call(i, WS2812FX_mode_tricolor_chase);
 					break;
 				case FX_MODE_ICU:
-					WS2812FX_call(i, WS2812FX_mode_icu);
+					WS2812FX_call(i, mode_icu_wled);
+					// WS2812FX_call(i, WS2812FX_mode_icu);
 					break;
 				// case FX_MODE_PLAYLIST:
 				// 	// playlist_next(now, i);

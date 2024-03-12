@@ -147,7 +147,7 @@ static void setDefaults() {
 
 		led_config.channel[i]->options = 0;
 
-		led_config.channel[i]->color[0] = 0xFFFF00;
+		led_config.channel[i]->color[0] = 0x3E46AE;
 		led_config.channel[i]->color[1] = 0x00FF00;
 		led_config.channel[i]->color[2] = 0x0000FF;
 
@@ -222,6 +222,7 @@ void config_setMode(uint8_t mode) {
 			led_config.channel[i]->black[0] = led_config.channel[i]->black[1] =
 			led_config.channel[i]->black[2] = -1;
 			led_config.channel[i]->speed = 1000;
+			led_config.channel[i]->intensity = 128;
 		}		
 	}
 	ownled_setColorOrder(OWNLED_GRB);

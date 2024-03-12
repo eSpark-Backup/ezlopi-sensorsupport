@@ -37,6 +37,7 @@ void WS2812FX_deinit(int line);
 #define SEGPALETTE       gGradientPalettes[SEGMENT->palette].palette
 #define SEGPALETTESIZE   gGradientPalettes[SEGMENT->palette].size
 #define SEGCOLOR(x)      fx_segments[line]->colors[x]
+#define SPEED_FORMULA_L  (5U + (50U*(255U - (uint8_t)((SEGMENT->speed/2000.0F)*255.0F)))/SEGLEN)
 #define default_opacity  255
 
 #define COLORFROMPALETTE(x) colorFromPalette(SEGPALETTE, SEGPALETTESIZE, SEGLEN, x, default_opacity, SEGMENT->options)
@@ -78,6 +79,7 @@ uint16_t WS2812FX_mode_flash_sparkle(int line);
 uint16_t WS2812FX_mode_halloween(int line);
 uint16_t WS2812FX_mode_hyper_sparkle(int line);
 uint16_t WS2812FX_mode_icu(int line);
+uint16_t mode_icu_wled(int line);
 // uint16_t WS2812FX_mode_larson_scanner(int line);
 uint16_t WS2812FX_mode_merry_christmas(int line);
 uint16_t WS2812FX_mode_multi_dynamic(int line);

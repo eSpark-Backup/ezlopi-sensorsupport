@@ -22,6 +22,7 @@
 #include <cpt_palettes.h>
 #include "lib8tion.h"
 
+
 /*function prototypes*/
 static uint16_t random16mm( uint16_t min, uint16_t lim);
 static uint16_t random16l( uint16_t lim);
@@ -95,6 +96,17 @@ static inline uint16_t map(uint16_t value, uint16_t fromLow, uint16_t fromHigh, 
 
     // Perform the mapping calculation
     return (uint16_t)((uint32_t)(value - fromLow) * (uint32_t)(toHigh - toLow) / (uint32_t)(fromHigh - fromLow) + toLow);
+}
+
+static inline long map_long(long x, long in_min, long in_max, long out_min, long out_max) {
+    const long dividend = out_max - out_min;
+    const long divisor = in_max - in_min;
+    const long delta = x - in_min;
+    if(divisor == 0){
+        // ESP_LOGI("Invalid map input range, min == max");
+        return -1; //AVR returns -1, SAM returns 0
+    }
+    return (delta * dividend + (divisor / 2)) / divisor + out_min;
 }
 
 // some common colors
@@ -2075,12 +2087,16 @@ uint16_t WS2812FX_mode_circus_combustus(int line) {
  * ICU mode
  */
 uint16_t WS2812FX_mode_icu(int line) {
-  // CREATEDEFAULTPALETTE(SEGCOLOR(0));
+  CREATEDEFAULTPALETTE(SEGCOLOR(1));
   int virtualSegmentLength = 5;
   if(SEGMENT->counter_mode_step + virtualSegmentLength  >= SEGLEN){
     SEGMENT->counter_mode_step = 0;
   }
   uint16_t dest = fx_segments[line]->counter_mode_step ;
+
+  for (uint16_t i = SEGMENT->start; i < SEGMENT->stop; i++) {
+    setPixelColor(line, i, COLORFROMPALETTE(i));
+  }
 
 
   // setPixelColor(line, fx_segments[line]->start + dest,
@@ -2127,6 +2143,48 @@ uint16_t WS2812FX_mode_icu(int line) {
   // return (fx_segments[line]->speed / segmentLength(line));
   return 15*(2000/fx_segments[line]->speed);
 }
+
+/*
+ * ICU mode
+ */
+uint16_t mode_icu_wled(int line) {
+  CREATEDEFAULTPALETTE(SEGCOLOR(0));
+  uint16_t dest = SEGENV->counter_mode_step & 0xFFFF;
+  uint8_t space = (SEGMENT->intensity >> 3) + 2;
+
+  // if (!SEGMENT.check2) 
+    fill(line, R(SEGCOLOR(1)), G(SEGCOLOR(1)), B(SEGCOLOR(1)));
+
+  byte pindex = map_long(dest, 0, SEGLEN-SEGLEN/space, 0, 255);
+  uint32_t col = colorFromPalette(SEGPALETTE, SEGPALETTESIZE, 255, pindex, default_opacity, SEGMENT->options);
+
+  setPixelColor(line, dest + SEGMENT->start, col);
+  setPixelColor(line, dest + SEGLEN/space + SEGMENT->start, col);
+
+  if(SEGENV->aux_param3 == dest) { // pause between eye movements
+    if(random8l(6) == 0) { // blink once in a while
+      setPixelColor(line, dest + SEGMENT->start, SEGCOLOR(1));
+      setPixelColor(line, dest + SEGLEN/space + SEGMENT->start, SEGCOLOR(1));
+      return 200;
+    }
+    SEGENV->aux_param3 = random16l(SEGLEN-SEGLEN/space);
+    return 1000 + random16l(2000);
+  }
+
+  if(SEGENV->aux_param3 > SEGENV->counter_mode_step) {
+    SEGENV->counter_mode_step++;
+    dest++;
+  } else if (SEGENV->aux_param3 < SEGENV->counter_mode_step) {
+    SEGENV->counter_mode_step--;
+    dest--;
+  }
+
+  setPixelColor(line, dest + SEGMENT->start, col);
+  setPixelColor(line, dest + SEGLEN/space + SEGMENT->start, col);
+
+  return SPEED_FORMULA_L;
+}
+
 
 /////////////////////
 //      2D DNA     //
