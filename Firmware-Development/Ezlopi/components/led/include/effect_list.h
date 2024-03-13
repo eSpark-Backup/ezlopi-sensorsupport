@@ -29,7 +29,7 @@ FX_MODE(FLASH_SPARKLE,          "Flash Sparkle",                "!,;Fx,Bg;!;;m12
 FX_MODE(HYPER_SPARKLE,          "Hyper Sparkle",                "!,;Fx,Bg;!;;m12=0")
 FX_MODE(STROBE,                 "Strobe",                       "!;!,!;!;01")
 FX_MODE(STROBE_RAINBOW,         "Strobe Rainbow",               "!;,!;!;01")
-FX_MODE(MULTI_STROBE,           "Multi Strobe",                 "!;!,!;!;01")
+FX_MODE(MULTI_STROBE,           "Strobe Mega",                  "!,!;!,!;!;01")
 FX_MODE(POLICE_STROBE,          "Police Strobe",                "!;!,!;!;01")
 FX_MODE(ANDROID,                "Android",                      "!,Width;!,!;!;;m12=1")
 FX_MODE(BLINK_RAINBOW,          "Blink Rainbow",                "Frequency,;,!;!;01")

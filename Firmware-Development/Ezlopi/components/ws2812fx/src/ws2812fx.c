@@ -619,11 +619,48 @@ static uint16_t blink(int line, uint32_t color1, uint32_t color2, int strobe) {
 }
 
 /*
+ * Blink/strobe function
+ * Alternate between color1 and color2
+ * if(strobe == true) then create a strobe effect
+ */
+static uint16_t blink_wled(int line, uint32_t color1, uint32_t color2, bool strobe) {
+
+  uint32_t cycleTime = (255 - ((SEGMENT->speed/2000.0F)*255.0F))*20;
+  uint32_t onTime = 20;
+  if (!strobe) onTime += ((cycleTime * SEGMENT->intensity) >> 8);
+  cycleTime += 20*2;
+  // uint32_t it = strip->now / cycleTime;
+  uint32_t it = SEGMENT->next_time / cycleTime;
+  uint32_t rem = SEGMENT->next_time % cycleTime;
+
+  bool on = false;
+  if (it != SEGENV->counter_mode_step //new iteration, force on state for one frame, even if set time is too brief
+      || rem <= onTime) {
+    on = true;
+  }
+
+  SEGENV->counter_mode_step = it; //save previous iteration
+
+  uint32_t color = on ? color1 : color2;
+  if (color == color2)
+  {
+    for (int i = 0; i < SEGLEN; i++) {
+      setPixelColor(line, i, COLORFROMPALETTE(i));
+    }
+  } else fill(line, R(color), G(color), B(color));
+
+  return 20;
+}
+
+
+/*
  * Normal blinking. 50% on/off time.
  */
 uint16_t WS2812FX_mode_blink(int line) {
-  return blink(line, fx_segments[line]->colors[0], fx_segments[line]->colors[1],
-               false);
+  
+  // return blink(line, fx_segments[line]->colors[0], fx_segments[line]->colors[1],
+  //              false);
+  return blink_wled(line, fx_segments[line]->colors[0], fx_segments[line]->colors[1], false);
 }
 // const char _data_FX_MODE_BLINK[] = "Blink@!,Duty cycle;!,!;!;01";
 
@@ -631,22 +668,26 @@ uint16_t WS2812FX_mode_blink(int line) {
  * Classic Blink effect. Cycling through the rainbow.
  */
 uint16_t WS2812FX_mode_blink_rainbow(int line) {
-  return blink(line, color_wheel(fx_segments[line]->counter_mode_call & 0xFF), fx_segments[line]->colors[0], false);
+  // return blink(line, color_wheel(fx_segments[line]->counter_mode_call & 0xFF), fx_segments[line]->colors[0], false);
+  return blink_wled(line, color_wheel(SEGENV->counter_mode_call & 0xFF), SEGCOLOR(1), false);
 }
 
 /*
  * Classic Strobe effect.
  */
 uint16_t WS2812FX_mode_strobe(int line) {
-  return blink(line, fx_segments[line]->colors[0], fx_segments[line]->colors[1],
-               true);
+  // return blink(line, fx_segments[line]->colors[0], fx_segments[line]->colors[1],
+  //              true);
+  return blink_wled(line, fx_segments[line]->colors[0], fx_segments[line]->colors[1],
+               true);               
 }
 
 /*
  * Classic Strobe effect. Cycling through the rainbow.
  */
 uint16_t WS2812FX_mode_strobe_rainbow(int line) {
-  return blink(line, SEGCOLOR(1), color_wheel(SEGMENT->counter_mode_call & 0xFF), true);
+  // return blink(line, SEGCOLOR(1), color_wheel(SEGMENT->counter_mode_call & 0xFF), true);
+  return blink_wled(line, color_wheel(SEGMENT->counter_mode_call & 0xFF), SEGCOLOR(1), true);
 }
   
 /*
@@ -743,7 +784,7 @@ static uint16_t color_wipe_wled(int line, bool rev, bool useRandomColors) {
   }
   return 5;
   // return 200*(fx_segments[line]->speed/2000.0F);
-  // return FRAMETIME;
+  // return 20;
 }
 
 /*
@@ -1346,8 +1387,9 @@ uint16_t WS2812FX_mode_multi_strobe(int line) {
     setPixelColor(line, i, COLORFROMPALETTE(i-(SEGMENT->start)));
   }
 
-  uint16_t delay = 200 + ((9 - (fx_segments[line]->speed % 10)) * 100);
-  uint16_t count = 2 * ((fx_segments[line]->speed / 100) + 1);
+  // uint16_t delay = 200 + ((9 - (fx_segments[line]->speed % 10)) * 100);
+  uint16_t delay = 50 + 20*(uint16_t)(255-((SEGMENT->speed/2000.0F)*255.0F));
+  uint16_t count = 2 * ((fx_segments[line]->intensity / 10) + 1);
   if (fx_segments[line]->counter_mode_step < count) {
     if ((fx_segments[line]->counter_mode_step & 1) == 0) {
       for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop;
@@ -1373,7 +1415,7 @@ uint16_t WS2812FX_mode_multi_strobe(int line) {
 static uint16_t police_strobe(int line, uint32_t color1, uint32_t color2) {
   if (SEGLEN == 1) return WS2812FX_mode_static(line);
   uint16_t delay = 1 + (20<<3) / SEGLEN;  // longer segments should change faster
-  // uint16_t delay = 1 + (FRAMETIME<<3) / SEGLEN;  // longer segments should change faster
+  // uint16_t delay = 1 + (20<<3) / SEGLEN;  // longer segments should change faster
   uint32_t it = SEGENV->next_time;
   // uint32_t it = SEGENV->next_time / map(SEGSPEED, 0, 2000 , delay<<4, delay);
   uint16_t offset = it % SEGLEN;
@@ -1388,7 +1430,7 @@ static uint16_t police_strobe(int line, uint32_t color1, uint32_t color2) {
   }
   // return 10;
   return 265 - map(SEGSPEED, 0, 2000 , 0, 255);
-  // return FRAMETIME;
+  // return 20;
 }
 
 /*
@@ -1488,8 +1530,8 @@ uint16_t WS2812FX_mode_android(int line) {
   }
   SEGENV->counter_mode_step = a;
 
-  // return 3 + ((16 * (uint32_t)(2000 -SEGMENT->speed)) / SEGLEN);
-  return 15*(2000/SEGSPEED);
+  return 3 + ((8 * (uint32_t)(255 - ((SEGMENT->speed/2000.0F)*255.0F))) / SEGLEN);
+  // return 15*(2000/SEGSPEED);
   // return 20;
 }
 
