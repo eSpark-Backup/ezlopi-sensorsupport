@@ -645,7 +645,7 @@ static uint16_t blink_wled(int line, uint32_t color1, uint32_t color2, bool stro
   if (color == color2)
   {
     for (int i = 0; i < SEGLEN; i++) {
-      setPixelColor(line, i, COLORFROMPALETTE(i));
+      setPixelColor(line, i + SEGSTART, COLORFROMPALETTE(i));
     }
   } else fill(line, R(color), G(color), B(color));
 
@@ -1542,119 +1542,71 @@ uint16_t WS2812FX_mode_android(int line) {
  */
 
 static uint16_t chase(int line, uint32_t color1, uint32_t color2,
-                      uint32_t color3) {
+                      uint32_t color3, bool do_palette) {
+  uint16_t counter = SEGMENT->next_time * (((uint8_t)((SEGMENT->speed/2000.0F)*255.0F) >> 2) + 1);
+  uint16_t a = (counter * SEGLEN) >> 16;
 
-  CREATEDEFAULTPALETTE(color1);
+  bool chase_random = (SEGMENT->mode == FX_MODE_CHASE_RANDOM);
+  if (chase_random) {
+    if (a < SEGENV->counter_mode_step) //we hit the start again, choose new color for Chase random
+    {
+      SEGENV->aux_param2 = SEGENV->aux_param; //store previous random color
+      SEGENV->aux_param = get_random_wheel_index(SEGENV->aux_param);
+    }
+    color1 = color_wheel(SEGENV->aux_param);
+  }
+  SEGENV->counter_mode_step = a;
 
-  uint16_t a = fx_segments[line]->counter_mode_step;
-  uint16_t b = (a + 1) % segmentLength(line);
-  uint16_t c = (b + 1) % segmentLength(line);
-  // uint16_t a = 0,b = 0,c = 0;
+  // Use intensity setting to vary chase up to 1/2 string length
+  uint8_t size = 1 + ((SEGMENT->intensity * SEGLEN) >> 10);
 
-  // color1 = COLORFROMPALETTE(a);
+  uint16_t b = a + size; //"trail" of chase, filled with color1
+  if (b > SEGLEN) b -= SEGLEN;
+  uint16_t c = b + size;
+  if (c > SEGLEN) c -= SEGLEN;
 
-  if (isReverse(line)) {
-    setPixelColor(line, fx_segments[line]->stop - a, color1);
-    setPixelColor(line, fx_segments[line]->stop - b, color2);
-    setPixelColor(line, fx_segments[line]->stop - c, color3);
-  } else {
-    setPixelColor(line, fx_segments[line]->start + a, color1);
-    setPixelColor(line, fx_segments[line]->start + b, color2);
-    setPixelColor(line, fx_segments[line]->start + c, color3);
+  //background
+  if (do_palette)
+  {
+    for (int i = 0; i < SEGLEN; i++) {
+      setPixelColor(line, i + SEGSTART, COLORFROMPALETTE(i));
+    }
+  } else fill(line, R(color1), G(color1), B(color1));
+
+  //if random, fill old background between a and end
+  if (chase_random)
+  {
+    color1 = color_wheel(SEGENV->aux_param2);
+    for (int i = a; i < SEGLEN; i++)
+      setPixelColor(line, i + SEGSTART, color1);
   }
 
-// for (uint16_t i = 0; i <= (uint16_t)((SEGINTENSITY/255.0F)*(SEGLEN/2.0F)); i+=3) {
-//     a = fx_segments[line]->counter_mode_step;
-//     b = (a + 1 + i) % segmentLength(line);
-//     c = (b + 1 + i) % segmentLength(line);
-//   if (isReverse(line)) {
-//     setPixelColor(line, fx_segments[line]->stop - a, color1);
-//     setPixelColor(line, fx_segments[line]->stop - b, color2);
-//     setPixelColor(line, fx_segments[line]->stop - c, color3); 
-//   } else {
-//     // setPixelColor(line, fx_segments[line]->start + ((a+i)%segmentLength(line)), color1);
-//     // setPixelColor(line, fx_segments[line]->start + ((a+i+1)%segmentLength(line)), color2);
-//     // setPixelColor(line, fx_segments[line]->start + ((a+i+2)%segmentLength(line)), color3);
-//     setPixelColor(line, fx_segments[line]->start + a, color1);
-//     setPixelColor(line, fx_segments[line]->start + b, color2);
-//     setPixelColor(line, fx_segments[line]->start + c, color3);    
-//   }
+  //fill between points a and b with color2
+  if (a < b)
+  {
+    for (int i = a; i < b; i++)
+      setPixelColor(line, i + SEGSTART, color2);
+  } else {
+    for (int i = a; i < SEGLEN; i++) //fill until end
+      setPixelColor(line, i + SEGSTART, color2);
+    for (int i = 0; i < b; i++) //fill from start until b
+      setPixelColor(line, i + SEGSTART, color2);
+  }
 
-  //  Use intensity setting to vary chase up to 1/2 string length
-  // uint8_t size = 1 + ((SEGMENT->intensity * SEGLEN) >> 10);
-  // uint16_t a = fx_segments[line]->counter_mode_step;
-  // uint16_t b = a + size; //"trail" of chase, filled with color1
-  // if (b > SEGLEN) b -= SEGLEN;
-  // uint16_t c = b + size;
-  // if (c > SEGLEN) c -= SEGLEN;
+  //fill between points b and c with color2
+  if (b < c)
+  {
+    for (int i = b; i < c; i++)
+      setPixelColor(line, i + SEGSTART, color3);
+  } else {
+    for (int i = b; i < SEGLEN; i++) //fill until end
+      setPixelColor(line, i + SEGSTART, color3);
+    for (int i = 0; i < c; i++) //fill from start until c
+      setPixelColor(line, i + SEGSTART, color3);
+  }
 
-
-
-  // bool chase_random = (SEGMENT->mode == FX_MODE_CHASE_RANDOM);
-  // if (chase_random) {
-  //   if (a < SEGENV->counter_mode_step) //we hit the start again, choose new color for Chase random
-  //   {
-  //     SEGENV->aux_param2 = SEGENV->aux_param; //store previous random color
-  //     SEGENV->aux_param = get_random_wheel_index(SEGENV->aux_param);
-  //   }
-  //   // color1 = color_wheel(SEGENV->aux_param);
-  // }
-  // SEGENV->counter_mode_step = a;
-
-  // if(SEGPALETTE == DEFAULT_PALETTE)
-  // {
-    // for (int i = 0; i < SEGLEN; i++) 
-    // {
-    //   setPixelColor(line, i, COLORFROMPALETTE(i));
-    // }
-  // }
-  // else
-  // {
-  //   for (int i = 0; i < SEGLEN; i++) 
-  //   {
-  //     setPixelColor(line, i, COLORFROMPALETTE(i));
-  //   }
-  // }
-
-  // for (int i = SEGMENT->start; i < a; i++)
-  //   setPixelColor(line, i, COLORFROMPALETTE(i));
-
-  // for (int i = SEGMENT->start; i < a; i++)
-  //   setPixelColor(line, i, COLORFROMPALETTE(i));   
-
-  // //fill between points a and b with color2
-  // if (a < b)
-  // {
-  //   for (int i = a; i < b; i++)
-  //     setPixelColor(line, i, color2);
-  // } else {
-  //   for (int i = a; i < SEGLEN; i++) //fill until end
-  //     setPixelColor(line, i, color2);
-  //   for (int i = 0; i < b; i++) //fill from start until b
-  //     setPixelColor(line, i, color2);
-  // }
-
-  // //fill between points b and c with color2
-  // if (b < c)
-  // {
-  //   for (int i = b; i < c; i++)
-  //     setPixelColor(line, i, color3);
-  // } else {
-  //   for (int i = b; i < SEGLEN; i++) //fill until end
-  //     setPixelColor(line, i, color3);
-  //   for (int i = 0; i < c; i++) //fill from start until c
-  //     setPixelColor(line, i, color3);
-  // }
-
-
-  if (b == 0)
-    setCycle(line);
-  else
-    clearCycle(line);
-
-  fx_segments[line]->counter_mode_step =
-      (fx_segments[line]->counter_mode_step + 1) % segmentLength(line);
-  return (10 + (255 - map(SEGSPEED, 0, 2000, 0, 255))*0.5);
+  return 20;
+  
 }
 
 /*
@@ -1662,7 +1614,7 @@ static uint16_t chase(int line, uint32_t color1, uint32_t color2,
  */
 uint16_t WS2812FX_mode_bicolor_chase(int line) {
   return chase(line, fx_segments[line]->colors[0], fx_segments[line]->colors[1],
-               fx_segments[line]->colors[2]);
+               fx_segments[line]->colors[2], true);
 }
 
 /*
@@ -1699,14 +1651,16 @@ static uint16_t fire_flicker(int line, int rev_intensity) {
  * White running on _color.
  */
 uint16_t WS2812FX_mode_chase_color(int line) {
-  return chase(line, fx_segments[line]->colors[1], fx_segments[line]->colors[0], fx_segments[line]->colors[2]);
+  // return chase(line, fx_segments[line]->colors[1], fx_segments[line]->colors[0], fx_segments[line]->colors[2]);
+  return chase(line, SEGCOLOR(1), (SEGCOLOR(2)) ? SEGCOLOR(2) : SEGCOLOR(0), SEGCOLOR(0), true);
 }
 
 /*
  * Black running on _color.
  */
 uint16_t WS2812FX_mode_chase_blackout(int line) {
-  return chase(line, fx_segments[line]->colors[0], BLACK, BLACK);
+  // return chase(line, fx_segments[line]->colors[0], BLACK, BLACK);
+  return chase(line, fx_segments[line]->colors[0], BLACK, BLACK, true);
 }
 
 /*
@@ -1714,18 +1668,18 @@ uint16_t WS2812FX_mode_chase_blackout(int line) {
  */
 uint16_t WS2812FX_mode_chase_white(int line) {
   return chase(line, WHITE, fx_segments[line]->colors[0],
-               fx_segments[line]->colors[0]);
+               fx_segments[line]->colors[0], true);
 }
 
 /*
  * White running followed by random color.
  */
 uint16_t WS2812FX_mode_chase_random(int line) {
-  if (fx_segments[line]->counter_mode_step == 0) {
-    fx_segments[line]->aux_param =
-        get_random_wheel_index(fx_segments[line]->aux_param);
-  }
-  return chase(line, color_wheel(fx_segments[line]->aux_param), WHITE, WHITE);
+  // if (fx_segments[line]->counter_mode_step == 0) {
+  //   fx_segments[line]->aux_param =
+  //       get_random_wheel_index(fx_segments[line]->aux_param);
+  // }
+  return chase(line, SEGCOLOR(1), (SEGCOLOR(2)) ? SEGCOLOR(2) : SEGCOLOR(0), SEGCOLOR(0), false);
 }
 
 /*
@@ -1741,7 +1695,7 @@ uint16_t WS2812FX_mode_chase_rainbow_white(int line) {
                                  (fx_segments[line]->counter_mode_call & 0xFF)) &
                                 0xFF);
 
-  return chase(line, SEGCOLOR(0), color2, color3);
+  return chase(line, SEGCOLOR(0), color2, color3, true);
 }
 
 /*
@@ -1753,7 +1707,7 @@ uint16_t WS2812FX_mode_chase_rainbow(int line) {
   uint32_t color = color_wheel(
       ((fx_segments[line]->counter_mode_step * color_sep) + color_index) & 0xFF);
 
-  return chase(line,  SEGCOLOR(1), color, color);
+  return chase(line, color, SEGCOLOR(0), SEGCOLOR(1), false);
 }
 
 /*
@@ -1765,7 +1719,7 @@ uint16_t WS2812FX_mode_chase_blackout_rainbow(int line) {
   uint32_t color = color_wheel(
       ((fx_segments[line]->counter_mode_step * color_sep) + color_index) & 0xFF);
 
-  return chase(line, color, BLACK, BLACK);
+  return chase(line, color, BLACK, BLACK, true);
 }
 
 /*

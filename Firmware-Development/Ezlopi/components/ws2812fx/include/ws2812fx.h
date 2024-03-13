@@ -31,6 +31,7 @@ void WS2812FX_deinit(int line);
 
 #define SEGMENT          fx_segments[line]
 #define SEGENV           fx_segments[line]
+#define SEGSTART         fx_segments[line]->start
 #define SEGLEN           segmentLength(line)
 #define SEGSPEED         SEGMENT->speed
 #define SEGINTENSITY     SEGMENT->intensity
