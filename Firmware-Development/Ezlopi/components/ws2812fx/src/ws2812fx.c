@@ -845,14 +845,31 @@ uint16_t WS2812FX_mode_color_sweep_random(int line) {
  * to the next random color.
  */
 uint16_t WS2812FX_mode_random_color(int line) {
-  fx_segments[line]->aux_param = get_random_wheel_index(
-      fx_segments[line]->aux_param); // aux_param will store our random color wheel index
-  uint32_t color = color_wheel(fx_segments[line]->aux_param);
+  uint32_t cycleTime = 200 + (255 - ((SEGMENT->speed/2000.0F)*255.0F))*50;
+  uint32_t it = SEGMENT->next_time / cycleTime;
+  uint32_t rem = SEGMENT->next_time % cycleTime;
+  uint16_t fadedur = (cycleTime * SEGMENT->intensity) >> 8;
 
-  for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
-    setPixelColor(line, i, color);
+  uint32_t fade = 255;
+  if (fadedur) {
+    fade = (rem * 255) / fadedur;
+    if (fade > 255) fade = 255;
   }
-  return 50*(2000/fx_segments[line]->speed);
+
+  if (SEGENV->counter_mode_call == 0) {
+    SEGENV->aux_param = random8();
+    SEGENV->counter_mode_step = 2;
+  }
+  if (it != SEGENV->counter_mode_step) //new color
+  {
+    SEGENV->aux_param2 = SEGENV->aux_param;
+    SEGENV->aux_param = get_random_wheel_index(SEGENV->aux_param); //aux_param will store our random color wheel index
+    SEGENV->counter_mode_step = it;
+  }
+
+  uint32_t fill_color = color_blend(color_wheel(SEGENV->aux_param2), color_wheel(SEGENV->aux_param), fade);
+  fill(line, R(fill_color), G(fill_color), B(fill_color));
+  return 20;
 }
 
 /*
@@ -1080,16 +1097,19 @@ uint16_t WS2812FX_mode_dual_scan(int line) {
  * Cycles all LEDs at once through a rainbow.
  */
 uint16_t WS2812FX_mode_rainbow(int line) { //COLORLOOP
-  uint32_t color = color_wheel(SEGMENT->counter_mode_step);
-  // led_coloring.saturation = (SEGINTENSITY/255.0F)*1;
-  color = adjust_saturation(color, ((SEGINTENSITY/255.0F)*1));
-  for (uint16_t i = SEGMENT->start; i <= SEGMENT->stop; i++) {
-    setPixelColor(line, i, color);
+  uint16_t counter = (SEGMENT->next_time * (((uint8_t)((SEGMENT->speed/2000.0F)*255.0F) >> 2) +2)) & 0xFFFF;
+  counter = counter >> 8;
+
+  uint32_t fill_color = 0;
+  if (SEGMENT->intensity < 128){
+    fill_color = color_blend(color_wheel(counter),WHITE,128-SEGMENT->intensity);
+    fill(line, R(fill_color), G(fill_color), B(fill_color));
+  } else {
+    fill_color = color_wheel(counter);
+    fill(line, R(fill_color), G(fill_color), B(fill_color));
   }
 
-  SEGMENT->counter_mode_step =
-      (SEGMENT->counter_mode_step + (int)(0.01*SEGMENT->speed)) & 0xFF;
-  return 25*(2000/SEGMENT->speed);
+  return 20;
 }
 
 /*
@@ -1566,7 +1586,7 @@ static uint16_t chase(int line, uint32_t color1, uint32_t color2,
   if (c > SEGLEN) c -= SEGLEN;
 
   //background
-  if (do_palette)
+  if (SEGMENT->palette != DEFAULT_PALETTE)
   {
     for (int i = 0; i < SEGLEN; i++) {
       setPixelColor(line, i + SEGSTART, COLORFROMPALETTE(i));
