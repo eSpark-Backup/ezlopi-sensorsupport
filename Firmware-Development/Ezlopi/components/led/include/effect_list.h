@@ -19,7 +19,7 @@ FX_MODE(RAINBOW,                "Colorloop",                    "!,Saturation;;!
 FX_MODE(RAINBOW_CYCLE,          "Rainbow",                      "!,;;!")
 
 FX_MODE(SCAN,                   "Scan",                         "!,;!,!;!;;m12=0")
-FX_MODE(DUAL_SCAN,              "Dual Scan",                    "!,# of dots;!,!,;!;;m12=0")
+FX_MODE(DUAL_SCAN,              "Dual Scan",                    "!,# of dots;!,!,!;!;;m12=0")
 FX_MODE(FADE,                   "Fade",                         "!;!,!;!;01")
 FX_MODE(THEATER_CHASE,          "Theater Chase",                "!,Gap size;!,!;!")
 FX_MODE(THEATER_CHASE_RAINBOW,  "Theater Chase Rainbow",        "!,Gap size;,!;!")
