@@ -380,7 +380,8 @@ void config_set_effect_intensity(uint8_t intensity){
 
 void config_set_effect_speed(uint8_t speed){
 
-	speed = (speed > 255) | (speed <= 0) ? 128 : speed;
+	// speed = (speed > 255) | (speed <= 0) ? 128 : speed;
+	speed = (speed > 255) ? 255 : ((speed <= 0) ? 1 : speed);
 
 
 	uint16_t new_speed;

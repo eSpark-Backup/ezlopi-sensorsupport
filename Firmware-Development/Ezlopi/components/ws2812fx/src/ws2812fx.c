@@ -150,6 +150,14 @@ struct FX_SEGMENT { // 20 bytes
   uint16_t aux_param; // auxilary param (usually stores a WS2812FX_color_wheel index)
   uint16_t aux_param2;  // auxilary param (usually stores bitwise options)
   uint16_t aux_param3; // auxilary param (usually stores a segment index)
+  byte     *data; // effect data pointer
+
+  struct {
+    uint8_t custom3 : 5;        // reduced range slider (0-31)
+    bool    check1  : 1;        // checkmark 1
+    bool    check2  : 1;        // checkmark 2
+    bool    check3  : 1;        // checkmark 3
+  };
 };
 
 struct FX_SEGMENT *fx_segments[MAX_SEGMENTS];
@@ -525,6 +533,8 @@ void fadeToBlackBy(int line, uint8_t fadeBy) {
 
 inline void fadePixelColor(int line, uint16_t n, uint8_t fade)                 { setPixelColor(line, n, color_fade(getPixelColor(line, n), fade)); }
 inline void fadePixelColorXY(int line, uint16_t x, uint16_t y, uint8_t fade)            { fadePixelColor(line, x, fade); }
+inline void blendPixelColor(int line, int n, uint32_t color, uint8_t blend)    { setPixelColor(line, n, color_blend(getPixelColor(line, n), color, blend)); }
+
 
 /*
  * No blinking. Just plain old static light.
@@ -894,11 +904,54 @@ uint16_t WS2812FX_mode_single_dynamic(int line) {
  * to new random colors.
  */
 uint16_t WS2812FX_mode_multi_dynamic(int line) {
-  for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
-    setPixelColor(line, i, color_wheel(random8()));
+  // for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
+  //   setPixelColor(line, i, color_wheel(random8()));
+  // }
+  // return 100*(2000/fx_segments[line]->speed);
+  static bool allocated_mem = false;
+  if(!allocated_mem){
+    SEGMENT->data = (byte*)calloc(SEGLEN, sizeof(byte));  
+    allocated_mem = true;
+  }    
+
+
+  if(SEGENV->counter_mode_call == 0) {
+    //SEGMENT->fill(BLACK);
+    for (int i = 0; i < SEGLEN; i++) SEGENV->data[i] = random8();
   }
-  return 100*(2000/fx_segments[line]->speed);
+
+  uint32_t cycleTime = 50 + (255 - ((SEGMENT->speed/2000.0F)*255.0F))*15;
+  uint32_t it = SEGMENT->next_time / cycleTime;
+  if (it != SEGENV->counter_mode_step && SEGMENT->speed != 0) //new color
+  {
+    for (int i = 0; i < SEGLEN; i++) {
+      if (random8() <= SEGMENT->intensity) SEGENV->data[i] = random8(); // random color index
+    }
+    SEGENV->counter_mode_step = it;
+  }
+
+  if (SEGMENT->check1) {
+    for (int i = 0; i < SEGLEN; i++) {
+      blendPixelColor(line, i + SEGMENT->start, color_wheel(SEGENV->data[i]), 0);
+    }
+  } else {
+    for (int i = 0; i < SEGLEN; i++) {
+      setPixelColor(line, i + SEGMENT->start, color_wheel(SEGENV->data[i]));
+    }
+  }
+  return 20;
 }
+
+/*
+ * effect "Dynamic" with smooth color-fading
+ */
+uint16_t mode_dynamic_smooth(int line) {
+  bool old = SEGMENT->check1;
+  SEGMENT->check1 = true;
+  WS2812FX_mode_multi_dynamic(line);
+  SEGMENT->check1 = old;
+  return 20;
+ }
 
 /*
  * Does the "standby-breathing" of well known i-Devices. Fixed Speed.
@@ -989,10 +1042,10 @@ static uint32_t color_blend(uint32_t color1, uint32_t color2, uint8_t blend) {
   int g2 = (color2 >> 8) & 0xff;
   int b2 = color2 & 0xff;
 
-  uint32_t w3 = ((w2 * blend) + (w1 * (255 - blend))) / 256;
-  uint32_t r3 = ((r2 * blend) + (r1 * (255 - blend))) / 256;
-  uint32_t g3 = ((g2 * blend) + (g1 * (255 - blend))) / 256;
-  uint32_t b3 = ((b2 * blend) + (b1 * (255 - blend))) / 256;
+  uint32_t w3 = ((w2 * blend) + (w1 * (255 - blend))) >> 8;
+  uint32_t r3 = ((r2 * blend) + (r1 * (255 - blend))) >> 8;
+  uint32_t g3 = ((g2 * blend) + (g1 * (255 - blend))) >> 8;
+  uint32_t b3 = ((b2 * blend) + (b1 * (255 - blend))) >> 8;
 
   return ((w3 << 24) | (r3 << 16) | (g3 << 8) | (b3));
 }
@@ -1021,38 +1074,7 @@ uint16_t WS2812FX_mode_fade(int line) {
     fx_segments[line]->counter_mode_step = 0;
   // return (fx_segments[line]->speed / 128);
   return 15*(2000/fx_segments[line]->speed);
-}
 
-/*
- * Runs a single pixel back and forth.
- */
-uint16_t WS2812FX_mode_scan(int line) {
-
-  // CREATEDEFAULTPALETTE(SEGCOLOR(0));
-
-
-  if (fx_segments[line]->counter_mode_step > (segmentLength(line) * 2) - 3) {
-    fx_segments[line]->counter_mode_step = 0;
-  }
-
-  for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
-    setPixelColor(line, i, fx_segments[line]->colors[0]);
-  }
-
-  int led_offset =
-      fx_segments[line]->counter_mode_step - (segmentLength(line) - 1);
-  led_offset = abs(led_offset);
-
-  if (isReverse(line)) {
-    // setPixelColor(line, fx_segments[line]->stop - led_offset, fx_segments[line]->colors[0]);
-    setPixelColor(line, fx_segments[line]->stop - led_offset, COLORFROMPALETTE(led_offset));
-  } else {
-    // setPixelColor(line, fx_segments[line]->start + led_offset, fx_segments[line]->colors[0]);
-    setPixelColor(line, fx_segments[line]->start + led_offset, COLORFROMPALETTE(led_offset));
-  }
-
-  fx_segments[line]->counter_mode_step++;
-  return (fx_segments[line]->speed / (segmentLength(line) * 2));
 }
 
 /*
@@ -1075,7 +1097,7 @@ uint16_t scan_wled(int line, bool dual)
   if (dual) {
     for (int j = led_offset; j < led_offset + size; j++) {
       uint16_t i2 = SEGLEN -1 -j;
-      setPixelColor(line, i2 + SEGMENT->start, (SEGMENT->palette == DEFAULT_PALETTE) ? SEGCOLOR(2) : COLORFROMPALETTE(j));
+      setPixelColor(line, i2 + SEGMENT->start, (SEGMENT->palette == DEFAULT_PALETTE) ? (SEGCOLOR(2) ? SEGCOLOR(2) : SEGCOLOR(0)) : COLORFROMPALETTE(j));
     }
   }
 
@@ -1084,6 +1106,41 @@ uint16_t scan_wled(int line, bool dual)
   }
 
   return 20;
+}
+
+/*
+ * Runs a single pixel back and forth.
+ */
+uint16_t WS2812FX_mode_scan(int line) {
+
+  // CREATEDEFAULTPALETTE(SEGCOLOR(0));
+
+
+  // if (fx_segments[line]->counter_mode_step > (segmentLength(line) * 2) - 3) {
+  //   fx_segments[line]->counter_mode_step = 0;
+  // }
+
+  // for (uint16_t i = fx_segments[line]->start; i <= fx_segments[line]->stop; i++) {
+  //   setPixelColor(line, i, fx_segments[line]->colors[0]);
+  // }
+
+  // int led_offset =
+  //     fx_segments[line]->counter_mode_step - (segmentLength(line) - 1);
+  // led_offset = abs(led_offset);
+
+  // if (isReverse(line)) {
+  //   // setPixelColor(line, fx_segments[line]->stop - led_offset, fx_segments[line]->colors[0]);
+  //   setPixelColor(line, fx_segments[line]->stop - led_offset, COLORFROMPALETTE(led_offset));
+  // } else {
+  //   // setPixelColor(line, fx_segments[line]->start + led_offset, fx_segments[line]->colors[0]);
+  //   setPixelColor(line, fx_segments[line]->start + led_offset, COLORFROMPALETTE(led_offset));
+  // }
+
+  // fx_segments[line]->counter_mode_step++;
+  // return (fx_segments[line]->speed / (segmentLength(line) * 2));
+
+  return scan_wled(line, false);
+
 }
 
 /*

@@ -195,6 +195,7 @@ void led_set_color(uint8_t c, uint16_t p, uint8_t r, uint8_t g, uint8_t b) {
 }
 
 uint32_t led_get_color(uint8_t c, uint16_t pos){
+	c =  0;
 	return ownled_getPixelColor(c, pos);
 }
 
@@ -711,6 +712,9 @@ static void task(void *args) {
 				case FX_MODE_MULTI_DYNAMIC:
 					WS2812FX_call(i, WS2812FX_mode_multi_dynamic);
 					break;
+				// case FX_MODE_DYNAMIC_SMOOTH:
+				// 	WS2812FX_call(i, mode_dynamic_smooth);
+				// 	break;
 				case FX_MODE_RAINBOW:
 					WS2812FX_call(i, WS2812FX_mode_rainbow);
 					break;

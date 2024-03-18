@@ -84,6 +84,7 @@ uint16_t mode_icu_wled(int line);
 // uint16_t WS2812FX_mode_larson_scanner(int line);
 uint16_t WS2812FX_mode_merry_christmas(int line);
 uint16_t WS2812FX_mode_multi_dynamic(int line);
+uint16_t mode_dynamic_smooth(int line);
 uint16_t WS2812FX_mode_multi_strobe(int line);
 uint16_t WS2812FX_mode_rainbow(int line);
 uint16_t WS2812FX_mode_rainbow_cycle(int line);

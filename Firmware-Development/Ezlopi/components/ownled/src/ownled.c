@@ -573,7 +573,7 @@ extern uint32_t ownled_getPixelColor(uint8_t c, uint16_t pos) {
         color = RGB(s[2], s[1], s[0]);
         break;
     }
-
+	// ESP_LOGI(TAG, "RETURNING GET PIXLE COLOR : %x", color);
     return color;
 }
 
